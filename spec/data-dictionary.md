@@ -225,29 +225,101 @@ At each lease expiration, engines blend the renewal and new-tenant outcomes by
 
 ## `valuation`
 
+Carries inputs for all four approaches: income (DCF and direct capitalization),
+sales comparison, and cost. Each method listed in `methods` requires its parameter
+object. Reference engine v0.1 computes DCF and direct cap; sales comparison and cost
+inputs travel as structured, auditable disclosure until engine support lands.
+
 | Field | Type | Definition |
 |---|---|---|
 | `analysisStartDate` **(R)** | date | First day of analysis month 1; conventionally `rentRoll.asOfDate`. All growth, downtime, and discounting measure from here. |
-| `methods` **(R)** | array | `dcf` and/or `direct_cap`. Each listed method's parameter object is required. |
+| `valueDate` | date | Effective date of value if different (retrospective/prospective). |
+| `interestAppraised` | enum | `leased_fee` (default — subject to in-place leases), `fee_simple` (unencumbered: engines value as if every lease rolled to market at analysis start), `leasehold`. |
+| `valuePremise` | enum | `as_is` (default), `as_stabilized`, `as_complete` — state assumed dates/conditions in notes. |
+| `purpose` | enum | `acquisition`, `disposition`, `financing`, `appraisal`, `internal`, `other`. |
+| `methods` **(R)** | array | Any of `dcf`, `direct_cap`, `sales_comparison`, `cost` (min 1, unique). |
 | `purchasePrice` | number | USD. When present, engines report IRR/NPV against it; when absent, concluded value only. |
 | `acquisitionCostsPercent` | number | Closing costs, percent of price, added to initial outflow. Default 0. |
+| `reconciliation` | object | Final conclusion across approaches — see below. |
 
 ### `valuation.dcf`
 
 | Field | Type | Definition |
 |---|---|---|
-| `holdPeriodYears` **(R)** | integer | 1–30 whole years from `analysisStartDate`; reversion at end of final year. |
-| `discountRatePercent` **(R)** | number | Annual rate applied to unlevered cash flows. |
-| `reversionCapRatePercent` **(R)** | number | Applied to forward (hold + 1 year) NOI for gross reversion value. |
+| `holdPeriodYears` / `holdPeriodMonths` **(R)** | integer | Exactly one. Years (1–30) for calendar holds; months (1–360) for exits timed to lease events. Reversion occurs at the end of the final period. |
+| `discountRatePercent` **(R)** | number | Annual rate applied to unlevered operating cash flows. |
+| `reversionDiscountRatePercent` | number | Separate rate for the reversion where terminal risk is priced differently. Defaults to `discountRatePercent`. |
+| `discountTiming` | enum | `monthly` (default): cash flows at the equivalent monthly rate ((1+r)^(1/12)−1). `annual`: year-end aggregation. Declared so every engine produces the identical NPV. |
+| `periodConvention` | enum | `end` (default) or `mid` period discounting (mid is common in appraisal DCF). Reversion always discounts from the end of the final period. |
+| `terminalValue` **(R)** | object | How gross reversion value is computed — see below. |
+
+### `valuation.dcf.terminalValue`
+
+| Field | Type | Definition |
+|---|---|---|
+| `method` **(R)** | enum | `direct_cap`: capitalize terminal NOI. `exit_price_psf`: `exitPricePerSF` × building SF. `fixed_value`: stated value. `grown_purchase_price`: purchase price compounded at `annualAppreciationPercent`. Each method's parameter is conditionally required. |
+| `capRatePercent` | number | Terminal cap rate (required for `direct_cap`). |
+| `noiBasis` | enum | `forwardYear` (default): the 12 months after sale. `trailingYear`: the 12 months before. `stabilizedAtMarket`: all space at market rent/structure at exit — strips residual below-market leases from terminal NOI (the lease-to-market exit). |
+| `deductBelowTheLineItems` | boolean | Capitalize NOI net of reserves. Default false; declared so engines agree. |
+| `exitPricePerSF` / `fixedValue` / `annualAppreciationPercent` | number | Parameter for the respective method. |
 | `sellingCostsPercent` | number | Percent of gross reversion, default 0. |
-| `discountTiming` | enum | `monthly` (default): end-of-month cash flows at the equivalent monthly rate ((1+r)^(1/12)−1). `annual`: end-of-year aggregation, annual discounting. Declared so every engine produces the identical NPV. |
+| `deductUnfundedObligations` | boolean | Deduct outstanding TI/LC and remaining free rent on leases extending past sale — the buyer-assumed-costs adjustment. Default false. |
 
 ### `valuation.directCap`
 
 | Field | Type | Definition |
 |---|---|---|
 | `capRatePercent` **(R)** | number | Overall capitalization rate. |
-| `noiBasis` | enum | `year1` (default): forward 12 months per the full assumption set. `inPlace`: annualized contractual rent at `analysisStartDate` less annualized expenses, ignoring rollover and lease-up. |
+| `noiBasis` **(R)** | enum | `year1`: forward 12 months per the full assumption set. `inPlace`: annualized contractual rent less annualized expenses, no rollover or lease-up. `stabilizedAtMarket`: all space at market — the fee-simple / lease-to-market basis, typically paired with `markToMarket` and `nearTermAdjustments` to walk back to as-is leased-fee value. `trailing12` / `custom`: the stated `customNOI` (required for both). |
+| `customNOI` | number | Stated annual NOI for `custom`/`trailing12` bases. |
+| `applyGeneralVacancy` | boolean | Apply general vacancy / credit loss in the basis NOI. Default true. |
+| `deductBelowTheLineItems` | boolean | Capitalize NOI net of reserves. Default false. |
+| `excludeExpenseIds[]` | string[] | Expense items excluded from the capped NOI (e.g. owner-specific costs a buyer won't inherit). |
+| `nearTermAdjustments` | object | Deduct near-term costs from the capped value — the bridge from stabilized to as-is. `periodMonths` **(R)** (e.g. 18); toggles `includeDowntimeLostRent`, `includeFreeRent`, `includeTI`, `includeLC` (all default true); optional `discountRatePercent` to take deductions at PV instead of face. |
+| `markToMarket` | object | Leased-fee adjustment: PV of (contract − market) rent differentials through each lease's expiration, added (above-market) or deducted (below-market). `discountRatePercent` **(R)**. Presence enables it. |
+| `adjustments[]` | array | Explicit lump sums: `name` **(R)**, `type` **(R)** (`deduction`/`addition`), `amount` **(R)** (positive USD; type carries the sign), `category` (`deferred_maintenance`, `capital_costs`, `leasing_costs`, `excess_land`, `entitlements`, `other`). |
+
+### `valuation.salesComparison`
+
+| Field | Type | Definition |
+|---|---|---|
+| `unitBasis` **(R)** | enum | `building_sf` (improved industrial), `land_sf` / `land_acre` (land-driven product, e.g. IOS). |
+| `comparables[]` **(R)** | array | Min 1 — see below. |
+| `concludedValuePerUnit` **(R)** | number | Concluded value per unit after reconciling the adjusted comps. |
+| `indicatedValue` | number | Concluded × subject units; stated so files are self-checking. |
+
+### `valuation.salesComparison.comparables[]`
+
+| Field | Type | Definition |
+|---|---|---|
+| `salePrice` **(R)** / `saleDate` **(R)** | number / date | Transaction facts. |
+| `name`, `address` | — | Comp identification (`street1`, `city`, `state`). |
+| `buildingSF`, `landAcres` | number | Size in the relevant basis. |
+| `pricePerUnit`, `adjustedPricePerUnit` | number | Unadjusted and post-adjustment unit prices, stated for self-checking. |
+| `capRatePercent` | number | Going-in cap at sale — supports cap rate extraction. |
+| `occupancyPercentAtSale`, `yearBuilt`, `clearHeightFt`, `condition` | — | Comparability facts. |
+| `propertyRights` | enum | Interest conveyed: `fee_simple`, `leased_fee`, `leasehold`. |
+| `financingNotes` | string | Non-market financing / conditions-of-sale color. |
+| `adjustments[]` | array | `factor` **(R)** from the standard elements of comparison (`property_rights`, `financing`, `conditions_of_sale`, `market_conditions` (time), `location`, `size`, `age_condition`, `clear_height`, `loading`, `site_coverage`, `yard`, `other`), plus exactly one of `percentAdjustment` (signed) or `amountPerUnitAdjustment` (signed USD/unit), and `rationale`. |
+| `source` | string | Verification source. |
+
+### `valuation.costApproach`
+
+| Field | Type | Definition |
+|---|---|---|
+| `landValue` **(R)** | object | Exactly one of `amount` (USD) or `perAcreAmount` (× `siteAreaAcres`); optional `landComparables[]` (`salePrice` **(R)**, `saleDate` **(R)**, `landAcres` **(R)**, `zoning`). |
+| `improvements` **(R)** | object | Exactly one of `replacementCostNew` (USD) or `replacementCostNewPerSF` (× `buildingSF`); `costBasis` (`replacement` default / `reproduction`); `costSource` free text; `siteImprovementsCost` (paving, fencing, yard, rail); `indirectCostsPercent`; `entrepreneurialProfitPercent`. |
+| `depreciation` | object | `physicalDeteriorationPercent`, `functionalObsolescencePercent` (e.g. inadequate clear height), `externalObsolescencePercent`, plus age-life inputs `effectiveAgeYears` / `economicLifeYears`. Percents apply to RCN + site improvements. |
+| `indicatedValue` | number | Land + depreciated improvements (+ profit); stated for self-checking. |
+
+### `valuation.reconciliation`
+
+| Field | Type | Definition |
+|---|---|---|
+| `concludedValue` **(R)** | number | Final value conclusion, USD. |
+| `concludedValuePerSF` | number | Stated for self-checking. |
+| `primaryMethod` | enum | Approach given most weight. |
+| `exposureTimeMonths` / `marketingTimeMonths` | number | Appraisal context. |
 
 ## `debt` (optional)
 

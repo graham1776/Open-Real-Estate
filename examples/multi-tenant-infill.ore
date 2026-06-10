@@ -211,19 +211,114 @@
   },
   "valuation": {
     "analysisStartDate": "2026-06-01",
-    "methods": ["dcf", "direct_cap"],
+    "methods": ["dcf", "direct_cap", "sales_comparison"],
+    "interestAppraised": "leased_fee",
+    "valuePremise": "as_is",
+    "purpose": "acquisition",
     "purchasePrice": 21200000,
     "acquisitionCostsPercent": 0.5,
     "dcf": {
       "holdPeriodYears": 7,
       "discountRatePercent": 7.25,
-      "reversionCapRatePercent": 6.0,
-      "sellingCostsPercent": 1.5,
-      "discountTiming": "monthly"
+      "discountTiming": "monthly",
+      "periodConvention": "end",
+      "terminalValue": {
+        "method": "direct_cap",
+        "capRatePercent": 6.0,
+        "noiBasis": "forwardYear",
+        "sellingCostsPercent": 1.5,
+        "deductUnfundedObligations": true,
+        "notes": "Buyer-assumed-costs deduction covers any TI/LC/free rent on leases signed near the exit."
+      }
     },
     "directCap": {
       "capRatePercent": 5.6,
-      "noiBasis": "year1"
+      "noiBasis": "stabilizedAtMarket",
+      "applyGeneralVacancy": true,
+      "nearTermAdjustments": {
+        "periodMonths": 18,
+        "includeDowntimeLostRent": true,
+        "includeFreeRent": true,
+        "includeTI": true,
+        "includeLC": true,
+        "notes": "Stabilized capped value less suite 400 lease-up costs and the L-200 (Dec 2026) rollover costs, taken at face value over 18 months."
+      },
+      "markToMarket": {
+        "discountRatePercent": 7.25,
+        "notes": "PV of contract-vs-market differentials on L-100/L-200/L-300 through their expirations, bridging the stabilized basis back to leased-fee as-is."
+      }
+    },
+    "salesComparison": {
+      "unitBasis": "building_sf",
+      "comparables": [
+        {
+          "name": "Comp 1 — 9600 Rush St",
+          "address": { "city": "South El Monte", "state": "CA" },
+          "salePrice": 19850000,
+          "saleDate": "2026-02-12",
+          "buildingSF": 71500,
+          "pricePerUnit": 277.62,
+          "capRatePercent": 5.4,
+          "occupancyPercentAtSale": 100,
+          "yearBuilt": 1984,
+          "clearHeightFt": 20,
+          "propertyRights": "leased_fee",
+          "adjustments": [
+            { "factor": "market_conditions", "percentAdjustment": 1.0, "rationale": "4 months of market growth at ~3.5%/yr." },
+            { "factor": "age_condition", "percentAdjustment": -3.0, "rationale": "Comp is newer vintage with refreshed office." },
+            { "factor": "clear_height", "percentAdjustment": -2.0, "rationale": "20 ft vs subject 18 ft." }
+          ],
+          "adjustedPricePerUnit": 266.7,
+          "source": "public record; listing broker confirmed",
+          "notes": "Fully synthetic comparable."
+        },
+        {
+          "name": "Comp 2 — 4421 Temple City Blvd",
+          "address": { "city": "El Monte", "state": "CA" },
+          "salePrice": 16400000,
+          "saleDate": "2025-10-30",
+          "buildingSF": 64200,
+          "pricePerUnit": 255.45,
+          "occupancyPercentAtSale": 92,
+          "yearBuilt": 1976,
+          "propertyRights": "leased_fee",
+          "adjustments": [
+            { "factor": "market_conditions", "percentAdjustment": 2.0, "rationale": "7 months of market growth." },
+            { "factor": "location", "percentAdjustment": 2.5, "rationale": "Inferior freeway access vs subject." }
+          ],
+          "adjustedPricePerUnit": 267.0,
+          "source": "public record",
+          "notes": "Fully synthetic comparable."
+        },
+        {
+          "name": "Comp 3 — 2800 Durfee Ave",
+          "address": { "city": "El Monte", "state": "CA" },
+          "salePrice": 23900000,
+          "saleDate": "2026-04-22",
+          "buildingSF": 88000,
+          "pricePerUnit": 271.59,
+          "capRatePercent": 5.5,
+          "occupancyPercentAtSale": 100,
+          "yearBuilt": 1981,
+          "propertyRights": "fee_simple",
+          "adjustments": [
+            { "factor": "property_rights", "percentAdjustment": -1.5, "rationale": "Fee-simple sale to owner-user; subject is leased fee." },
+            { "factor": "size", "percentAdjustment": 1.0, "rationale": "Larger building trades at a per-SF discount." }
+          ],
+          "adjustedPricePerUnit": 270.2,
+          "source": "buyer's broker (confirmed)",
+          "notes": "Fully synthetic comparable."
+        }
+      ],
+      "concludedValuePerUnit": 268.0,
+      "indicatedValue": 21011200,
+      "notes": "Comps 1 and 3 weighted most heavily; all three bracket the subject after adjustment."
+    },
+    "reconciliation": {
+      "concludedValue": 21200000,
+      "concludedValuePerSF": 270.41,
+      "primaryMethod": "dcf",
+      "notes": "DCF given most weight for the rollover timing; direct cap and sales comparison corroborate within 1%."
     },
     "notes": "Debt module intentionally omitted: unlevered underwriting."
   },

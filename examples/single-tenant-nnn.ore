@@ -165,18 +165,28 @@
   "valuation": {
     "analysisStartDate": "2026-06-01",
     "methods": ["dcf", "direct_cap"],
+    "interestAppraised": "leased_fee",
+    "valuePremise": "as_is",
+    "purpose": "acquisition",
     "purchasePrice": 14100000,
     "acquisitionCostsPercent": 0.5,
     "dcf": {
       "holdPeriodYears": 10,
       "discountRatePercent": 6.75,
-      "reversionCapRatePercent": 5.75,
-      "sellingCostsPercent": 1.5,
-      "discountTiming": "monthly"
+      "discountTiming": "monthly",
+      "periodConvention": "end",
+      "terminalValue": {
+        "method": "direct_cap",
+        "capRatePercent": 5.75,
+        "noiBasis": "forwardYear",
+        "deductBelowTheLineItems": false,
+        "sellingCostsPercent": 1.5
+      }
     },
     "directCap": {
       "capRatePercent": 5.45,
-      "noiBasis": "year1"
+      "noiBasis": "year1",
+      "applyGeneralVacancy": true
     }
   },
   "debt": {

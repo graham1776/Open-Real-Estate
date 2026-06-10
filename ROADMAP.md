@@ -22,10 +22,14 @@
 
 ## v0.1 scope (deliberate constraints)
 
-US industrial only; NNN/NN/modified gross leases; DCF and direct capitalization;
-simple debt sizing only. Out of scope for v0.1: retail percentage rent, office
-complex reimbursement pools, hotel, multifamily unit-level, international
-conventions, debt waterfalls.
+US industrial only; NNN/NN/modified gross leases; simple debt sizing only. The
+valuation schema carries inputs for all four approaches — DCF (with terminal value
+method options), direct capitalization (with stabilized/mark-to-market bases and
+near-term cost deductions), sales comparison, and cost — while the v0.1 reference
+engine computes DCF and direct cap; sales comparison and cost travel as structured
+disclosure until engine support lands. Out of scope for v0.1: retail percentage
+rent, office complex reimbursement pools, hotel, multifamily unit-level,
+international conventions, debt waterfalls.
 
 ## After v0.1
 
