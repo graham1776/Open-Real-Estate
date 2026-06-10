@@ -1,0 +1,80 @@
+{
+  "kernelVersion": "0.1.0-kernel",
+  "property": {
+    "name": "Garvey Industrial Park",
+    "cityState": "El Monte, CA",
+    "market": "Los Angeles",
+    "submarket": "San Gabriel Valley",
+    "buildingSF": 78400,
+    "yearBuilt": 1979,
+    "clearHeightFt": 18
+  },
+  "occupancy": {
+    "buildingSF": 78400,
+    "occupiedSF": 64200,
+    "vacantSF": 14200,
+    "occupancyPercent": 81.89
+  },
+  "rent": {
+    "inPlaceAnnualBaseRent": 1014516,
+    "inPlaceWARentPerSFPerMonth": 1.32,
+    "marketRentPerSFPerMonth": 1.5,
+    "inPlaceVsMarketPercent": -12.21
+  },
+  "expenses": {
+    "aboveLineAnnualExclMgmt": 291296,
+    "belowTheLineAnnual": 11760,
+    "managementFeePercentOfEGR": 3
+  },
+  "noi": {
+    "year1NOI": 1052452,
+    "stabilizedAtMarketNOI": 1349770
+  },
+  "directCap": {
+    "basis": "stabilizedAtMarket",
+    "basisNOI": 1349770,
+    "capRatePercent": 5.6,
+    "grossValue": 24103031,
+    "adjustmentsApplied": [
+      {
+        "name": "Mark-to-market (PV of contract vs market)",
+        "amount": -189612
+      },
+      {
+        "name": "Near-term costs (18 mo, face)",
+        "amount": -368630
+      }
+    ],
+    "indicatedValue": 23544789,
+    "perSF": 300.32
+  },
+  "dcf": {
+    "holdMonths": 84,
+    "discountRatePercent": 7.25,
+    "reversionDiscountRatePercent": 7.25,
+    "pvOperating": 6628730,
+    "terminalGross": 27508438,
+    "terminalNet": 27095811,
+    "pvTerminal": 16600496,
+    "indicatedValue": 23229226,
+    "perSF": 296.29
+  },
+  "concluded": {
+    "value": 21200000,
+    "source": "reconciliation (producer-stated)"
+  },
+  "warnings": [
+    {
+      "code": "mg_recovery_zero",
+      "message": "Lease L-200 (MG): kernel models zero recoveries (base-year delta not computed); full engine will compute base-year/stop recoveries."
+    },
+    {
+      "code": "general_vacancy_simplified",
+      "message": "General vacancy + credit loss applied to all revenue including months already in modeled downtime (kernel does not de-duplicate); full engine will exclude explicit downtime from the base."
+    },
+    {
+      "code": "unfunded_obligations_not_deducted",
+      "message": "terminalValue.deductUnfundedObligations not computed by kernel (full engine will deduct TI/LC/free rent on leases extending past sale)."
+    }
+  ]
+}

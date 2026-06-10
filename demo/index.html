@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ORE Viewer — drop a .ore file</title>
+<style>
+  :root {
+    --ink: #1a2433; --muted: #5b6b80; --line: #dfe5ec; --bg: #f6f8fa;
+    --card: #ffffff; --accent: #0b5fff; --good: #0a7d33; --warn: #9a6700; --bad: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.45 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--ink); background: var(--bg); }
+  header { padding: 14px 22px; background: var(--card); border-bottom: 1px solid var(--line); display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  header h1 { font-size: 16px; margin: 0; }
+  header .tag { color: var(--muted); font-size: 12px; }
+  #drop { margin: 22px; padding: 46px 20px; border: 2px dashed var(--line); border-radius: 10px; background: var(--card); text-align: center; color: var(--muted); cursor: pointer; }
+  #drop.hover { border-color: var(--accent); color: var(--accent); }
+  #drop strong { color: var(--ink); }
+  main { display: none; padding: 0 22px 40px; max-width: 1100px; }
+  nav { display: flex; gap: 4px; margin: 16px 0 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  nav button { border: none; background: none; padding: 9px 14px; font: inherit; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; }
+  nav button.on { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+  nav button .pill { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 5px; border-radius: 9px; background: #fde8c8; color: var(--warn); font-size: 11px; font-weight: 700; }
+  section { display: none; }
+  section.on { display: block; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; margin: 16px 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .card .k { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .card .v { font-size: 19px; font-weight: 650; margin-top: 3px; }
+  .card .s { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  table { border-collapse: collapse; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin: 14px 0; }
+  th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); background: #fbfcfd; }
+  tr:last-child td { border-bottom: none; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .warnbox { border-left: 3px solid var(--warn); background: #fff8eb; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+  .errbox { border-left: 3px solid var(--bad); background: #fdf0ef; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+  .okbox { border-left: 3px solid var(--good); background: #effaf2; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+  .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+  pre { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px; overflow: auto; font-size: 12px; }
+  h2 { font-size: 14px; margin: 22px 0 6px; }
+  .muted { color: var(--muted); }
+  .gap-neg { color: var(--bad); } .gap-pos { color: var(--good); }
+  footer { padding: 18px 22px; color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>ORE Viewer</h1>
+  <span class="tag">Open Real Estate format — see the deal in 30 seconds. Runs entirely in your browser; nothing is uploaded.</span>
+  <span class="tag" id="filetag"></span>
+</header>
+
+<div id="drop">
+  <strong>Drop a <span class="code">.ore</span> file here</strong> or click to choose one.<br>
+  <span style="font-size:12px">A .ore file is standard JSON — property, rent roll, expenses, assumptions, and valuation in one self-contained file.</span>
+  <input type="file" id="file" accept=".ore,.json" hidden>
+</div>
+
+<main id="main">
+  <nav id="tabs"></nav>
+  <section id="tab-summary"></section>
+  <section id="tab-rentroll"></section>
+  <section id="tab-expenses"></section>
+  <section id="tab-market"></section>
+  <section id="tab-valuation"></section>
+  <section id="tab-outputs"></section>
+  <section id="tab-warnings"></section>
+  <section id="tab-json"></section>
+</main>
+
+<footer>
+  ORE (Open Real Estate) — open format, open math. Outputs computed by the thin calc kernel (simplified; see Warnings tab). Full reference engine: see ROADMAP.
+</footer>
+
+<script type="module">
+import { computeAll, lint } from "../engine/kernel.mjs";
+
+const $ = (id) => document.getElementById(id);
+const usd = (n) => n == null ? "—" : n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+const num = (n, d = 0) => n == null ? "—" : n.toLocaleString("en-US", { maximumFractionDigits: d });
+const pct = (n) => n == null ? "—" : `${num(n, 2)}%`;
+const esc = (s) => String(s ?? "—").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+const TABS = [
+  ["summary", "Summary"], ["rentroll", "Rent Roll"], ["expenses", "Expenses"],
+  ["market", "Assumptions"], ["valuation", "Valuation"], ["outputs", "Outputs"],
+  ["warnings", "Warnings"], ["json", "Raw JSON"],
+];
+
+function show(deal, fileName) {
+  const problems = lint(deal);
+  const fatal = problems.filter((p) => p.code !== "advice");
+  let out = null, computeError = null;
+  if (fatal.length === 0) {
+    try { out = computeAll(deal); } catch (e) { computeError = e; }
+  }
+
+  $("filetag").textContent = fileName;
+  $("drop").style.display = "none";
+  $("main").style.display = "block";
+
+  const warnCount = (out?.warnings.length ?? 0) + problems.length + (computeError ? 1 : 0);
+  $("tabs").innerHTML = TABS.map(([id, label]) =>
+    `<button data-t="${id}">${label}${id === "warnings" && warnCount ? `<span class="pill">${warnCount}</span>` : ""}</button>`).join("");
+  $("tabs").querySelectorAll("button").forEach((b) => b.onclick = () => activate(b.dataset.t));
+
+  renderSummary(deal, out);
+  renderRentRoll(deal);
+  renderExpenses(deal);
+  renderMarket(deal);
+  renderValuation(deal);
+  renderOutputs(deal, out, computeError);
+  renderWarnings(problems, out, computeError);
+  $("tab-json").innerHTML = `<pre>${esc(JSON.stringify(deal, null, 2))}</pre>`;
+  activate("summary");
+}
+
+function activate(t) {
+  $("tabs").querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.t === t));
+  TABS.forEach(([id]) => $("tab-" + id).classList.toggle("on", id === t));
+}
+
+function card(k, v, s) { return `<div class="card"><div class="k">${k}</div><div class="v">${v}</div>${s ? `<div class="s">${s}</div>` : ""}</div>`; }
+
+function renderSummary(deal, out) {
+  const p = deal.property, ph = p.physical;
+  const o = out?.occupancy, r = out?.rent;
+  const gapCls = r?.inPlaceVsMarketPercent == null ? "" : r.inPlaceVsMarketPercent < 0 ? "gap-neg" : "gap-pos";
+  $("tab-summary").innerHTML = `
+    <h2>${esc(p.name)} — ${esc(p.address.city)}, ${esc(p.address.state)} <span class="muted">(${esc(p.propertySubtype ?? p.propertyType)}, ${esc(p.tenancy ?? "—")}-tenant)</span></h2>
+    <div class="cards">
+      ${card("Building SF", num(ph.buildingSF))}
+      ${card("Occupancy", o ? pct(o.occupancyPercent) : "—", o ? `${num(o.vacantSF)} SF vacant` : "")}
+      ${card("In-place rent", r ? usd(r.inPlaceAnnualBaseRent) : "—", r?.inPlaceWARentPerSFPerMonth != null ? `$${num(r.inPlaceWARentPerSFPerMonth, 2)}/SF/mo` : "")}
+      ${card("Vs market", r?.inPlaceVsMarketPercent != null ? `<span class="${gapCls}">${pct(r.inPlaceVsMarketPercent)}</span>` : "—", r?.marketRentPerSFPerMonth != null ? `market $${num(r.marketRentPerSFPerMonth, 2)}/SF/mo` : "")}
+      ${card("Year built", num(ph.yearBuilt), ph.yearRenovated ? `renovated ${ph.yearRenovated}` : "")}
+      ${card("Clear height", ph.clearHeightFt ? `${ph.clearHeightFt} ft` : "—")}
+      ${card("Loading", `${num(ph.dockHighDoors)} DH / ${num(ph.gradeLevelDoors)} GL`)}
+      ${card("Site", deal.property.siteAreaAcres ? `${num(deal.property.siteAreaAcres, 2)} ac` : "—", ph.coverageRatio ? `${num(ph.coverageRatio * 100)}% coverage` : "")}
+    </div>
+    ${p.location ? `<p class="muted">${esc(p.location.market ?? "")}${p.location.submarket ? " / " + esc(p.location.submarket) : ""}</p>` : ""}
+    ${p.description ? `<p>${esc(p.description)}</p>` : ""}
+    ${p.notes ? `<p class="muted">${esc(p.notes)}</p>` : ""}`;
+}
+
+function renderRentRoll(deal) {
+  const rr = deal.rentRoll;
+  const rows = rr.leases.map((l) => {
+    const step = l.baseRent.schedule[l.baseRent.schedule.length - 1];
+    return `<tr>
+      <td>${esc(l.suite ?? "—")}</td><td>${esc(l.tenant.name)}<div class="muted">${esc(l.tenant.industry ?? "")}</div></td>
+      <td class="num">${num(l.leasedSF)}</td>
+      <td>${esc(l.commencementDate)} → ${esc(l.expirationDate)}</td>
+      <td class="num">${num(step.amount, 2)} <span class="muted">${esc(l.baseRent.unit)}</span></td>
+      <td>${esc(l.escalation?.type ?? "none")}${l.escalation?.rate != null ? ` ${l.escalation.rate}%` : ""}</td>
+      <td>${esc(l.reimbursement.structure)}</td>
+      <td>${(l.options ?? []).map((o) => esc(o.type)).join(", ") || "—"}</td>
+    </tr>`;
+  }).join("");
+  const vac = (rr.vacantSuites ?? []).map((v) =>
+    `<tr><td>${esc(v.suite ?? "—")}</td><td class="muted">VACANT${v.spaceType ? ` (${esc(v.spaceType)})` : ""}</td><td class="num">${num(v.sf)}</td><td colspan="5" class="muted">${esc(v.notes ?? "")}</td></tr>`).join("");
+  $("tab-rentroll").innerHTML = `
+    <h2>Rent roll as of ${esc(rr.asOfDate)}</h2>
+    <table><thead><tr><th>Suite</th><th>Tenant</th><th class="num">SF</th><th>Term</th><th class="num">Base rent</th><th>Escalation</th><th>Structure</th><th>Options</th></tr></thead>
+    <tbody>${rows}${vac}</tbody></table>
+    ${rr.notes ? `<p class="muted">${esc(rr.notes)}</p>` : ""}`;
+}
+
+function renderExpenses(deal) {
+  const items = deal.expenses?.items;
+  if (!items) { $("tab-expenses").innerHTML = `<p class="muted">No expenses module in this file.</p>`; return; }
+  const sf = deal.property.physical.buildingSF;
+  const rows = items.map((i) => {
+    const annual = i.amountUnit === "perSFPerYear" ? i.amount * sf : i.amountUnit === "totalPerYear" ? i.amount : null;
+    return `<tr><td>${esc(i.name)}<div class="muted code">${esc(i.expenseId)}</div></td><td>${esc(i.category ?? "—")}</td>
+      <td class="num">${annual != null ? usd(annual) : `${i.amount}% of EGR`}</td>
+      <td class="num">${annual != null ? "$" + num(annual / sf, 2) : "—"}</td>
+      <td>${i.recoverable ? "yes" : "no"}</td><td>${i.belowTheLine ? "below NOI" : ""}</td>
+      <td class="muted">${esc(i.notes ?? "")}</td></tr>`;
+  }).join("");
+  $("tab-expenses").innerHTML = `<h2>Operating expenses (annualized as of ${esc(deal.rentRoll.asOfDate)})</h2>
+    <table><thead><tr><th>Item</th><th>Category</th><th class="num">Annual</th><th class="num">$/SF/yr</th><th>Recoverable</th><th></th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function renderMarket(deal) {
+  const ma = deal.marketAssumptions;
+  if (!ma) { $("tab-market").innerHTML = `<p class="muted">No marketAssumptions module in this file.</p>`; return; }
+  const growthStr = (g) => g == null ? "—" : typeof g === "number" ? `${g}%/yr` : g.map((s) => `yr ${s.fromYear}+: ${s.annualPercent}%`).join(", ");
+  const profs = Object.entries(ma.marketLeasing ?? {}).map(([k, p]) => `
+    <table><thead><tr><th colspan="2">Profile: ${esc(k)}</th></tr></thead><tbody>
+      <tr><td>Market rent</td><td>${p.marketRent.amount} ${esc(p.marketRent.unit)}</td></tr>
+      <tr><td>Term / downtime</td><td>${p.termMonths} mo / ${p.downtimeMonths} mo</td></tr>
+      <tr><td>Renewal probability</td><td>${p.renewalProbabilityPercent}%${p.renewalRentPercentOfMarket != null ? ` @ ${p.renewalRentPercentOfMarket}% of market` : ""}</td></tr>
+      <tr><td>New tenant TI / LC / free</td><td>$${p.newTenant?.tiPerSF ?? 0}/SF · ${p.newTenant?.lcPercentOfRent ?? 0}% · ${p.newTenant?.freeRentMonths ?? 0} mo</td></tr>
+      <tr><td>Renewal TI / LC / free</td><td>$${p.renewal?.tiPerSF ?? 0}/SF · ${p.renewal?.lcPercentOfRent ?? 0}% · ${p.renewal?.freeRentMonths ?? 0} mo</td></tr>
+      <tr><td>Structure / escalation</td><td>${esc(p.reimbursementStructure ?? "NNN")} / ${esc(p.escalation?.type ?? "none")}${p.escalation?.rate != null ? ` ${p.escalation.rate}%` : ""}</td></tr>
+      ${p.notes ? `<tr><td>Notes</td><td class="muted">${esc(p.notes)}</td></tr>` : ""}
+    </tbody></table>`).join("");
+  $("tab-market").innerHTML = `
+    <h2>Growth</h2>
+    <div class="cards">
+      ${card("Market rent", growthStr(ma.growth?.marketRent))}
+      ${card("Expenses", growthStr(ma.growth?.expenses))}
+      ${card("CPI", growthStr(ma.growth?.cpi))}
+      ${card("Gen. vacancy / credit loss", `${ma.generalVacancyPercent ?? 0}% / ${ma.creditLossPercent ?? 0}%`)}
+    </div>
+    <h2>Market leasing</h2>${profs}`;
+}
+
+function renderValuation(deal) {
+  const v = deal.valuation;
+  if (!v) { $("tab-valuation").innerHTML = `<p class="muted">No valuation module in this file.</p>`; return; }
+  let html = `<div class="cards">
+    ${card("Methods", v.methods.join(", "))}
+    ${card("Interest / premise", `${esc(v.interestAppraised ?? "leased_fee")} / ${esc(v.valuePremise ?? "as_is")}`)}
+    ${card("Purchase price", usd(v.purchasePrice), v.acquisitionCostsPercent ? `+ ${v.acquisitionCostsPercent}% costs` : "")}
+    ${card("Analysis start", esc(v.analysisStartDate))}
+  </div>`;
+  if (v.dcf) {
+    const tv = v.dcf.terminalValue;
+    html += `<h2>DCF</h2><table><tbody>
+      <tr><td>Hold</td><td>${v.dcf.holdPeriodYears ? v.dcf.holdPeriodYears + " yrs" : v.dcf.holdPeriodMonths + " mo"}</td></tr>
+      <tr><td>Discount rate</td><td>${v.dcf.discountRatePercent}%${v.dcf.reversionDiscountRatePercent ? ` (reversion ${v.dcf.reversionDiscountRatePercent}%)` : ""} · ${esc(v.dcf.discountTiming ?? "monthly")}, ${esc(v.dcf.periodConvention ?? "end")}-period</td></tr>
+      <tr><td>Terminal value</td><td>${esc(tv.method)}${tv.capRatePercent ? ` @ ${tv.capRatePercent}% on ${esc(tv.noiBasis ?? "forwardYear")} NOI` : ""}${tv.exitPricePerSF ? ` $${tv.exitPricePerSF}/SF` : ""}${tv.sellingCostsPercent ? `, less ${tv.sellingCostsPercent}% selling costs` : ""}${tv.deductUnfundedObligations ? ", less unfunded obligations" : ""}</td></tr>
+      ${tv.notes ? `<tr><td>Notes</td><td class="muted">${esc(tv.notes)}</td></tr>` : ""}
+    </tbody></table>`;
+  }
+  if (v.directCap) {
+    const d = v.directCap;
+    html += `<h2>Direct capitalization</h2><table><tbody>
+      <tr><td>Cap rate / basis</td><td>${d.capRatePercent}% on ${esc(d.noiBasis)} NOI</td></tr>
+      ${d.nearTermAdjustments ? `<tr><td>Near-term deductions</td><td>${d.nearTermAdjustments.periodMonths} months${d.nearTermAdjustments.discountRatePercent ? `, PV @ ${d.nearTermAdjustments.discountRatePercent}%` : ", face value"}</td></tr>` : ""}
+      ${d.markToMarket ? `<tr><td>Mark-to-market</td><td>PV @ ${d.markToMarket.discountRatePercent}%</td></tr>` : ""}
+      ${(d.adjustments ?? []).map((a) => `<tr><td>${esc(a.name)}</td><td>${a.type === "deduction" ? "−" : "+"}${usd(a.amount)} <span class="muted">${esc(a.category ?? "")}</span></td></tr>`).join("")}
+    </tbody></table>`;
+  }
+  if (v.salesComparison) {
+    const s = v.salesComparison;
+    html += `<h2>Sales comparison <span class="muted">(${esc(s.unitBasis)})</span></h2>
+    <table><thead><tr><th>Comp</th><th>Sale</th><th class="num">Price</th><th class="num">SF</th><th class="num">$/unit</th><th class="num">Adj. $/unit</th></tr></thead><tbody>
+      ${s.comparables.map((c) => `<tr><td>${esc(c.name ?? "—")}</td><td>${esc(c.saleDate)}</td><td class="num">${usd(c.salePrice)}</td><td class="num">${num(c.buildingSF)}</td><td class="num">${num(c.pricePerUnit, 2)}</td><td class="num">${num(c.adjustedPricePerUnit, 2)}</td></tr>`).join("")}
+      <tr><td colspan="5"><strong>Concluded $/unit</strong></td><td class="num"><strong>${num(s.concludedValuePerUnit, 2)}</strong></td></tr>
+    </tbody></table>`;
+  }
+  if (v.costApproach) {
+    const c = v.costApproach;
+    html += `<h2>Cost approach</h2><table><tbody>
+      <tr><td>Land</td><td>${c.landValue.amount ? usd(c.landValue.amount) : `$${num(c.landValue.perAcreAmount)}/acre`}</td></tr>
+      <tr><td>Replacement cost</td><td>${c.improvements.replacementCostNew ? usd(c.improvements.replacementCostNew) : `$${num(c.improvements.replacementCostNewPerSF)}/SF`}${c.improvements.entrepreneurialProfitPercent ? ` + ${c.improvements.entrepreneurialProfitPercent}% profit` : ""}</td></tr>
+      ${c.depreciation ? `<tr><td>Depreciation</td><td>${["physicalDeteriorationPercent", "functionalObsolescencePercent", "externalObsolescencePercent"].filter((k) => c.depreciation[k] != null).map((k) => `${k.replace(/Percent$/, "").replace(/([A-Z])/g, " $1").toLowerCase()} ${c.depreciation[k]}%`).join(", ")}</td></tr>` : ""}
+      ${c.indicatedValue ? `<tr><td>Indicated value (stated)</td><td>${usd(c.indicatedValue)}</td></tr>` : ""}
+    </tbody></table>`;
+  }
+  if (v.reconciliation) {
+    html += `<h2>Reconciliation</h2><div class="okbox">Concluded value (producer-stated): <strong>${usd(v.reconciliation.concludedValue)}</strong>${v.reconciliation.primaryMethod ? ` — primary method: ${esc(v.reconciliation.primaryMethod)}` : ""}${v.reconciliation.notes ? `<div class="muted">${esc(v.reconciliation.notes)}</div>` : ""}</div>`;
+  }
+  $("tab-valuation").innerHTML = html;
+}
+
+function renderOutputs(deal, out, err) {
+  if (err) { $("tab-outputs").innerHTML = `<div class="errbox">Kernel could not compute outputs: <span class="code">${esc(err.message)}</span></div>`; return; }
+  if (!out) { $("tab-outputs").innerHTML = `<div class="errbox">File failed structural checks (see Warnings tab); outputs not computed.</div>`; return; }
+  const d = out.directCap, c = out.dcf;
+  $("tab-outputs").innerHTML = `
+    <div class="warnbox">Computed by the <strong>thin calc kernel</strong> — simplified methodology, every simplification disclosed in the Warnings tab. The full reference engine replaces these numbers.</div>
+    <div class="cards">
+      ${card("Year-1 NOI", usd(out.noi.year1NOI))}
+      ${card("Stabilized NOI (at market)", usd(out.noi.stabilizedAtMarketNOI))}
+      ${card("Direct cap value", d ? usd(d.indicatedValue) : "—", d ? `${d.capRatePercent}% on ${d.basis} · $${num(d.perSF, 0)}/SF` : "")}
+      ${card("DCF value", c ? usd(c.indicatedValue) : "—", c ? `${c.holdMonths} mo @ ${c.discountRatePercent}% · $${num(c.perSF, 0)}/SF` : "")}
+      ${card("Concluded value", usd(out.concluded.value), esc(out.concluded.source ?? ""))}
+    </div>
+    ${d ? `<h2>Direct cap walk</h2><table><tbody>
+      <tr><td>Basis NOI (${esc(d.basis)})</td><td class="num">${usd(d.basisNOI)}</td></tr>
+      <tr><td>Capped @ ${d.capRatePercent}%</td><td class="num">${usd(d.grossValue)}</td></tr>
+      ${d.adjustmentsApplied.map((a) => `<tr><td>${esc(a.name)}</td><td class="num">${usd(a.amount)}</td></tr>`).join("")}
+      <tr><td><strong>Indicated value</strong></td><td class="num"><strong>${usd(d.indicatedValue)}</strong></td></tr>
+    </tbody></table>` : ""}
+    ${c ? `<h2>DCF walk</h2><table><tbody>
+      <tr><td>PV of operating cash flows (${c.holdMonths} mo @ ${c.discountRatePercent}%)</td><td class="num">${usd(c.pvOperating)}</td></tr>
+      <tr><td>Terminal value (gross → net of selling costs)</td><td class="num">${usd(c.terminalGross)} → ${usd(c.terminalNet)}</td></tr>
+      <tr><td>PV of reversion @ ${c.reversionDiscountRatePercent}%</td><td class="num">${usd(c.pvTerminal)}</td></tr>
+      <tr><td><strong>Indicated value</strong></td><td class="num"><strong>${usd(c.indicatedValue)}</strong></td></tr>
+      ${deal.valuation?.purchasePrice ? `<tr><td class="muted">vs purchase price</td><td class="num muted">${usd(deal.valuation.purchasePrice)} (${num(((c.indicatedValue - deal.valuation.purchasePrice) / deal.valuation.purchasePrice) * 100, 1)}%)</td></tr>` : ""}
+    </tbody></table>` : ""}`;
+}
+
+function renderWarnings(problems, out, err) {
+  const blocks = [];
+  for (const p of problems) blocks.push(`<div class="${p.code === "advice" ? "warnbox" : "errbox"}"><span class="code">${esc(p.code)}</span> — ${esc(p.message)}</div>`);
+  if (err) blocks.push(`<div class="errbox"><span class="code">compute_error</span> — ${esc(err.message)}</div>`);
+  for (const w of out?.warnings ?? []) blocks.push(`<div class="warnbox"><span class="code">${esc(w.code)}</span> — ${esc(w.message)}</div>`);
+  $("tab-warnings").innerHTML = blocks.length
+    ? `<p class="muted">ORE treats disclosed uncertainty as a feature: every simplification the kernel applied to <em>this file</em> is named here.</p>` + blocks.join("")
+    : `<div class="okbox">No warnings — file is structurally complete and all requested outputs were computable.</div>`;
+}
+
+// ---- file loading ----
+function load(file) {
+  file.text().then((text) => {
+    let deal;
+    try { deal = JSON.parse(text); }
+    catch (e) {
+      $("drop").innerHTML = `<div class="errbox" style="text-align:left">Not valid JSON: <span class="code">${esc(e.message)}</span>. A .ore file is standard JSON — check for trailing commas or comments.</div>`;
+      return;
+    }
+    show(deal, file.name);
+  });
+}
+const drop = $("drop");
+drop.onclick = () => $("file").click();
+$("file").onchange = (e) => e.target.files[0] && load(e.target.files[0]);
+drop.ondragover = (e) => { e.preventDefault(); drop.classList.add("hover"); };
+drop.ondragleave = () => drop.classList.remove("hover");
+drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove("hover"); e.dataTransfer.files[0] && load(e.dataTransfer.files[0]); };
+
+// when served from the repo (e.g. `npx serve` at root), offer the bundled examples
+fetch("../examples/single-tenant-nnn.ore").then((r) => {
+  if (!r.ok) return;
+  const div = document.createElement("div");
+  div.style.marginTop = "14px";
+  div.innerHTML = `<span class="muted" style="font-size:12px">or load an example: </span>` +
+    ["single-tenant-nnn", "multi-tenant-infill", "value-add-rollover"].map((n) =>
+      `<button class="code" style="margin:0 4px;cursor:pointer" data-x="${n}">${n}.ore</button>`).join("");
+  drop.appendChild(div);
+  div.querySelectorAll("button").forEach((b) => b.onclick = (e) => {
+    e.stopPropagation();
+    fetch(`../examples/${b.dataset.x}.ore`).then((r) => r.json()).then((deal) => show(deal, b.dataset.x + ".ore"));
+  });
+}).catch(() => {});
+</script>
+</body>
+</html>

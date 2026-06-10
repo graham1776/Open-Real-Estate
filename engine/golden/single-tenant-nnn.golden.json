@@ -1,0 +1,63 @@
+{
+  "kernelVersion": "0.1.0-kernel",
+  "property": {
+    "name": "14250 Marigold Avenue",
+    "cityState": "Santa Fe Springs, CA",
+    "market": "Los Angeles",
+    "submarket": "Mid-Counties",
+    "buildingSF": 45120,
+    "yearBuilt": 1988,
+    "clearHeightFt": 24
+  },
+  "occupancy": {
+    "buildingSF": 45120,
+    "occupiedSF": 45120,
+    "vacantSF": 0,
+    "occupancyPercent": 100
+  },
+  "rent": {
+    "inPlaceAnnualBaseRent": 768845,
+    "inPlaceWARentPerSFPerMonth": 1.42,
+    "marketRentPerSFPerMonth": 1.55,
+    "inPlaceVsMarketPercent": -8.39
+  },
+  "expenses": {
+    "aboveLineAnnualExclMgmt": 205296,
+    "belowTheLineAnnual": 4512,
+    "managementFeePercentOfEGR": 2.5
+  },
+  "noi": {
+    "year1NOI": 783928,
+    "stabilizedAtMarketNOI": 833875
+  },
+  "directCap": {
+    "basis": "year1",
+    "basisNOI": 783928,
+    "capRatePercent": 5.45,
+    "grossValue": 14383998,
+    "adjustmentsApplied": [],
+    "indicatedValue": 14383998,
+    "perSF": 318.79
+  },
+  "dcf": {
+    "holdMonths": 120,
+    "discountRatePercent": 6.75,
+    "reversionDiscountRatePercent": 6.75,
+    "pvOperating": 6141776,
+    "terminalGross": 19292304,
+    "terminalNet": 19002920,
+    "pvTerminal": 9888752,
+    "indicatedValue": 16030528,
+    "perSF": 355.29
+  },
+  "concluded": {
+    "value": 16030528,
+    "source": "computed (dcf, kernel)"
+  },
+  "warnings": [
+    {
+      "code": "general_vacancy_simplified",
+      "message": "General vacancy + credit loss applied to all revenue including months already in modeled downtime (kernel does not de-duplicate); full engine will exclude explicit downtime from the base."
+    }
+  ]
+}

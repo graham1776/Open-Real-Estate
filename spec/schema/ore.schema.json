@@ -7,6 +7,11 @@
   "required": ["formatVersion", "property", "rentRoll"],
   "additionalProperties": false,
   "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri",
+      "description": "Optional URL of the published ORE JSON Schema this file conforms to, e.g. https://oreformat.org/schema/0.1.0/ore.schema.json. Carrying it lets any reader — editor, validator, or LLM — resolve field definitions from the file alone."
+    },
     "formatVersion": {
       "type": "string",
       "pattern": "^0\\.1\\.\\d+$",

@@ -163,6 +163,38 @@ model** (the IFC/buildingSMART path) once there is a working v1 and momentum.
   Conformance = reproducing golden outputs exactly. This is how "the engine working
   the same way" becomes enforceable for third-party implementations.
 
+### AI/LLM design (standing principles, decided June 2026)
+**The file is the prompt; the engine is the calculator.** Three modes, designed for
+separately (full reasoning: `docs/design/llm-and-excel.md`):
+- **LLM as cold reader:** people already drop OM PDFs into LLMs to "underwrite" —
+  a `.ore` file is the structured replacement for that workflow. Format rules:
+  spelled-out field names with units embedded (`clearHeightFt`, `...Percent`),
+  conventions declared in-file (never inferred), readable enums, `notes` alongside
+  structure, optional root `$schema` URL so definitions resolve from the file alone.
+- **LLM + engine:** LLMs do judgment, the engine does arithmetic. Ship an MCP
+  server (`@ore-format/mcp`) wrapping the reference engine (validate,
+  run_valuation, cash_flows, compare) once the engine exists. Files carry inputs
+  only; outputs are always one engine call away.
+- **LLM as author:** agents will write `.ore` files to send deal data to each
+  other. An LLM author is a producer like any other: schema validation gates form,
+  the engine gates coherence, provenance discloses authorship. Publish the spec as
+  a single LLM-ingestible document (`llms.txt`) as the authoring guide.
+
+### Excel strategy (decided June 2026)
+**Your model, ORE's data.** Every shop trusts its house model; the pain is
+re-keying, not a missing DCF. Two tiers:
+- **Tier 1 — standard export, zero install:** `ore export-xlsx` produces typed,
+  named tables (`ore_RentRoll`, `ore_Expenses`, …) under a documented "ORE Excel
+  Layout" convention, so a shop retrofits its house model once and every deal file
+  plugs in thereafter. Publish a Power Query snippet for zero-tooling ingestion.
+- **Tier 2 — Excel add-in with the embedded engine:** Office.js runs JavaScript, so
+  the TypeScript reference engine runs inside Excel unmodified
+  (`@ore-format/excel`): open/validate/edit/save `.ore` in place, engine outputs as
+  custom functions (`=ORE.NOI(1)`, `=ORE.IRR()`).
+- **Explicit non-goal:** no formula-based reference workbook re-implementing engine
+  logic — a second engine breaks the conformance story and is a permanent parity
+  tax. Third parties may build one (golden files make it testable); we don't.
+
 ### Repo structure
 ```
 /spec        — JSON Schema files + human-readable spec + data dictionary

@@ -30,6 +30,10 @@ document, never separate files.
 ## Conventions
 
 - **Dates** are ISO 8601 (`YYYY-MM-DD`) strings.
+- **Self-description:** files may carry a root `$schema` URL pointing at the
+  published schema, and field names spell out their units (`clearHeightFt`,
+  `...Percent`) — a reader (human, tool, or LLM) should understand a `.ore` file
+  cold, with no external lookup. See `docs/design/llm-and-excel.md`.
 - **Money** is USD. Per-SF rent units are declared explicitly per lease via
   `baseRent.unit` — never inferred from market convention.
 - **Percentages** are expressed as percent values (`3.5` = 3.5%), except ratios

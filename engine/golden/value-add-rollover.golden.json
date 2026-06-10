@@ -1,0 +1,80 @@
+{
+  "kernelVersion": "0.1.0-kernel",
+  "property": {
+    "name": "2900 Coronado Street",
+    "cityState": "Anaheim, CA",
+    "market": "Orange County",
+    "submarket": "North County",
+    "buildingSF": 62000,
+    "yearBuilt": 1975,
+    "clearHeightFt": 22
+  },
+  "occupancy": {
+    "buildingSF": 62000,
+    "occupiedSF": 62000,
+    "vacantSF": 0,
+    "occupancyPercent": 100
+  },
+  "rent": {
+    "inPlaceAnnualBaseRent": 632400,
+    "inPlaceWARentPerSFPerMonth": 0.85,
+    "marketRentPerSFPerMonth": 1.6,
+    "inPlaceVsMarketPercent": -46.88
+  },
+  "expenses": {
+    "aboveLineAnnualExclMgmt": 218140,
+    "belowTheLineAnnual": 12400,
+    "managementFeePercentOfEGR": 2.5
+  },
+  "noi": {
+    "year1NOI": 611404,
+    "stabilizedAtMarketNOI": 1163681
+  },
+  "directCap": {
+    "basis": "stabilizedAtMarket",
+    "basisNOI": 1163681,
+    "capRatePercent": 5.75,
+    "grossValue": 20237924,
+    "adjustmentsApplied": [
+      {
+        "name": "Mark-to-market (PV of contract vs market)",
+        "amount": -675112
+      },
+      {
+        "name": "Near-term costs (24 mo, PV)",
+        "amount": -1028973
+      },
+      {
+        "name": "Roof replacement reserve",
+        "amount": -350000
+      }
+    ],
+    "indicatedValue": 18183839,
+    "perSF": 293.29
+  },
+  "dcf": {
+    "holdMonths": 63,
+    "discountRatePercent": 8,
+    "reversionDiscountRatePercent": 8.5,
+    "pvOperating": 3567664,
+    "terminalGross": 24515832,
+    "terminalNet": 24148094,
+    "pvTerminal": 15735362,
+    "indicatedValue": 19303027,
+    "perSF": 311.34
+  },
+  "concluded": {
+    "value": 15500000,
+    "source": "reconciliation (producer-stated)"
+  },
+  "warnings": [
+    {
+      "code": "general_vacancy_simplified",
+      "message": "General vacancy + credit loss applied to all revenue including months already in modeled downtime (kernel does not de-duplicate); full engine will exclude explicit downtime from the base."
+    },
+    {
+      "code": "unfunded_obligations_not_deducted",
+      "message": "terminalValue.deductUnfundedObligations not computed by kernel (full engine will deduct TI/LC/free rent on leases extending past sale)."
+    }
+  ]
+}

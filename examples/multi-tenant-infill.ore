@@ -1,4 +1,5 @@
 {
+  "$schema": "https://oreformat.org/schema/0.1.0/ore.schema.json",
   "formatVersion": "0.1.0",
   "property": {
     "name": "Garvey Industrial Park",
@@ -19,7 +20,11 @@
       "submarket": "San Gabriel Valley"
     },
     "parcels": [
-      { "apn": "8577-014-021", "landAcres": 3.6, "zoning": "M-1" }
+      {
+        "apn": "8577-014-021",
+        "landAcres": 3.6,
+        "zoning": "M-1"
+      }
     ],
     "siteAreaAcres": 3.6,
     "physical": {
@@ -54,12 +59,24 @@
         "baseRent": {
           "unit": "perSFPerMonth",
           "schedule": [
-            { "startDate": "2026-04-01", "amount": 1.31 }
+            {
+              "startDate": "2026-04-01",
+              "amount": 1.31
+            }
           ]
         },
-        "escalation": { "type": "fixed_percent", "rate": 4.0, "frequencyMonths": 12 },
-        "reimbursement": { "structure": "NNN" },
-        "securityDeposit": { "amount": 32226, "form": "cash" }
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 4.0,
+          "frequencyMonths": 12
+        },
+        "reimbursement": {
+          "structure": "NNN"
+        },
+        "securityDeposit": {
+          "amount": 32226,
+          "form": "cash"
+        }
       },
       {
         "leaseId": "L-200",
@@ -74,16 +91,24 @@
         "baseRent": {
           "unit": "perSFPerMonth",
           "schedule": [
-            { "startDate": "2026-01-01", "amount": 1.18 }
+            {
+              "startDate": "2026-01-01",
+              "amount": 1.18
+            }
           ]
         },
-        "escalation": { "type": "none" },
+        "escalation": {
+          "type": "none"
+        },
         "reimbursement": {
           "structure": "MG",
           "baseYear": 2022,
           "notes": "Tenant pays pro-rata share of operating expense increases over the 2022 base year."
         },
-        "securityDeposit": { "amount": 22302, "form": "cash" },
+        "securityDeposit": {
+          "amount": 22302,
+          "form": "cash"
+        },
         "notes": "Near-term rollover: expires 7 months after the as-of date with no remaining options."
       },
       {
@@ -100,13 +125,27 @@
         "baseRent": {
           "unit": "perSFPerMonth",
           "schedule": [
-            { "startDate": "2025-11-01", "amount": 1.45 }
+            {
+              "startDate": "2025-11-01",
+              "amount": 1.45
+            }
           ]
         },
-        "escalation": { "type": "cpi", "frequencyMonths": 12, "cpiFloorPercent": 2.0, "cpiCapPercent": 5.0 },
-        "reimbursement": { "structure": "NNN" },
+        "escalation": {
+          "type": "cpi",
+          "frequencyMonths": 12,
+          "cpiFloorPercent": 2.0,
+          "cpiCapPercent": 5.0
+        },
+        "reimbursement": {
+          "structure": "NNN"
+        },
         "freeRent": [
-          { "startDate": "2026-11-01", "endDate": "2026-11-30", "percentAbated": 100 }
+          {
+            "startDate": "2026-11-01",
+            "endDate": "2026-11-30",
+            "percentAbated": 100
+          }
         ],
         "options": [
           {
@@ -116,7 +155,10 @@
             "rentBasis": "market"
           }
         ],
-        "securityDeposit": { "amount": 30015, "form": "letter_of_credit" },
+        "securityDeposit": {
+          "amount": 30015,
+          "form": "letter_of_credit"
+        },
         "notes": "Month 13 of free rent (Nov 2026) remains unburned as of the as-of date."
       }
     ],
@@ -196,14 +238,28 @@
     "creditLossPercent": 0.5,
     "marketLeasing": {
       "small_bay": {
-        "marketRent": { "amount": 1.5, "unit": "perSFPerMonth" },
+        "marketRent": {
+          "amount": 1.5,
+          "unit": "perSFPerMonth"
+        },
         "termMonths": 48,
-        "escalation": { "type": "fixed_percent", "rate": 4.0, "frequencyMonths": 12 },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 4.0,
+          "frequencyMonths": 12
+        },
         "reimbursementStructure": "NNN",
         "downtimeMonths": 5,
         "renewalProbabilityPercent": 65,
-        "newTenant": { "tiPerSF": 4, "lcPercentOfRent": 6, "freeRentMonths": 1 },
-        "renewal": { "tiPerSF": 1, "lcPercentOfRent": 3 },
+        "newTenant": {
+          "tiPerSF": 4,
+          "lcPercentOfRent": 6,
+          "freeRentMonths": 1
+        },
+        "renewal": {
+          "tiPerSF": 1,
+          "lcPercentOfRent": 3
+        },
         "renewalRentPercentOfMarket": 95,
         "notes": "Single profile applies to all suites; park leases out in comparable small-bay increments."
       }
@@ -211,7 +267,11 @@
   },
   "valuation": {
     "analysisStartDate": "2026-06-01",
-    "methods": ["dcf", "direct_cap", "sales_comparison"],
+    "methods": [
+      "dcf",
+      "direct_cap",
+      "sales_comparison"
+    ],
     "interestAppraised": "leased_fee",
     "valuePremise": "as_is",
     "purpose": "acquisition",
@@ -253,7 +313,10 @@
       "comparables": [
         {
           "name": "Comp 1 — 9600 Rush St",
-          "address": { "city": "South El Monte", "state": "CA" },
+          "address": {
+            "city": "South El Monte",
+            "state": "CA"
+          },
           "salePrice": 19850000,
           "saleDate": "2026-02-12",
           "buildingSF": 71500,
@@ -264,9 +327,21 @@
           "clearHeightFt": 20,
           "propertyRights": "leased_fee",
           "adjustments": [
-            { "factor": "market_conditions", "percentAdjustment": 1.0, "rationale": "4 months of market growth at ~3.5%/yr." },
-            { "factor": "age_condition", "percentAdjustment": -3.0, "rationale": "Comp is newer vintage with refreshed office." },
-            { "factor": "clear_height", "percentAdjustment": -2.0, "rationale": "20 ft vs subject 18 ft." }
+            {
+              "factor": "market_conditions",
+              "percentAdjustment": 1.0,
+              "rationale": "4 months of market growth at ~3.5%/yr."
+            },
+            {
+              "factor": "age_condition",
+              "percentAdjustment": -3.0,
+              "rationale": "Comp is newer vintage with refreshed office."
+            },
+            {
+              "factor": "clear_height",
+              "percentAdjustment": -2.0,
+              "rationale": "20 ft vs subject 18 ft."
+            }
           ],
           "adjustedPricePerUnit": 266.7,
           "source": "public record; listing broker confirmed",
@@ -274,7 +349,10 @@
         },
         {
           "name": "Comp 2 — 4421 Temple City Blvd",
-          "address": { "city": "El Monte", "state": "CA" },
+          "address": {
+            "city": "El Monte",
+            "state": "CA"
+          },
           "salePrice": 16400000,
           "saleDate": "2025-10-30",
           "buildingSF": 64200,
@@ -283,8 +361,16 @@
           "yearBuilt": 1976,
           "propertyRights": "leased_fee",
           "adjustments": [
-            { "factor": "market_conditions", "percentAdjustment": 2.0, "rationale": "7 months of market growth." },
-            { "factor": "location", "percentAdjustment": 2.5, "rationale": "Inferior freeway access vs subject." }
+            {
+              "factor": "market_conditions",
+              "percentAdjustment": 2.0,
+              "rationale": "7 months of market growth."
+            },
+            {
+              "factor": "location",
+              "percentAdjustment": 2.5,
+              "rationale": "Inferior freeway access vs subject."
+            }
           ],
           "adjustedPricePerUnit": 267.0,
           "source": "public record",
@@ -292,7 +378,10 @@
         },
         {
           "name": "Comp 3 — 2800 Durfee Ave",
-          "address": { "city": "El Monte", "state": "CA" },
+          "address": {
+            "city": "El Monte",
+            "state": "CA"
+          },
           "salePrice": 23900000,
           "saleDate": "2026-04-22",
           "buildingSF": 88000,
@@ -302,8 +391,16 @@
           "yearBuilt": 1981,
           "propertyRights": "fee_simple",
           "adjustments": [
-            { "factor": "property_rights", "percentAdjustment": -1.5, "rationale": "Fee-simple sale to owner-user; subject is leased fee." },
-            { "factor": "size", "percentAdjustment": 1.0, "rationale": "Larger building trades at a per-SF discount." }
+            {
+              "factor": "property_rights",
+              "percentAdjustment": -1.5,
+              "rationale": "Fee-simple sale to owner-user; subject is leased fee."
+            },
+            {
+              "factor": "size",
+              "percentAdjustment": 1.0,
+              "rationale": "Larger building trades at a per-SF discount."
+            }
           ],
           "adjustedPricePerUnit": 270.2,
           "source": "buyer's broker (confirmed)",
@@ -331,8 +428,16 @@
       "email": "examples@oreformat.org"
     },
     "sourceDocuments": [
-      { "name": "Synthetic Rent Roll June 2026", "type": "rent_roll", "date": "2026-06-01" },
-      { "name": "Synthetic CY2025 Operating Statement", "type": "operating_statement", "date": "2026-01-20" }
+      {
+        "name": "Synthetic Rent Roll June 2026",
+        "type": "rent_roll",
+        "date": "2026-06-01"
+      },
+      {
+        "name": "Synthetic CY2025 Operating Statement",
+        "type": "operating_statement",
+        "date": "2026-01-20"
+      }
     ],
     "confidentiality": "None — fully synthetic example data published with the ORE specification.",
     "notes": "All parties, documents, and figures are fictional."
