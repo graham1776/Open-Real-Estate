@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreformat.org/schema/0.1.0/provenance.schema.json",
+  "title": "ORE Provenance Module",
+  "description": "Who produced the file, when, from what source documents, and whom to contact. Provenance is how a recipient judges what they can rely on and what to re-verify.",
+  "type": "object",
+  "required": ["generatedAt", "generatedBy"],
+  "additionalProperties": false,
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the file was produced (ISO 8601 date-time with timezone)."
+    },
+    "generatedBy": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "description": "The party responsible for the file's contents.",
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "description": "Person or team name." },
+        "organization": { "type": "string" },
+        "role": {
+          "type": "string",
+          "enum": ["listing_broker", "buyer", "appraiser", "owner", "lender", "other"],
+          "description": "The producer's role in the transaction — recipients read assumptions differently depending on who set them."
+        },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" }
+      }
+    },
+    "software": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Tool that wrote the file, for conformance triage.",
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" }
+      }
+    },
+    "sourceDocuments": {
+      "type": "array",
+      "description": "Documents the file's data was abstracted from. Listed for diligence; the documents themselves do not travel in the file.",
+      "items": {
+        "type": "object",
+        "required": ["name", "type"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "description": "Document title, e.g. \"Lease Agreement dated 2021-08-15\"." },
+          "type": {
+            "type": "string",
+            "enum": [
+              "lease",
+              "lease_amendment",
+              "rent_roll",
+              "operating_statement",
+              "budget",
+              "tax_bill",
+              "offering_memorandum",
+              "site_plan",
+              "estoppel",
+              "other"
+            ]
+          },
+          "date": { "type": "string", "format": "date", "description": "Document date." },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "contacts": {
+      "type": "array",
+      "description": "Deal contacts beyond the producer (e.g. listing team members).",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "organization": { "type": "string" },
+          "role": { "type": "string", "description": "Free-text role, e.g. \"co-listing broker\"." },
+          "email": { "type": "string", "format": "email" },
+          "phone": { "type": "string" }
+        }
+      }
+    },
+    "confidentiality": {
+      "type": "string",
+      "description": "Free-text confidentiality statement or NDA reference governing the file's distribution."
+    },
+    "notes": { "type": "string" }
+  }
+}

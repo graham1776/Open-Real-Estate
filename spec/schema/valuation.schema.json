@@ -1,0 +1,505 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreformat.org/schema/0.1.0/valuation.schema.json",
+  "title": "ORE Valuation Module",
+  "description": "Valuation method parameters across the income (DCF and direct capitalization), sales comparison, and cost approaches. Each method listed in `methods` must have its parameter object present. The schema carries inputs for all four approaches; reference engine v0.1 computes DCF and direct cap, and carries the others as structured disclosure.",
+  "type": "object",
+  "required": ["analysisStartDate", "methods"],
+  "additionalProperties": false,
+  "properties": {
+    "analysisStartDate": {
+      "type": "string",
+      "format": "date",
+      "description": "First day of analysis month 1. Conventionally equals rentRoll.asOfDate; all growth, downtime, and discounting measure from this date."
+    },
+    "valueDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Effective date of value, if different from analysisStartDate (e.g. a retrospective or prospective appraisal)."
+    },
+    "interestAppraised": {
+      "type": "string",
+      "enum": ["fee_simple", "leased_fee", "leasehold"],
+      "default": "leased_fee",
+      "description": "Property interest being valued. leased_fee: subject to in-place leases (the default for income-producing property). fee_simple: unencumbered, all space at market — engines value as if every lease rolled to market terms at the analysis start. leasehold: the tenant's interest."
+    },
+    "valuePremise": {
+      "type": "string",
+      "enum": ["as_is", "as_stabilized", "as_complete"],
+      "default": "as_is",
+      "description": "Premise of value. as_stabilized and as_complete values should state their assumed dates and conditions in notes."
+    },
+    "purpose": {
+      "type": "string",
+      "enum": ["acquisition", "disposition", "financing", "appraisal", "internal", "other"],
+      "description": "Why the valuation was prepared. Recipients weight assumptions differently by purpose."
+    },
+    "methods": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "enum": ["dcf", "direct_cap", "sales_comparison", "cost"] },
+      "description": "Valuation methods this file carries inputs for. Each listed method's parameter object is required."
+    },
+    "purchasePrice": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Assumed or actual purchase price, USD. Optional: when present, engines report IRR/NPV against it; when absent, engines report concluded value only."
+    },
+    "acquisitionCostsPercent": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0,
+      "description": "Closing costs at acquisition as a percent of purchase price, added to the initial outflow."
+    },
+    "dcf": { "$ref": "#/$defs/dcf" },
+    "directCap": { "$ref": "#/$defs/directCap" },
+    "salesComparison": { "$ref": "#/$defs/salesComparison" },
+    "costApproach": { "$ref": "#/$defs/costApproach" },
+    "reconciliation": { "$ref": "#/$defs/reconciliation" },
+    "notes": { "type": "string" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "methods": { "type": "array", "contains": { "const": "dcf" } } }, "required": ["methods"] },
+      "then": { "required": ["dcf"] }
+    },
+    {
+      "if": { "properties": { "methods": { "type": "array", "contains": { "const": "direct_cap" } } }, "required": ["methods"] },
+      "then": { "required": ["directCap"] }
+    },
+    {
+      "if": { "properties": { "methods": { "type": "array", "contains": { "const": "sales_comparison" } } }, "required": ["methods"] },
+      "then": { "required": ["salesComparison"] }
+    },
+    {
+      "if": { "properties": { "methods": { "type": "array", "contains": { "const": "cost" } } }, "required": ["methods"] },
+      "then": { "required": ["costApproach"] }
+    }
+  ],
+  "$defs": {
+    "dcf": {
+      "type": "object",
+      "required": ["discountRatePercent", "terminalValue"],
+      "additionalProperties": false,
+      "oneOf": [
+        { "required": ["holdPeriodYears"], "not": { "required": ["holdPeriodMonths"] } },
+        { "required": ["holdPeriodMonths"], "not": { "required": ["holdPeriodYears"] } }
+      ],
+      "properties": {
+        "holdPeriodYears": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30,
+          "description": "Hold period in whole years from analysisStartDate. Provide this or holdPeriodMonths, not both."
+        },
+        "holdPeriodMonths": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 360,
+          "description": "Hold period in months from analysisStartDate, for partial-year holds (e.g. exit timed to a lease event)."
+        },
+        "discountRatePercent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Annual discount rate applied to unlevered operating cash flows, in percent."
+        },
+        "reversionDiscountRatePercent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Separate annual discount rate for the reversion, where the shop rates terminal value risk differently. Defaults to discountRatePercent."
+        },
+        "discountTiming": {
+          "type": "string",
+          "enum": ["monthly", "annual"],
+          "default": "monthly",
+          "description": "monthly: end/mid-month cash flows discounted at the equivalent monthly rate ((1+r)^(1/12)-1). annual: end/mid-year aggregated cash flows discounted annually. Declared explicitly so every engine produces the identical NPV."
+        },
+        "periodConvention": {
+          "type": "string",
+          "enum": ["end", "mid"],
+          "default": "end",
+          "description": "Whether cash flows are discounted as received at period end or mid-period (common in appraisal DCF). The reversion is always discounted from the end of the final period."
+        },
+        "terminalValue": { "$ref": "#/$defs/terminalValue" },
+        "notes": { "type": "string" }
+      }
+    },
+    "terminalValue": {
+      "type": "object",
+      "required": ["method"],
+      "additionalProperties": false,
+      "description": "How the gross reversion value is computed at the end of the hold.",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["direct_cap", "exit_price_psf", "fixed_value", "grown_purchase_price"],
+          "description": "direct_cap: capitalize terminal NOI per noiBasis at capRatePercent. exit_price_psf: exitPricePerSF × property.physical.buildingSF. fixed_value: the stated fixedValue. grown_purchase_price: purchasePrice compounded at annualAppreciationPercent over the hold (purchasePrice required)."
+        },
+        "capRatePercent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Terminal (reversion) cap rate, in percent. Required when method is direct_cap."
+        },
+        "noiBasis": {
+          "type": "string",
+          "enum": ["forwardYear", "trailingYear", "stabilizedAtMarket"],
+          "default": "forwardYear",
+          "description": "NOI capitalized at exit. forwardYear: the 12 months following sale (hold + 1), per the full assumption set. trailingYear: the 12 months preceding sale. stabilizedAtMarket: all space at market rent and structure as of the exit date — a fee-simple-style exit that strips any residual below-market leases out of the terminal NOI."
+        },
+        "deductBelowTheLineItems": {
+          "type": "boolean",
+          "default": false,
+          "description": "Capitalize NOI net of below-the-line items (conventionally capital reserves). Some buyers cap NOI after reserves; declared so engines agree."
+        },
+        "exitPricePerSF": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Gross exit value per building SF. Required when method is exit_price_psf."
+        },
+        "fixedValue": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Stated gross reversion value, USD. Required when method is fixed_value."
+        },
+        "annualAppreciationPercent": {
+          "type": "number",
+          "description": "Annual appreciation applied to purchasePrice. Required when method is grown_purchase_price."
+        },
+        "sellingCostsPercent": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0,
+          "description": "Costs of sale as a percent of gross reversion value, deducted to reach net reversion."
+        },
+        "deductUnfundedObligations": {
+          "type": "boolean",
+          "default": false,
+          "description": "Deduct outstanding TI/LC and the value of remaining free rent on leases extending past the sale date from the gross reversion — the buyer-assumed-costs adjustment."
+        },
+        "notes": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "method": { "const": "direct_cap" } } },
+          "then": { "required": ["capRatePercent"] }
+        },
+        {
+          "if": { "properties": { "method": { "const": "exit_price_psf" } } },
+          "then": { "required": ["exitPricePerSF"] }
+        },
+        {
+          "if": { "properties": { "method": { "const": "fixed_value" } } },
+          "then": { "required": ["fixedValue"] }
+        },
+        {
+          "if": { "properties": { "method": { "const": "grown_purchase_price" } } },
+          "then": { "required": ["annualAppreciationPercent"] }
+        }
+      ]
+    },
+    "directCap": {
+      "type": "object",
+      "required": ["capRatePercent", "noiBasis"],
+      "additionalProperties": false,
+      "properties": {
+        "capRatePercent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Overall capitalization rate, in percent."
+        },
+        "noiBasis": {
+          "type": "string",
+          "enum": ["year1", "inPlace", "stabilizedAtMarket", "trailing12", "custom"],
+          "description": "NOI to capitalize. year1: forward 12 months from analysisStartDate per the full assumption set. inPlace: annualized contractual rent in force at analysisStartDate less annualized expenses, ignoring rollover and lease-up. stabilizedAtMarket: all space leased at market rent and structure — the fee-simple / lease-to-market basis, typically paired with markToMarket and nearTermAdjustments to walk back to leased-fee as-is value. trailing12: not computable from this file alone; provide customNOI alongside. custom: the stated customNOI."
+        },
+        "customNOI": {
+          "type": "number",
+          "description": "Stated annual NOI, USD. Required when noiBasis is custom or trailing12."
+        },
+        "applyGeneralVacancy": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether marketAssumptions.generalVacancyPercent and creditLossPercent are applied in the basis NOI."
+        },
+        "deductBelowTheLineItems": {
+          "type": "boolean",
+          "default": false,
+          "description": "Capitalize NOI net of below-the-line items (conventionally capital reserves)."
+        },
+        "excludeExpenseIds": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "expenseIds excluded from the capped NOI (e.g. an owner-specific expense a buyer would not inherit)."
+        },
+        "nearTermAdjustments": {
+          "type": "object",
+          "required": ["periodMonths"],
+          "additionalProperties": false,
+          "description": "Deduction of near-term costs from the capitalized value — the conventional bridge from a stabilized capped value to an as-is value. Engines compute scheduled costs within the period from the rent roll and market assumptions.",
+          "properties": {
+            "periodMonths": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Horizon over which near-term costs are deducted, in months from analysisStartDate (e.g. 18)."
+            },
+            "includeDowntimeLostRent": {
+              "type": "boolean",
+              "default": true,
+              "description": "Deduct gross rent (and recoveries) lost to vacancy and downtime within the period."
+            },
+            "includeFreeRent": {
+              "type": "boolean",
+              "default": true,
+              "description": "Deduct scheduled and modeled free rent within the period."
+            },
+            "includeTI": {
+              "type": "boolean",
+              "default": true,
+              "description": "Deduct unfunded and modeled tenant improvement costs within the period."
+            },
+            "includeLC": {
+              "type": "boolean",
+              "default": true,
+              "description": "Deduct unpaid and modeled leasing commissions within the period."
+            },
+            "discountRatePercent": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "When present, deductions are taken at present value discounted at this annual rate; when omitted, at face value."
+            },
+            "notes": { "type": "string" }
+          }
+        },
+        "markToMarket": {
+          "type": "object",
+          "required": ["discountRatePercent"],
+          "additionalProperties": false,
+          "description": "Leased-fee adjustment when capping a market-basis NOI: the present value of (contract − market) rent differentials on each lease through its expiration is added to (above-market) or deducted from (below-market) the capitalized value. Presence of this object enables the adjustment.",
+          "properties": {
+            "discountRatePercent": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Annual rate at which rent differentials are discounted."
+            },
+            "notes": { "type": "string" }
+          }
+        },
+        "adjustments": {
+          "type": "array",
+          "description": "Explicit lump-sum additions or deductions to the capitalized value: deferred maintenance, capital projects, excess land, entitlement value.",
+          "items": {
+            "type": "object",
+            "required": ["name", "type", "amount"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "type": { "type": "string", "enum": ["deduction", "addition"] },
+              "amount": { "type": "number", "exclusiveMinimum": 0, "description": "USD, always positive; type carries the sign." },
+              "category": {
+                "type": "string",
+                "enum": ["deferred_maintenance", "capital_costs", "leasing_costs", "excess_land", "entitlements", "other"]
+              },
+              "notes": { "type": "string" }
+            }
+          }
+        },
+        "notes": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "noiBasis": { "enum": ["custom", "trailing12"] } }, "required": ["noiBasis"] },
+          "then": { "required": ["customNOI"] }
+        }
+      ]
+    },
+    "salesComparison": {
+      "type": "object",
+      "required": ["unitBasis", "comparables", "concludedValuePerUnit"],
+      "additionalProperties": false,
+      "properties": {
+        "unitBasis": {
+          "type": "string",
+          "enum": ["building_sf", "land_sf", "land_acre"],
+          "description": "Unit of comparison. building_sf for improved industrial; land_sf or land_acre for land-driven product (e.g. industrial outdoor storage)."
+        },
+        "comparables": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/saleComparable" }
+        },
+        "concludedValuePerUnit": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Concluded value per unitBasis unit after reconciling the adjusted comparables."
+        },
+        "indicatedValue": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Concluded value × subject units. Stated explicitly so files are self-checking; engines verify against concludedValuePerUnit."
+        },
+        "notes": { "type": "string", "description": "Reconciliation narrative: which comps were weighted and why." }
+      }
+    },
+    "saleComparable": {
+      "type": "object",
+      "required": ["salePrice", "saleDate"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "description": "Identifier or address line for the comp." },
+        "address": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "street1": { "type": "string" },
+            "city": { "type": "string" },
+            "state": { "type": "string", "pattern": "^[A-Z]{2}$" }
+          }
+        },
+        "salePrice": { "type": "number", "exclusiveMinimum": 0, "description": "USD." },
+        "saleDate": { "type": "string", "format": "date" },
+        "buildingSF": { "type": "number", "exclusiveMinimum": 0 },
+        "landAcres": { "type": "number", "exclusiveMinimum": 0 },
+        "pricePerUnit": { "type": "number", "exclusiveMinimum": 0, "description": "Unadjusted price per the parent unitBasis. Stated for self-checking; derivable from salePrice and size." },
+        "capRatePercent": { "type": "number", "exclusiveMinimum": 0, "description": "Going-in cap rate at sale, if known — supports cap rate extraction for the income approach." },
+        "occupancyPercentAtSale": { "type": "number", "minimum": 0, "maximum": 100 },
+        "yearBuilt": { "type": "integer", "minimum": 1800, "maximum": 2100 },
+        "clearHeightFt": { "type": "number", "exclusiveMinimum": 0 },
+        "condition": { "type": "string", "description": "Free-text condition/quality note." },
+        "propertyRights": { "type": "string", "enum": ["fee_simple", "leased_fee", "leasehold"], "description": "Interest conveyed in the comp sale." },
+        "financingNotes": { "type": "string", "description": "Non-market financing or other conditions-of-sale color." },
+        "adjustments": {
+          "type": "array",
+          "description": "Adjustments to the comp toward the subject, applied in listed order. Use either percent or amount per adjustment, not both.",
+          "items": {
+            "type": "object",
+            "required": ["factor"],
+            "additionalProperties": false,
+            "oneOf": [
+              { "required": ["percentAdjustment"], "not": { "required": ["amountPerUnitAdjustment"] } },
+              { "required": ["amountPerUnitAdjustment"], "not": { "required": ["percentAdjustment"] } }
+            ],
+            "properties": {
+              "factor": {
+                "type": "string",
+                "enum": [
+                  "property_rights",
+                  "financing",
+                  "conditions_of_sale",
+                  "market_conditions",
+                  "location",
+                  "size",
+                  "age_condition",
+                  "clear_height",
+                  "loading",
+                  "site_coverage",
+                  "yard",
+                  "other"
+                ],
+                "description": "Element of comparison. market_conditions is the time adjustment."
+              },
+              "percentAdjustment": { "type": "number", "description": "Signed percent, e.g. -5 adjusts the comp down 5%." },
+              "amountPerUnitAdjustment": { "type": "number", "description": "Signed USD per unitBasis unit." },
+              "rationale": { "type": "string" }
+            }
+          }
+        },
+        "adjustedPricePerUnit": { "type": "number", "exclusiveMinimum": 0, "description": "Price per unit after adjustments. Stated for self-checking." },
+        "source": { "type": "string", "description": "Verification source, e.g. \"public record\", \"buyer's broker (confirmed)\"." },
+        "notes": { "type": "string" }
+      }
+    },
+    "costApproach": {
+      "type": "object",
+      "required": ["landValue", "improvements"],
+      "additionalProperties": false,
+      "properties": {
+        "landValue": {
+          "type": "object",
+          "additionalProperties": false,
+          "oneOf": [
+            { "required": ["amount"], "not": { "required": ["perAcreAmount"] } },
+            { "required": ["perAcreAmount"], "not": { "required": ["amount"] } }
+          ],
+          "properties": {
+            "amount": { "type": "number", "exclusiveMinimum": 0, "description": "Land value as if vacant, USD. Provide this or perAcreAmount, not both." },
+            "perAcreAmount": { "type": "number", "exclusiveMinimum": 0, "description": "USD per acre, applied to property.siteAreaAcres." },
+            "landComparables": {
+              "type": "array",
+              "description": "Land sales supporting the conclusion.",
+              "items": {
+                "type": "object",
+                "required": ["salePrice", "saleDate", "landAcres"],
+                "additionalProperties": false,
+                "properties": {
+                  "name": { "type": "string" },
+                  "salePrice": { "type": "number", "exclusiveMinimum": 0 },
+                  "saleDate": { "type": "string", "format": "date" },
+                  "landAcres": { "type": "number", "exclusiveMinimum": 0 },
+                  "zoning": { "type": "string" },
+                  "notes": { "type": "string" }
+                }
+              }
+            },
+            "notes": { "type": "string" }
+          }
+        },
+        "improvements": {
+          "type": "object",
+          "additionalProperties": false,
+          "oneOf": [
+            { "required": ["replacementCostNew"], "not": { "required": ["replacementCostNewPerSF"] } },
+            { "required": ["replacementCostNewPerSF"], "not": { "required": ["replacementCostNew"] } }
+          ],
+          "properties": {
+            "replacementCostNew": { "type": "number", "exclusiveMinimum": 0, "description": "Direct cost of improvements, USD. Provide this or replacementCostNewPerSF, not both." },
+            "replacementCostNewPerSF": { "type": "number", "exclusiveMinimum": 0, "description": "USD per building SF, applied to property.physical.buildingSF." },
+            "costBasis": {
+              "type": "string",
+              "enum": ["replacement", "reproduction"],
+              "default": "replacement",
+              "description": "Replacement (modern equivalent utility) or reproduction (exact replica) cost."
+            },
+            "costSource": { "type": "string", "description": "Basis of the cost estimate, e.g. a published cost service and section, or contractor budget." },
+            "siteImprovementsCost": { "type": "number", "minimum": 0, "description": "Paving, fencing, yard lighting, rail spur — site work beyond the building shell, USD." },
+            "indirectCostsPercent": { "type": "number", "minimum": 0, "description": "Soft costs (A&E, permits, financing, lease-up) as a percent of direct costs, if not already in the cost source." },
+            "entrepreneurialProfitPercent": { "type": "number", "minimum": 0, "description": "Developer profit as a percent of total cost." }
+          }
+        },
+        "depreciation": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Accrued depreciation on the improvements. Percent fields apply to replacement cost new (plus site improvements); the age-life inputs document how physical deterioration was derived.",
+          "properties": {
+            "physicalDeteriorationPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+            "functionalObsolescencePercent": { "type": "number", "minimum": 0, "maximum": 100, "description": "E.g. inadequate clear height or loading for the modern market." },
+            "externalObsolescencePercent": { "type": "number", "minimum": 0, "maximum": 100, "description": "Value loss from outside the property: market conditions, surrounding uses." },
+            "effectiveAgeYears": { "type": "number", "minimum": 0, "description": "Age-life input behind physical deterioration." },
+            "economicLifeYears": { "type": "number", "exclusiveMinimum": 0, "description": "Total economic life used in the age-life calculation." },
+            "notes": { "type": "string" }
+          }
+        },
+        "indicatedValue": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Land + depreciated improvements (+ profit). Stated for self-checking; engines verify against components."
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "reconciliation": {
+      "type": "object",
+      "required": ["concludedValue"],
+      "additionalProperties": false,
+      "description": "Final value conclusion across the approaches carried in this file.",
+      "properties": {
+        "concludedValue": { "type": "number", "exclusiveMinimum": 0, "description": "USD." },
+        "concludedValuePerSF": { "type": "number", "exclusiveMinimum": 0, "description": "Stated for self-checking against property.physical.buildingSF." },
+        "primaryMethod": { "type": "string", "enum": ["dcf", "direct_cap", "sales_comparison", "cost"], "description": "The approach given most weight." },
+        "exposureTimeMonths": { "type": "number", "minimum": 0, "description": "Estimated exposure time supporting the conclusion (appraisal context)." },
+        "marketingTimeMonths": { "type": "number", "minimum": 0 },
+        "notes": { "type": "string", "description": "Reconciliation narrative: weighting rationale across approaches." }
+      }
+    }
+  }
+}

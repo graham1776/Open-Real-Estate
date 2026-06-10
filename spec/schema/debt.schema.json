@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreformat.org/schema/0.1.0/debt.schema.json",
+  "title": "ORE Debt Module",
+  "description": "Optional simple loan terms for levered returns. ORE v0.1 supports a single fixed-rate loan sized by amount or LTV; waterfalls and floating rates are out of scope.",
+  "type": "object",
+  "required": ["interestRatePercent", "termMonths"],
+  "additionalProperties": false,
+  "oneOf": [
+    { "required": ["loanAmount"], "not": { "required": ["ltvPercent"] } },
+    { "required": ["ltvPercent"], "not": { "required": ["loanAmount"] } }
+  ],
+  "properties": {
+    "loanAmount": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Loan amount in USD. Provide this or ltvPercent, not both."
+    },
+    "ltvPercent": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 100,
+      "description": "Loan-to-value in percent, applied to valuation.purchasePrice (which must be present when sizing by LTV)."
+    },
+    "interestRatePercent": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Fixed annual interest rate in percent. v0.1 supports fixed rates only."
+    },
+    "rateType": {
+      "const": "fixed",
+      "default": "fixed",
+      "description": "v0.1 supports fixed-rate debt only; future versions will widen this enum."
+    },
+    "termMonths": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "description": "Loan term in months from fundingDate. If the term ends before the hold period, engines assume payoff of the outstanding balance at term end refinanced on identical terms; state deviations in notes."
+    },
+    "amortizationMonths": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "description": "Amortization schedule in months (e.g. 360 for 30-year). Omit for interest-only through the full term."
+    },
+    "interestOnlyMonths": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0,
+      "description": "Interest-only period in months at the start of the loan, before amortization begins."
+    },
+    "originationFeePercent": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0,
+      "description": "Origination fee as a percent of loan amount, deducted from proceeds at funding."
+    },
+    "fundingDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Loan funding date. Defaults to valuation.analysisStartDate."
+    },
+    "notes": { "type": "string" }
+  }
+}

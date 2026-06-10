@@ -1,0 +1,14 @@
+{
+  "name": "ore-format-repo",
+  "private": true,
+  "description": "ORE (Open Real Estate) — open file format and reference engine for CRE underwriting data. Repo-level tooling; publishable packages live in their own directories.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "validate": "node validator/validate-examples.mjs"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreformat.org/schema/0.1.0/expenses.schema.json",
+  "title": "ORE Expenses Module",
+  "description": "Operating expense schedule with recoverability flags. Amounts are annualized as of rentRoll.asOfDate and grow per the expense growth assumption in marketAssumptions unless an item carries its own growth override.",
+  "type": "object",
+  "required": ["items"],
+  "additionalProperties": false,
+  "properties": {
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/expenseItem" }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text notes on the expense schedule as a whole (source statements, normalization adjustments)."
+    }
+  },
+  "$defs": {
+    "expenseItem": {
+      "type": "object",
+      "required": ["expenseId", "name", "amount", "amountUnit", "recoverable"],
+      "additionalProperties": false,
+      "properties": {
+        "expenseId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable identifier, unique within the file. Referenced by leases' reimbursement.excludedExpenses."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Display name, e.g. \"Real Estate Taxes\"."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "real_estate_taxes",
+            "insurance",
+            "cam",
+            "repairs_maintenance",
+            "utilities",
+            "management_fee",
+            "administrative",
+            "reserves",
+            "other"
+          ],
+          "description": "Standard category for cross-file comparability and standards mapping. Use the name field for the shop-specific label."
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Annual amount in the unit declared by amountUnit, as of rentRoll.asOfDate."
+        },
+        "amountUnit": {
+          "type": "string",
+          "enum": ["totalPerYear", "perSFPerYear", "percentOfEGR"],
+          "description": "totalPerYear: USD per year. perSFPerYear: USD per SF of property.physical.buildingSF per year. percentOfEGR: percent of effective gross revenue (the conventional management fee basis) — amount is the percent value, e.g. 2.5."
+        },
+        "recoverable": {
+          "type": "boolean",
+          "description": "Whether the expense is recoverable from tenants, subject to each lease's reimbursement structure and exclusions."
+        },
+        "belowTheLine": {
+          "type": "boolean",
+          "default": false,
+          "description": "True for items excluded from NOI but included in cash flow (conventionally capital reserves)."
+        },
+        "growthOverridePercent": {
+          "type": "number",
+          "description": "Annual growth rate in percent for this item only, overriding marketAssumptions.growth.expenses. Has no effect on percentOfEGR items, which float with revenue."
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

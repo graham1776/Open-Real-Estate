@@ -1,0 +1,270 @@
+{
+  "formatVersion": "0.1.0",
+  "property": {
+    "name": "2900 Coronado Street",
+    "propertyType": "industrial",
+    "propertySubtype": "manufacturing",
+    "tenancy": "single",
+    "description": "Synthetic example: value-add play — single tenant paying roughly half of market rent on a lease expiring 15 months after the as-of date. The deal is the mark-to-market at rollover. All data in this file is fictional.",
+    "address": {
+      "street1": "2900 E Coronado St",
+      "city": "Anaheim",
+      "state": "CA",
+      "postalCode": "92806",
+      "county": "Orange",
+      "country": "US"
+    },
+    "location": {
+      "market": "Orange County",
+      "submarket": "North County"
+    },
+    "parcels": [
+      { "apn": "345-111-007", "landAcres": 2.9, "zoning": "I (Industrial)" }
+    ],
+    "siteAreaAcres": 2.9,
+    "physical": {
+      "buildingSF": 62000,
+      "officeSF": 5200,
+      "clearHeightFt": 22,
+      "dockHighDoors": 4,
+      "gradeLevelDoors": 3,
+      "yearBuilt": 1975,
+      "stories": 1,
+      "construction": "tilt_up",
+      "sprinkler": "wet",
+      "powerAmps": 2000,
+      "powerVolts": "277/480V 3-phase",
+      "autoParkingStalls": 70,
+      "coverageRatio": 0.49,
+      "fencedYard": true,
+      "yardAcres": 0.4
+    },
+    "notes": "Heavy power and fenced yard support either renewal at market or repositioning to distribution use."
+  },
+  "rentRoll": {
+    "asOfDate": "2026-06-01",
+    "leases": [
+      {
+        "leaseId": "L-001",
+        "tenant": {
+          "name": "Meridian Plastics Manufacturing Co.",
+          "industry": "injection molding",
+          "creditNotes": "Original 2016 tenant on a flat legacy lease; no remaining options."
+        },
+        "leasedSF": 62000,
+        "commencementDate": "2016-09-01",
+        "expirationDate": "2027-08-31",
+        "baseRent": {
+          "unit": "perSFPerMonth",
+          "schedule": [
+            { "startDate": "2024-09-01", "amount": 0.85 }
+          ]
+        },
+        "escalation": { "type": "none" },
+        "reimbursement": {
+          "structure": "NN",
+          "proRataSharePercent": 100,
+          "notes": "Tenant reimburses taxes, insurance, and maintenance; landlord retains roof and structure."
+        },
+        "securityDeposit": { "amount": 52700, "form": "cash" },
+        "notes": "In-place rent ~53% of market. No renewal options; rollover terms set by marketAssumptions."
+      }
+    ],
+    "vacantSuites": [],
+    "notes": "Synthetic value-add example: below-market single tenant with near-term rollover."
+  },
+  "expenses": {
+    "items": [
+      {
+        "expenseId": "E-TAX",
+        "name": "Real Estate Taxes",
+        "category": "real_estate_taxes",
+        "amount": 158000,
+        "amountUnit": "totalPerYear",
+        "recoverable": true,
+        "growthOverridePercent": 2.0
+      },
+      {
+        "expenseId": "E-INS",
+        "name": "Insurance",
+        "category": "insurance",
+        "amount": 0.32,
+        "amountUnit": "perSFPerYear",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-RM",
+        "name": "Repairs & Maintenance",
+        "category": "repairs_maintenance",
+        "amount": 0.45,
+        "amountUnit": "perSFPerYear",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-ROOF",
+        "name": "Roof & Structure",
+        "category": "repairs_maintenance",
+        "amount": 0.2,
+        "amountUnit": "perSFPerYear",
+        "recoverable": false,
+        "notes": "Landlord obligation under the NN structure; non-recoverable."
+      },
+      {
+        "expenseId": "E-MGMT",
+        "name": "Management Fee",
+        "category": "management_fee",
+        "amount": 2.5,
+        "amountUnit": "percentOfEGR",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-RES",
+        "name": "Capital Reserves",
+        "category": "reserves",
+        "amount": 0.2,
+        "amountUnit": "perSFPerYear",
+        "recoverable": false,
+        "belowTheLine": true,
+        "notes": "Elevated reserve for 1975 vintage roof and truck court."
+      }
+    ]
+  },
+  "marketAssumptions": {
+    "asOfDate": "2026-06-01",
+    "growth": {
+      "marketRent": [
+        { "fromYear": 1, "annualPercent": 4.5 },
+        { "fromYear": 4, "annualPercent": 3.0 }
+      ],
+      "expenses": 3.0
+    },
+    "generalVacancyPercent": 0,
+    "creditLossPercent": 1.0,
+    "marketLeasing": {
+      "warehouse": {
+        "marketRent": { "amount": 1.6, "unit": "perSFPerMonth" },
+        "termMonths": 84,
+        "escalation": { "type": "fixed_percent", "rate": 3.5, "frequencyMonths": 12 },
+        "reimbursementStructure": "NNN",
+        "downtimeMonths": 6,
+        "renewalProbabilityPercent": 40,
+        "newTenant": { "tiPerSF": 5, "lcPercentOfRent": 6, "freeRentMonths": 2 },
+        "renewal": { "tiPerSF": 2, "lcPercentOfRent": 3 },
+        "renewalRentPercentOfMarket": 100,
+        "notes": "Renewal modeled at full market given the legacy tenant's mark-to-market; low renewal probability reflects the rent shock."
+      }
+    }
+  },
+  "valuation": {
+    "analysisStartDate": "2026-06-01",
+    "methods": ["dcf", "direct_cap", "cost"],
+    "interestAppraised": "leased_fee",
+    "valuePremise": "as_is",
+    "purpose": "acquisition",
+    "purchasePrice": 15500000,
+    "acquisitionCostsPercent": 0.75,
+    "dcf": {
+      "holdPeriodMonths": 63,
+      "discountRatePercent": 8.0,
+      "reversionDiscountRatePercent": 8.5,
+      "discountTiming": "monthly",
+      "periodConvention": "end",
+      "terminalValue": {
+        "method": "direct_cap",
+        "capRatePercent": 5.75,
+        "noiBasis": "stabilizedAtMarket",
+        "sellingCostsPercent": 1.5,
+        "deductUnfundedObligations": true,
+        "notes": "Exit timed 63 months out: 3 months after the second-generation lease's free rent burns off. Terminal NOI at market strips any residual legacy-lease drag; reversion discounted at a 50 bp premium."
+      },
+      "notes": "Partial-year hold (holdPeriodMonths) showcases exit timed to a lease event rather than a calendar anniversary."
+    },
+    "directCap": {
+      "capRatePercent": 5.75,
+      "noiBasis": "stabilizedAtMarket",
+      "applyGeneralVacancy": true,
+      "markToMarket": {
+        "discountRatePercent": 8.0,
+        "notes": "Deducts the PV of the ~$0.75/SF/mo contract-vs-market shortfall through the Aug 2027 expiration."
+      },
+      "nearTermAdjustments": {
+        "periodMonths": 24,
+        "includeDowntimeLostRent": true,
+        "includeFreeRent": true,
+        "includeTI": true,
+        "includeLC": true,
+        "discountRatePercent": 8.0,
+        "notes": "Rollover costs (6 months downtime, TI/LC, free rent) within 24 months, taken at PV."
+      },
+      "adjustments": [
+        {
+          "name": "Roof replacement reserve",
+          "type": "deduction",
+          "amount": 350000,
+          "category": "deferred_maintenance",
+          "notes": "1975 vintage roof at end of useful life per synthetic PCA."
+        }
+      ],
+      "notes": "Stabilized value at market, walked back to as-is via mark-to-market, near-term costs, and deferred maintenance."
+    },
+    "costApproach": {
+      "landValue": {
+        "perAcreAmount": 2400000,
+        "landComparables": [
+          { "name": "Land Comp 1 — Miraloma Ave", "salePrice": 6950000, "saleDate": "2025-12-05", "landAcres": 2.8, "zoning": "I", "notes": "Fully synthetic comparable." },
+          { "name": "Land Comp 2 — La Palma Ave", "salePrice": 5520000, "saleDate": "2026-03-18", "landAcres": 2.3, "zoning": "I", "notes": "Fully synthetic comparable." }
+        ],
+        "notes": "Industrial land in North Orange County concluded at $2.4M/acre."
+      },
+      "improvements": {
+        "replacementCostNewPerSF": 165,
+        "costBasis": "replacement",
+        "costSource": "Published cost service, Class C tilt-up warehouse section, local multipliers applied.",
+        "siteImprovementsCost": 900000,
+        "indirectCostsPercent": 8,
+        "entrepreneurialProfitPercent": 10
+      },
+      "depreciation": {
+        "physicalDeteriorationPercent": 55,
+        "functionalObsolescencePercent": 10,
+        "effectiveAgeYears": 30,
+        "economicLifeYears": 55,
+        "notes": "Functional obsolescence for 22 ft clear and shallow truck court vs the modern standard."
+      },
+      "indicatedValue": 14800000,
+      "notes": "Cost approach supports the land-value floor under the deal; given least weight."
+    },
+    "reconciliation": {
+      "concludedValue": 15500000,
+      "concludedValuePerSF": 250.0,
+      "primaryMethod": "dcf",
+      "exposureTimeMonths": 6,
+      "notes": "DCF primary for rollover timing; direct cap corroborates; cost approach evidences the land floor."
+    }
+  },
+  "debt": {
+    "loanAmount": 8500000,
+    "interestRatePercent": 6.1,
+    "rateType": "fixed",
+    "termMonths": 60,
+    "interestOnlyMonths": 60,
+    "originationFeePercent": 1.0,
+    "fundingDate": "2026-06-01",
+    "notes": "Interest-only bridge-style sizing through the rollover; amortizationMonths omitted per spec for full-term IO."
+  },
+  "provenance": {
+    "generatedAt": "2026-06-10T17:00:00Z",
+    "generatedBy": {
+      "name": "ORE Project Examples",
+      "organization": "ORE (Open Real Estate)",
+      "role": "other",
+      "email": "examples@oreformat.org"
+    },
+    "sourceDocuments": [
+      { "name": "Synthetic Lease Agreement", "type": "lease", "date": "2016-08-01" },
+      { "name": "Synthetic Tax Bill FY2025-26", "type": "tax_bill", "date": "2025-10-01" }
+    ],
+    "confidentiality": "None — fully synthetic example data published with the ORE specification.",
+    "notes": "All parties, documents, and figures are fictional."
+  }
+}
