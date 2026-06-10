@@ -1,5 +1,5 @@
 {
-  "kernelVersion": "0.1.0-kernel",
+  "engineVersion": "0.1.0",
   "property": {
     "name": "Garvey Industrial Park",
     "cityState": "El Monte, CA",
@@ -27,8 +27,156 @@
     "managementFeePercentOfEGR": 3
   },
   "noi": {
-    "year1NOI": 1052452,
+    "year1NOI": 1002906,
     "stabilizedAtMarketNOI": 1349770
+  },
+  "noiBridgeYear1": {
+    "year": 1,
+    "months": 12,
+    "scheduledBaseRent": 1095402,
+    "freeRent": -52065,
+    "absorptionVacancy": -156112,
+    "expenseRecoveries": 253658,
+    "generalVacancy": -7679,
+    "creditLoss": -6707,
+    "effectiveGrossRevenue": 1334674,
+    "operatingExpenses": -291296,
+    "managementFee": -40472,
+    "noi": 1002906,
+    "belowTheLine": -11760,
+    "tiCosts": -69085,
+    "lcCosts": -91886,
+    "cashFlow": 830175
+  },
+  "cashFlows": {
+    "annual": [
+      {
+        "year": 1,
+        "months": 12,
+        "scheduledBaseRent": 1095402,
+        "freeRent": -52065,
+        "absorptionVacancy": -156112,
+        "expenseRecoveries": 253658,
+        "generalVacancy": -7679,
+        "creditLoss": -6707,
+        "effectiveGrossRevenue": 1334674,
+        "operatingExpenses": -291296,
+        "managementFee": -40472,
+        "noi": 1002906,
+        "belowTheLine": -11760,
+        "tiCosts": -69085,
+        "lcCosts": -91886,
+        "cashFlow": 830175
+      },
+      {
+        "year": 2,
+        "months": 12,
+        "scheduledBaseRent": 1344992,
+        "freeRent": -10270,
+        "absorptionVacancy": -26734,
+        "expenseRecoveries": 342354,
+        "generalVacancy": -43047,
+        "creditLoss": -8221,
+        "effectiveGrossRevenue": 1636078,
+        "operatingExpenses": -298055,
+        "managementFee": -50620,
+        "noi": 1287403,
+        "belowTheLine": -12113,
+        "tiCosts": -42450,
+        "lcCosts": -67452,
+        "cashFlow": 1165388
+      },
+      {
+        "year": 3,
+        "months": 12,
+        "scheduledBaseRent": 1401809,
+        "freeRent": -13835,
+        "absorptionVacancy": -41505,
+        "expenseRecoveries": 347784,
+        "generalVacancy": -40995,
+        "creditLoss": -8543,
+        "effectiveGrossRevenue": 1700055,
+        "operatingExpenses": -304977,
+        "managementFee": -52488,
+        "noi": 1342590,
+        "belowTheLine": -12476,
+        "tiCosts": -34440,
+        "lcCosts": -42299,
+        "cashFlow": 1253374
+      },
+      {
+        "year": 4,
+        "months": 12,
+        "scheduledBaseRent": 1508015,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 368357,
+        "generalVacancy": -56291,
+        "creditLoss": -9100,
+        "effectiveGrossRevenue": 1810981,
+        "operatingExpenses": -312066,
+        "managementFee": -56291,
+        "noi": 1442623,
+        "belowTheLine": -12850,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 1429773
+      },
+      {
+        "year": 5,
+        "months": 12,
+        "scheduledBaseRent": 1393872,
+        "freeRent": -21025,
+        "absorptionVacancy": -142133,
+        "expenseRecoveries": 339170,
+        "generalVacancy": -23980,
+        "creditLoss": -8545,
+        "effectiveGrossRevenue": 1700516,
+        "operatingExpenses": -319327,
+        "managementFee": -51991,
+        "noi": 1329198,
+        "belowTheLine": -13236,
+        "tiCosts": -79530,
+        "lcCosts": -140954,
+        "cashFlow": 1095478
+      },
+      {
+        "year": 6,
+        "months": 12,
+        "scheduledBaseRent": 1550566,
+        "freeRent": -11785,
+        "absorptionVacancy": -40564,
+        "expenseRecoveries": 375266,
+        "generalVacancy": -28772,
+        "creditLoss": -9485,
+        "effectiveGrossRevenue": 1887574,
+        "operatingExpenses": -326764,
+        "managementFee": -57775,
+        "noi": 1503036,
+        "belowTheLine": -13633,
+        "tiCosts": -41153,
+        "lcCosts": -74047,
+        "cashFlow": 1374202
+      },
+      {
+        "year": 7,
+        "months": 12,
+        "scheduledBaseRent": 1587273,
+        "freeRent": -15876,
+        "absorptionVacancy": -58741,
+        "expenseRecoveries": 380137,
+        "generalVacancy": -20761,
+        "creditLoss": -9733,
+        "effectiveGrossRevenue": 1936915,
+        "operatingExpenses": -334380,
+        "managementFee": -59022,
+        "noi": 1543513,
+        "belowTheLine": -14042,
+        "tiCosts": -40036,
+        "lcCosts": -63526,
+        "cashFlow": 1425908
+      }
+    ]
   },
   "directCap": {
     "basis": "stabilizedAtMarket",
@@ -41,23 +189,99 @@
         "amount": -189612
       },
       {
-        "name": "Near-term costs (18 mo, face)",
-        "amount": -368630
+        "name": "Near-term downtime lost rent (18 mo)",
+        "amount": -156113
+      },
+      {
+        "name": "Near-term free rent (18 mo)",
+        "amount": -62335
+      },
+      {
+        "name": "Near-term TI (18 mo)",
+        "amount": -95545
+      },
+      {
+        "name": "Near-term LC (18 mo)",
+        "amount": -123285
       }
     ],
-    "indicatedValue": 23544789,
-    "perSF": 300.32
+    "indicatedValue": 23476141,
+    "perSF": 299.44
   },
   "dcf": {
     "holdMonths": 84,
     "discountRatePercent": 7.25,
     "reversionDiscountRatePercent": 7.25,
-    "pvOperating": 6628730,
-    "terminalGross": 27508438,
-    "terminalNet": 27095811,
-    "pvTerminal": 16600496,
-    "indicatedValue": 23229226,
-    "perSF": 296.29
+    "pvOperating": 6639433,
+    "terminalGross": 27450771,
+    "terminalNet": 27039009,
+    "pvTerminal": 16565695,
+    "indicatedValue": 23205128,
+    "perSF": 295.98,
+    "unfundedObligationsDeducted": 37946
+  },
+  "debt": null,
+  "returns": {
+    "unlevered": {
+      "irrPercent": 8.79,
+      "npvAtDiscountRate": 1899128,
+      "equityMultiple": 1.67,
+      "totalProfit": 14307307
+    },
+    "levered": null
+  },
+  "sensitivity": {
+    "discountRatesPercent": [
+      6.25,
+      6.75,
+      7.25,
+      7.75,
+      8.25
+    ],
+    "exitCapRatesPercent": [
+      5.5,
+      5.75,
+      6,
+      6.25,
+      6.5
+    ],
+    "values": [
+      [
+        26161818,
+        25321683,
+        24551560,
+        23843046,
+        23189034
+      ],
+      [
+        25424555,
+        24611582,
+        23866357,
+        23180749,
+        22547881
+      ],
+      [
+        24713182,
+        23926371,
+        23205128,
+        22541584,
+        21929082
+      ],
+      [
+        24026657,
+        23265051,
+        22566912,
+        21924624,
+        21331743
+      ],
+      [
+        23363985,
+        22626665,
+        21950788,
+        21328982,
+        20755006
+      ]
+    ]
   },
   "concluded": {
     "value": 21200000,
@@ -65,16 +289,8 @@
   },
   "warnings": [
     {
-      "code": "mg_recovery_zero",
-      "message": "Lease L-200 (MG): kernel models zero recoveries (base-year delta not computed); full engine will compute base-year/stop recoveries."
-    },
-    {
-      "code": "general_vacancy_simplified",
-      "message": "General vacancy + credit loss applied to all revenue including months already in modeled downtime (kernel does not de-duplicate); full engine will exclude explicit downtime from the base."
-    },
-    {
-      "code": "unfunded_obligations_not_deducted",
-      "message": "terminalValue.deductUnfundedObligations not computed by kernel (full engine will deduct TI/LC/free rent on leases extending past sale)."
+      "code": "mg_base_year_estimated",
+      "message": "Lease L-200: 2022 base-year expenses estimated by deflating current recoverable expenses at 3%/yr; provide actuals via expenseStopPerSF for precision."
     }
   ]
 }

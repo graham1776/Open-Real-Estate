@@ -1,5 +1,5 @@
 {
-  "kernelVersion": "0.1.0-kernel",
+  "engineVersion": "0.1.0",
   "property": {
     "name": "14250 Marigold Avenue",
     "cityState": "Santa Fe Springs, CA",
@@ -30,6 +30,208 @@
     "year1NOI": 783928,
     "stabilizedAtMarketNOI": 833875
   },
+  "noiBridgeYear1": {
+    "year": 1,
+    "months": 12,
+    "scheduledBaseRent": 789027,
+    "freeRent": 0,
+    "absorptionVacancy": 0,
+    "expenseRecoveries": 230791,
+    "generalVacancy": 0,
+    "creditLoss": -5099,
+    "effectiveGrossRevenue": 1014719,
+    "operatingExpenses": -205296,
+    "managementFee": -25495,
+    "noi": 783928,
+    "belowTheLine": -4512,
+    "tiCosts": 0,
+    "lcCosts": 0,
+    "cashFlow": 779416
+  },
+  "cashFlows": {
+    "annual": [
+      {
+        "year": 1,
+        "months": 12,
+        "scheduledBaseRent": 789027,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 230791,
+        "generalVacancy": 0,
+        "creditLoss": -5099,
+        "effectiveGrossRevenue": 1014719,
+        "operatingExpenses": -205296,
+        "managementFee": -25495,
+        "noi": 783928,
+        "belowTheLine": -4512,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 779416
+      },
+      {
+        "year": 2,
+        "months": 12,
+        "scheduledBaseRent": 816643,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 236081,
+        "generalVacancy": 0,
+        "creditLoss": -5264,
+        "effectiveGrossRevenue": 1047460,
+        "operatingExpenses": -209763,
+        "managementFee": -26318,
+        "noi": 811379,
+        "belowTheLine": -4647,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 806732
+      },
+      {
+        "year": 3,
+        "months": 12,
+        "scheduledBaseRent": 749395,
+        "freeRent": -22693,
+        "absorptionVacancy": -90771,
+        "expenseRecoveries": 215091,
+        "generalVacancy": 0,
+        "creditLoss": -4822,
+        "effectiveGrossRevenue": 959664,
+        "operatingExpenses": -214330,
+        "managementFee": -24112,
+        "noi": 721222,
+        "belowTheLine": -4787,
+        "tiCosts": -56400,
+        "lcCosts": -153937,
+        "cashFlow": 506098
+      },
+      {
+        "year": 4,
+        "months": 12,
+        "scheduledBaseRent": 895760,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 247583,
+        "generalVacancy": 0,
+        "creditLoss": -5717,
+        "effectiveGrossRevenue": 1137626,
+        "operatingExpenses": -218999,
+        "managementFee": -28584,
+        "noi": 890043,
+        "belowTheLine": -4930,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 885113
+      },
+      {
+        "year": 5,
+        "months": 12,
+        "scheduledBaseRent": 927111,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 253284,
+        "generalVacancy": 0,
+        "creditLoss": -5902,
+        "effectiveGrossRevenue": 1174493,
+        "operatingExpenses": -223774,
+        "managementFee": -29510,
+        "noi": 921210,
+        "belowTheLine": -5078,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 916131
+      },
+      {
+        "year": 6,
+        "months": 12,
+        "scheduledBaseRent": 959560,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 259123,
+        "generalVacancy": 0,
+        "creditLoss": -6093,
+        "effectiveGrossRevenue": 1212590,
+        "operatingExpenses": -228656,
+        "managementFee": -30467,
+        "noi": 953467,
+        "belowTheLine": -5231,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 948236
+      },
+      {
+        "year": 7,
+        "months": 12,
+        "scheduledBaseRent": 993145,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 265103,
+        "generalVacancy": 0,
+        "creditLoss": -6291,
+        "effectiveGrossRevenue": 1251957,
+        "operatingExpenses": -233647,
+        "managementFee": -31456,
+        "noi": 986854,
+        "belowTheLine": -5388,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 981466
+      },
+      {
+        "year": 8,
+        "months": 12,
+        "scheduledBaseRent": 883965,
+        "freeRent": -26307,
+        "absorptionVacancy": -105229,
+        "expenseRecoveries": 240385,
+        "generalVacancy": 0,
+        "creditLoss": -5622,
+        "effectiveGrossRevenue": 1118728,
+        "operatingExpenses": -238751,
+        "managementFee": -28109,
+        "noi": 851868,
+        "belowTheLine": -5549,
+        "tiCosts": -56400,
+        "lcCosts": -178455,
+        "cashFlow": 611464
+      },
+      {
+        "year": 9,
+        "months": 12,
+        "scheduledBaseRent": 1034877,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 276761,
+        "generalVacancy": 0,
+        "creditLoss": -6558,
+        "effectiveGrossRevenue": 1305080,
+        "operatingExpenses": -243970,
+        "managementFee": -32791,
+        "noi": 1028319,
+        "belowTheLine": -5716,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 1022603
+      },
+      {
+        "year": 10,
+        "months": 12,
+        "scheduledBaseRent": 1071098,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 283163,
+        "generalVacancy": 0,
+        "creditLoss": -6771,
+        "effectiveGrossRevenue": 1347490,
+        "operatingExpenses": -249307,
+        "managementFee": -33857,
+        "noi": 1064326,
+        "belowTheLine": -5887,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 1058439
+      }
+    ]
+  },
   "directCap": {
     "basis": "year1",
     "basisNOI": 783928,
@@ -43,21 +245,90 @@
     "holdMonths": 120,
     "discountRatePercent": 6.75,
     "reversionDiscountRatePercent": 6.75,
-    "pvOperating": 6141776,
-    "terminalGross": 19292304,
-    "terminalNet": 19002920,
-    "pvTerminal": 9888752,
-    "indicatedValue": 16030528,
-    "perSF": 355.29
+    "pvOperating": 6120545,
+    "terminalGross": 19158168,
+    "terminalNet": 18870796,
+    "pvTerminal": 9819998,
+    "indicatedValue": 15940542,
+    "perSF": 353.29,
+    "unfundedObligationsDeducted": null
+  },
+  "debt": {
+    "loanAmount": 7755000,
+    "netProceeds": 7677450,
+    "year1DebtService": 453668,
+    "dscrYear1": 1.73
+  },
+  "returns": {
+    "unlevered": {
+      "irrPercent": 8.35,
+      "npvAtDiscountRate": 1770042,
+      "equityMultiple": 1.93,
+      "totalProfit": 13215994
+    },
+    "levered": {
+      "irrPercent": 10.27,
+      "equityMultiple": 2.36,
+      "initialEquity": 6493050,
+      "totalProfit": 8808700
+    }
+  },
+  "sensitivity": {
+    "discountRatesPercent": [
+      5.75,
+      6.25,
+      6.75,
+      7.25,
+      7.75
+    ],
+    "exitCapRatesPercent": [
+      5.25,
+      5.5,
+      5.75,
+      6,
+      6.25
+    ],
+    "values": [
+      [
+        18221357,
+        17684235,
+        17193820,
+        16744273,
+        16330690
+      ],
+      [
+        17532309,
+        17019935,
+        16552116,
+        16123281,
+        15728754
+      ],
+      [
+        16875780,
+        16386906,
+        15940542,
+        15531376,
+        15154943
+      ],
+      [
+        16250051,
+        15783496,
+        15357510,
+        14967024,
+        14607776
+      ],
+      [
+        15653499,
+        15208147,
+        14801521,
+        14428781,
+        14085860
+      ]
+    ]
   },
   "concluded": {
-    "value": 16030528,
-    "source": "computed (dcf, kernel)"
+    "value": 15940542,
+    "source": "computed (dcf, engine)"
   },
-  "warnings": [
-    {
-      "code": "general_vacancy_simplified",
-      "message": "General vacancy + credit loss applied to all revenue including months already in modeled downtime (kernel does not de-duplicate); full engine will exclude explicit downtime from the base."
-    }
-  ]
+  "warnings": []
 }

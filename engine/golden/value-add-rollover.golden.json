@@ -1,5 +1,5 @@
 {
-  "kernelVersion": "0.1.0-kernel",
+  "engineVersion": "0.1.0",
   "property": {
     "name": "2900 Coronado Street",
     "cityState": "Anaheim, CA",
@@ -30,6 +30,136 @@
     "year1NOI": 611404,
     "stabilizedAtMarketNOI": 1163681
   },
+  "noiBridgeYear1": {
+    "year": 1,
+    "months": 12,
+    "scheduledBaseRent": 632400,
+    "freeRent": 0,
+    "absorptionVacancy": 0,
+    "expenseRecoveries": 227231,
+    "generalVacancy": 0,
+    "creditLoss": -8596,
+    "effectiveGrossRevenue": 851034,
+    "operatingExpenses": -218140,
+    "managementFee": -21491,
+    "noi": 611404,
+    "belowTheLine": -12400,
+    "tiCosts": 0,
+    "lcCosts": 0,
+    "cashFlow": 599004
+  },
+  "cashFlows": {
+    "annual": [
+      {
+        "year": 1,
+        "months": 12,
+        "scheduledBaseRent": 632400,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 227231,
+        "generalVacancy": 0,
+        "creditLoss": -8596,
+        "effectiveGrossRevenue": 851034,
+        "operatingExpenses": -218140,
+        "managementFee": -21491,
+        "noi": 611404,
+        "belowTheLine": -12400,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 599004
+      },
+      {
+        "year": 2,
+        "months": 12,
+        "scheduledBaseRent": 593489,
+        "freeRent": -124397,
+        "absorptionVacancy": -373190,
+        "expenseRecoveries": 161705,
+        "generalVacancy": 0,
+        "creditLoss": -7552,
+        "effectiveGrossRevenue": 747642,
+        "operatingExpenses": -223104,
+        "managementFee": -18880,
+        "noi": 505658,
+        "belowTheLine": -12772,
+        "tiCosts": -235600,
+        "lcCosts": -464512,
+        "cashFlow": -207226
+      },
+      {
+        "year": 3,
+        "months": 12,
+        "scheduledBaseRent": 1263560,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 252943,
+        "generalVacancy": 0,
+        "creditLoss": -15165,
+        "effectiveGrossRevenue": 1501339,
+        "operatingExpenses": -228186,
+        "managementFee": -37913,
+        "noi": 1235240,
+        "belowTheLine": -13155,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 1222085
+      },
+      {
+        "year": 4,
+        "months": 12,
+        "scheduledBaseRent": 1307785,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 259007,
+        "generalVacancy": 0,
+        "creditLoss": -15668,
+        "effectiveGrossRevenue": 1551125,
+        "operatingExpenses": -233387,
+        "managementFee": -39170,
+        "noi": 1278567,
+        "belowTheLine": -13550,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 1265018
+      },
+      {
+        "year": 5,
+        "months": 12,
+        "scheduledBaseRent": 1353558,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 265226,
+        "generalVacancy": 0,
+        "creditLoss": -16188,
+        "effectiveGrossRevenue": 1602595,
+        "operatingExpenses": -238712,
+        "managementFee": -40470,
+        "noi": 1323413,
+        "belowTheLine": -13956,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 1309457
+      },
+      {
+        "year": 6,
+        "months": 3,
+        "scheduledBaseRent": 344802,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 67761,
+        "generalVacancy": 0,
+        "creditLoss": -4126,
+        "effectiveGrossRevenue": 408438,
+        "operatingExpenses": -61041,
+        "managementFee": -10314,
+        "noi": 337083,
+        "belowTheLine": -3594,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 333489
+      }
+    ]
+  },
   "directCap": {
     "basis": "stabilizedAtMarket",
     "basisNOI": 1163681,
@@ -41,27 +171,113 @@
         "amount": -675112
       },
       {
-        "name": "Near-term costs (24 mo, PV)",
-        "amount": -1028973
+        "name": "Near-term downtime lost rent (24 mo, PV)",
+        "amount": -331458
+      },
+      {
+        "name": "Near-term free rent (24 mo, PV)",
+        "amount": -107682
+      },
+      {
+        "name": "Near-term TI (24 mo, PV)",
+        "amount": -206286
+      },
+      {
+        "name": "Near-term LC (24 mo, PV)",
+        "amount": -407342
       },
       {
         "name": "Roof replacement reserve",
         "amount": -350000
       }
     ],
-    "indicatedValue": 18183839,
-    "perSF": 293.29
+    "indicatedValue": 18160044,
+    "perSF": 292.9
   },
   "dcf": {
     "holdMonths": 63,
     "discountRatePercent": 8,
     "reversionDiscountRatePercent": 8.5,
-    "pvOperating": 3567664,
+    "pvOperating": 3513286,
     "terminalGross": 24515832,
     "terminalNet": 24148094,
     "pvTerminal": 15735362,
-    "indicatedValue": 19303027,
-    "perSF": 311.34
+    "indicatedValue": 19248648,
+    "perSF": 310.46,
+    "unfundedObligationsDeducted": 0
+  },
+  "debt": {
+    "loanAmount": 8500000,
+    "netProceeds": 8415000,
+    "year1DebtService": 518500,
+    "dscrYear1": 1.18
+  },
+  "returns": {
+    "unlevered": {
+      "irrPercent": 13.21,
+      "npvAtDiscountRate": 3632398,
+      "equityMultiple": 1.84,
+      "totalProfit": 13053671
+    },
+    "levered": {
+      "irrPercent": 18.7,
+      "equityMultiple": 2.42,
+      "initialEquity": 7201250,
+      "totalProfit": 10246546
+    }
+  },
+  "sensitivity": {
+    "discountRatesPercent": [
+      7,
+      7.5,
+      8,
+      8.5,
+      9
+    ],
+    "exitCapRatesPercent": [
+      5.25,
+      5.5,
+      5.75,
+      6,
+      6.25
+    ],
+    "values": [
+      [
+        21712251,
+        20889867,
+        20138995,
+        19450696,
+        18817461
+      ],
+      [
+        21222941,
+        20420351,
+        19687551,
+        19015818,
+        18397823
+      ],
+      [
+        20747254,
+        19963892,
+        19248648,
+        18593008,
+        17989819
+      ],
+      [
+        20284745,
+        19520065,
+        18821879,
+        18181876,
+        17593072
+      ],
+      [
+        19834989,
+        19088464,
+        18406854,
+        17782044,
+        17207220
+      ]
+    ]
   },
   "concluded": {
     "value": 15500000,
@@ -69,12 +285,8 @@
   },
   "warnings": [
     {
-      "code": "general_vacancy_simplified",
-      "message": "General vacancy + credit loss applied to all revenue including months already in modeled downtime (kernel does not de-duplicate); full engine will exclude explicit downtime from the base."
-    },
-    {
-      "code": "unfunded_obligations_not_deducted",
-      "message": "terminalValue.deductUnfundedObligations not computed by kernel (full engine will deduct TI/LC/free rent on leases extending past sale)."
+      "code": "loan_term_lt_hold",
+      "message": "Loan term (60 mo) ends before the hold (63 mo); per spec, payoff is assumed refinanced on identical terms (schedule continues)."
     }
   ]
 }
