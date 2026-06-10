@@ -31,7 +31,8 @@ direct capitalization. See [ROADMAP.md](ROADMAP.md).
 | Component | Where | State |
 |---|---|---|
 | Format spec & JSON Schema | [`spec/`](spec/) | All v0.1 modules drafted |
-| Reference engine (TypeScript) | [`engine/`](engine/) | Not started |
+| Viewer / demo | [`demo/`](demo/) | Working: drag a `.ore` file → summary, rent roll, outputs, warnings (`npm run demo`) |
+| Calc kernel + golden outputs | [`engine/`](engine/) | Thin kernel powering the demo; goldens locked (`npm run golden`); hardened TS engine next |
 | Example deal files | [`examples/`](examples/) | Three examples, all validating (`npm run validate`) |
 | Validator (CLI + browser) | [`validator/`](validator/) | Example-validation script; CLI not started |
 | Drag-and-drop DCF demo | [`demo/`](demo/) | Not started |

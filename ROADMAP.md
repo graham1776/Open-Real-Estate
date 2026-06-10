@@ -1,5 +1,11 @@
 # ORE Roadmap
 
+**Sequencing (decided 2026-06-10, see `docs/decisions/2026-06-10-demo-first-sequencing.md`):**
+schema → demo shell + golden outputs → thin calc kernel → validator CLI → real case
+study → hardened reference engine. The demo is the first customer of the engine;
+the goal of the next milestone is the 30-second "I can see the deal" moment, not a
+perfect institutional DCF.
+
 ## v0.1 — definition of done
 
 - [x] JSON Schema drafted and documented (all v0.1 modules; data dictionary complete)
@@ -14,16 +20,24 @@
   - [x] Single-tenant NNN (all modules populated)
   - [x] Multi-tenant infill (NNN / MG base-year / CPI mix, one vacant suite)
   - [x] Value-add with rollover (below-market single tenant, DCF-only, IO bridge debt)
-- [ ] Reference engine (TypeScript) reproduces golden outputs for all examples
-- [ ] Validator CLI works (`npx @ore-format/cli validate deal.ore`)
-- [ ] Browser demo: drag file → rendered DCF, cash flows, returns. Read-first
-      viewer with tabs per module (the "reader" anyone can open a deal file with);
-      light editing (change an assumption → outputs update → download the edited
-      file) follows post-v0.1
+- [x] Browser demo shell: drag a `.ore` file → tabs for summary, rent roll,
+      expenses, assumptions, valuation, computed outputs, and warnings
+      (`/demo/index.html`, static, no backend; light editing follows post-v0.1)
+- [x] Thin calc kernel (`engine/kernel.mjs`): occupancy, in-place rent, WA rent,
+      market rent gap, simplified NOI, direct cap with adjustments, simplified DCF
+      — with per-file warnings naming every simplification applied
+- [x] Golden output files locked for all examples (`npm run golden`)
+- [ ] Validator CLI works (`npx @ore-format/cli validate deal.ore`) — packages the
+      demo loader's checks as `validate` / `summarize` / `compute`
+- [ ] One real (anonymized) deal run end-to-end as the case study: source summary,
+      anonymized `.ore`, computed outputs, memo (what mapped cleanly, what was
+      ambiguous, what required human review)
+- [ ] Hardened reference engine (TypeScript) replaces the kernel
+      function-by-function, reproducing or consciously re-locking each golden
 - [ ] `llms.txt`: the spec, data dictionary, and an annotated example published as
       a single LLM-ingestible document (see `docs/design/llm-and-excel.md`)
+- [ ] README leads with a viewer screenshot/GIF
 - [x] README, CONTRIBUTING, GOVERNANCE, ROADMAP, LICENSE in place
-- [ ] One real (anonymized) deal run end-to-end as the case study
 
 ## v0.1 scope (deliberate constraints)
 
