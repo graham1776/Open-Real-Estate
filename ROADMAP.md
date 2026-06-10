@@ -23,17 +23,18 @@ perfect institutional DCF.
 - [x] Browser demo shell: drag a `.ore` file → tabs for summary, rent roll,
       expenses, assumptions, valuation, computed outputs, and warnings
       (`/demo/index.html`, static, no backend; light editing follows post-v0.1)
-- [x] Thin calc kernel (`engine/kernel.mjs`): occupancy, in-place rent, WA rent,
-      market rent gap, simplified NOI, direct cap with adjustments, simplified DCF
-      — with per-file warnings naming every simplification applied
+- [x] Thin calc kernel — shipped, then retired by the reference engine (which
+      kept its interface and its warnings-first design)
 - [x] Golden output files locked for all examples (`npm run golden`)
 - [ ] Validator CLI works (`npx @ore-format/cli validate deal.ore`) — packages the
       demo loader's checks as `validate` / `summarize` / `compute`
 - [ ] One real (anonymized) deal run end-to-end as the case study: source summary,
       anonymized `.ore`, computed outputs, memo (what mapped cleanly, what was
       ambiguous, what required human review)
-- [ ] Hardened reference engine (TypeScript) replaces the kernel
-      function-by-function, reproducing or consciously re-locking each golden
+- [x] Hardened reference engine (TypeScript, `engine/src/`) replaces the kernel:
+      MG base-year/stop recoveries, true two-branch rollover, TI/LC split,
+      general-vacancy de-dup, debt schedule, levered/unlevered IRR, NOI bridge,
+      annual cash flows, sensitivity grid; goldens consciously re-locked
 - [ ] `llms.txt`: the spec, data dictionary, and an annotated example published as
       a single LLM-ingestible document (see `docs/design/llm-and-excel.md`)
 - [ ] README leads with a viewer screenshot/GIF

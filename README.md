@@ -32,11 +32,10 @@ direct capitalization. See [ROADMAP.md](ROADMAP.md).
 |---|---|---|
 | Format spec & JSON Schema | [`spec/`](spec/) | All v0.1 modules drafted |
 | Viewer / demo | [`demo/`](demo/) | Working: drag a `.ore` file → summary, rent roll, outputs, warnings (`npm run demo`) |
-| Calc kernel + golden outputs | [`engine/`](engine/) | Thin kernel powering the demo; goldens locked (`npm run golden`); hardened TS engine next |
+| Reference engine (TypeScript) | [`engine/`](engine/) | Working: full cash model, valuation, debt, returns, sensitivity; goldens locked (`npm test`) |
 | Example deal files | [`examples/`](examples/) | Three examples, all validating (`npm run validate`) |
 | Validator (CLI + browser) | [`validator/`](validator/) | Example-validation script; CLI not started |
-| Drag-and-drop DCF demo | [`demo/`](demo/) | Not started |
-| Documentation site | [`docs/`](docs/) | Not started |
+| Documentation site | [`docs/`](docs/) | Decision and design notes; site not started |
 
 ## A `.ore` file is just JSON
 

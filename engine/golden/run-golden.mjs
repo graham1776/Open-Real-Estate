@@ -1,16 +1,16 @@
 #!/usr/bin/env node
-// Golden-output harness for the calc kernel.
+// Golden-output harness for the reference engine.
 //   node engine/golden/run-golden.mjs            -> check examples against goldens
 //   node engine/golden/run-golden.mjs --update   -> regenerate golden files
 //
-// Goldens lock kernel behavior: any change to computed outputs must either be
+// Goldens lock engine behavior: any change to computed outputs must either be
 // reproduced exactly or consciously re-locked with --update and a justification
 // in the commit message.
 
 import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
-import { computeAll } from "../kernel.mjs";
+import { computeAll } from "../dist/index.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..", "..");

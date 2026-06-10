@@ -71,11 +71,11 @@
 </main>
 
 <footer>
-  ORE (Open Real Estate) — open format, open math. Outputs computed by the thin calc kernel (simplified; see Warnings tab). Full reference engine: see ROADMAP.
+  ORE (Open Real Estate) — open format, open math. Outputs computed by the ORE reference engine; any simplification applied to this file is named in the Warnings tab.
 </footer>
 
 <script type="module">
-import { computeAll, lint } from "../engine/kernel.mjs";
+import { computeAll, lint } from "../engine/dist/index.js";
 
 const $ = (id) => document.getElementById(id);
 const usd = (n) => n == null ? "—" : n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -264,7 +264,7 @@ function renderOutputs(deal, out, err) {
   if (!out) { $("tab-outputs").innerHTML = `<div class="errbox">File failed structural checks (see Warnings tab); outputs not computed.</div>`; return; }
   const d = out.directCap, c = out.dcf;
   $("tab-outputs").innerHTML = `
-    <div class="warnbox">Computed by the <strong>thin calc kernel</strong> — simplified methodology, every simplification disclosed in the Warnings tab. The full reference engine replaces these numbers.</div>
+    <div class="warnbox">Computed by the <strong>ORE reference engine</strong> — open, auditable methodology; anything the engine simplified or estimated for this file is disclosed in the Warnings tab.</div>
     <div class="cards">
       ${card("Year-1 NOI", usd(out.noi.year1NOI))}
       ${card("Stabilized NOI (at market)", usd(out.noi.stabilizedAtMarketNOI))}
@@ -284,6 +284,21 @@ function renderOutputs(deal, out, err) {
       <tr><td>PV of reversion @ ${c.reversionDiscountRatePercent}%</td><td class="num">${usd(c.pvTerminal)}</td></tr>
       <tr><td><strong>Indicated value</strong></td><td class="num"><strong>${usd(c.indicatedValue)}</strong></td></tr>
       ${deal.valuation?.purchasePrice ? `<tr><td class="muted">vs purchase price</td><td class="num muted">${usd(deal.valuation.purchasePrice)} (${num(((c.indicatedValue - deal.valuation.purchasePrice) / deal.valuation.purchasePrice) * 100, 1)}%)</td></tr>` : ""}
+    </tbody></table>` : ""}
+    ${out.returns?.unlevered || out.returns?.levered ? `<h2>Returns${deal.valuation?.purchasePrice ? ` <span class="muted">(at ${usd(deal.valuation.purchasePrice)} purchase price)</span>` : ""}</h2>
+    <div class="cards">
+      ${out.returns.unlevered ? card("Unlevered IRR", pct(out.returns.unlevered.irrPercent), `${num(out.returns.unlevered.equityMultiple, 2)}x multiple`) : ""}
+      ${out.returns.levered ? card("Levered IRR", pct(out.returns.levered.irrPercent), `${num(out.returns.levered.equityMultiple, 2)}x on ${usd(out.returns.levered.initialEquity)} equity`) : ""}
+      ${out.debt ? card("Loan", usd(out.debt.loanAmount), `Year-1 DSCR ${num(out.debt.dscrYear1, 2)}`) : ""}
+      ${out.returns.unlevered ? card("NPV vs price", usd(out.returns.unlevered.npvAtDiscountRate)) : ""}
+    </div>` : ""}
+    ${out.cashFlows?.annual?.length ? `<h2>Annual cash flows</h2>
+    <div style="overflow-x:auto"><table><thead><tr><th>Year</th><th class="num">Base rent</th><th class="num">Free rent</th><th class="num">Vacancy</th><th class="num">Recoveries</th><th class="num">Gen vac / credit</th><th class="num">EGR</th><th class="num">Opex + mgmt</th><th class="num">NOI</th><th class="num">TI + LC</th><th class="num">Cash flow</th></tr></thead><tbody>
+      ${out.cashFlows.annual.map((r) => `<tr><td>${r.year}${r.months < 12 ? ` <span class="muted">(${r.months} mo)</span>` : ""}</td><td class="num">${usd(r.scheduledBaseRent)}</td><td class="num">${usd(r.freeRent)}</td><td class="num">${usd(r.absorptionVacancy)}</td><td class="num">${usd(r.expenseRecoveries)}</td><td class="num">${usd(r.generalVacancy + r.creditLoss)}</td><td class="num">${usd(r.effectiveGrossRevenue)}</td><td class="num">${usd(r.operatingExpenses + r.managementFee)}</td><td class="num"><strong>${usd(r.noi)}</strong></td><td class="num">${usd(r.tiCosts + r.lcCosts)}</td><td class="num">${usd(r.cashFlow)}</td></tr>`).join("")}
+    </tbody></table></div>` : ""}
+    ${out.sensitivity ? `<h2>Sensitivity <span class="muted">(DCF value: discount rate × ${out.sensitivity.exitCapRatesPercent ? "exit cap rate" : "—"})</span></h2>
+    <table><thead><tr><th>Discount \\ Exit cap</th>${(out.sensitivity.exitCapRatesPercent ?? ["value"]).map((c2) => `<th class="num">${typeof c2 === "number" ? c2 + "%" : c2}</th>`).join("")}</tr></thead><tbody>
+      ${out.sensitivity.values.map((row, i) => `<tr><td>${out.sensitivity.discountRatesPercent[i]}%</td>${row.map((v) => `<td class="num">${usd(v)}</td>`).join("")}</tr>`).join("")}
     </tbody></table>` : ""}`;
 }
 
@@ -293,7 +308,7 @@ function renderWarnings(problems, out, err) {
   if (err) blocks.push(`<div class="errbox"><span class="code">compute_error</span> — ${esc(err.message)}</div>`);
   for (const w of out?.warnings ?? []) blocks.push(`<div class="warnbox"><span class="code">${esc(w.code)}</span> — ${esc(w.message)}</div>`);
   $("tab-warnings").innerHTML = blocks.length
-    ? `<p class="muted">ORE treats disclosed uncertainty as a feature: every simplification the kernel applied to <em>this file</em> is named here.</p>` + blocks.join("")
+    ? `<p class="muted">ORE treats disclosed uncertainty as a feature: every simplification or estimate the engine applied to <em>this file</em> is named here.</p>` + blocks.join("")
     : `<div class="okbox">No warnings — file is structurally complete and all requested outputs were computable.</div>`;
 }
 
