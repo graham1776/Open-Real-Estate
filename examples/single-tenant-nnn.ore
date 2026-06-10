@@ -1,0 +1,92 @@
+{
+  "formatVersion": "0.1.0",
+  "property": {
+    "name": "14250 Marigold Avenue",
+    "propertyType": "industrial",
+    "propertySubtype": "warehouse_distribution",
+    "tenancy": "single",
+    "description": "Synthetic example: single-tenant infill distribution building on a fenced 2.1-acre site. All data in this file is fictional.",
+    "address": {
+      "street1": "14250 Marigold Ave",
+      "city": "Santa Fe Springs",
+      "state": "CA",
+      "postalCode": "90670",
+      "county": "Los Angeles",
+      "country": "US"
+    },
+    "location": {
+      "latitude": 33.9325,
+      "longitude": -118.0631,
+      "market": "Los Angeles",
+      "submarket": "Mid-Counties"
+    },
+    "parcels": [
+      { "apn": "8888-001-002", "landAcres": 2.1, "zoning": "M-2" }
+    ],
+    "siteAreaAcres": 2.1,
+    "physical": {
+      "buildingSF": 45120,
+      "officeSF": 3800,
+      "clearHeightFt": 24,
+      "dockHighDoors": 6,
+      "gradeLevelDoors": 2,
+      "railServed": false,
+      "yearBuilt": 1988,
+      "yearRenovated": 2019,
+      "stories": 1,
+      "construction": "tilt_up",
+      "sprinkler": "wet",
+      "powerAmps": 1200,
+      "powerVolts": "277/480V 3-phase",
+      "truckCourtDepthFt": 110,
+      "autoParkingStalls": 42,
+      "coverageRatio": 0.49,
+      "fencedYard": true
+    }
+  },
+  "rentRoll": {
+    "asOfDate": "2026-06-01",
+    "leases": [
+      {
+        "leaseId": "L-001",
+        "tenant": {
+          "name": "Pacific Coast Fulfillment LLC",
+          "industry": "third-party logistics",
+          "creditNotes": "Private regional 3PL, in occupancy since 2021, no late payments per synthetic ledger."
+        },
+        "leasedSF": 45120,
+        "commencementDate": "2021-09-01",
+        "expirationDate": "2028-08-31",
+        "baseRent": {
+          "unit": "perSFPerMonth",
+          "schedule": [
+            { "startDate": "2025-09-01", "amount": 1.42 }
+          ]
+        },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 3.5,
+          "frequencyMonths": 12
+        },
+        "reimbursement": {
+          "structure": "NNN",
+          "proRataSharePercent": 100
+        },
+        "options": [
+          {
+            "type": "renewal",
+            "noticeMonths": 9,
+            "renewalTermMonths": 60,
+            "renewalCount": 1,
+            "rentBasis": "market",
+            "notes": "Fair market rent, not less than rent in the final month of the initial term."
+          }
+        ],
+        "securityDeposit": { "amount": 64070, "form": "cash" },
+        "notes": "Steps prior to the as-of date omitted per spec convention; escalation rule generates 2026-2028 steps."
+      }
+    ],
+    "vacantSuites": [],
+    "notes": "Synthetic single-tenant NNN example for schema validation and engine golden files."
+  }
+}
