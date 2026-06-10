@@ -8,6 +8,7 @@ are listed as JSON paths from the file root. **(R)** marks required fields.
 
 | Field | Type | Definition |
 |---|---|---|
+| `$schema` | uri | Optional URL of the published ORE JSON Schema the file conforms to. Carrying it lets any reader — editor, validator, or LLM — resolve field definitions from the file alone. |
 | `formatVersion` **(R)** | string | ORE format version (semver). `0.1.x` files validate against the 0.1.0 schema. |
 | `property` **(R)** | object | Property module — see below. |
 | `rentRoll` **(R)** | object | Rent roll module — see below. |

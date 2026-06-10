@@ -1,4 +1,5 @@
 {
+  "$schema": "https://oreformat.org/schema/0.1.0/ore.schema.json",
   "formatVersion": "0.1.0",
   "property": {
     "name": "2900 Coronado Street",
@@ -19,7 +20,11 @@
       "submarket": "North County"
     },
     "parcels": [
-      { "apn": "345-111-007", "landAcres": 2.9, "zoning": "I (Industrial)" }
+      {
+        "apn": "345-111-007",
+        "landAcres": 2.9,
+        "zoning": "I (Industrial)"
+      }
     ],
     "siteAreaAcres": 2.9,
     "physical": {
@@ -57,16 +62,24 @@
         "baseRent": {
           "unit": "perSFPerMonth",
           "schedule": [
-            { "startDate": "2024-09-01", "amount": 0.85 }
+            {
+              "startDate": "2024-09-01",
+              "amount": 0.85
+            }
           ]
         },
-        "escalation": { "type": "none" },
+        "escalation": {
+          "type": "none"
+        },
         "reimbursement": {
           "structure": "NN",
           "proRataSharePercent": 100,
           "notes": "Tenant reimburses taxes, insurance, and maintenance; landlord retains roof and structure."
         },
-        "securityDeposit": { "amount": 52700, "form": "cash" },
+        "securityDeposit": {
+          "amount": 52700,
+          "form": "cash"
+        },
         "notes": "In-place rent ~53% of market. No renewal options; rollover terms set by marketAssumptions."
       }
     ],
@@ -133,8 +146,14 @@
     "asOfDate": "2026-06-01",
     "growth": {
       "marketRent": [
-        { "fromYear": 1, "annualPercent": 4.5 },
-        { "fromYear": 4, "annualPercent": 3.0 }
+        {
+          "fromYear": 1,
+          "annualPercent": 4.5
+        },
+        {
+          "fromYear": 4,
+          "annualPercent": 3.0
+        }
       ],
       "expenses": 3.0
     },
@@ -142,14 +161,28 @@
     "creditLossPercent": 1.0,
     "marketLeasing": {
       "warehouse": {
-        "marketRent": { "amount": 1.6, "unit": "perSFPerMonth" },
+        "marketRent": {
+          "amount": 1.6,
+          "unit": "perSFPerMonth"
+        },
         "termMonths": 84,
-        "escalation": { "type": "fixed_percent", "rate": 3.5, "frequencyMonths": 12 },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 3.5,
+          "frequencyMonths": 12
+        },
         "reimbursementStructure": "NNN",
         "downtimeMonths": 6,
         "renewalProbabilityPercent": 40,
-        "newTenant": { "tiPerSF": 5, "lcPercentOfRent": 6, "freeRentMonths": 2 },
-        "renewal": { "tiPerSF": 2, "lcPercentOfRent": 3 },
+        "newTenant": {
+          "tiPerSF": 5,
+          "lcPercentOfRent": 6,
+          "freeRentMonths": 2
+        },
+        "renewal": {
+          "tiPerSF": 2,
+          "lcPercentOfRent": 3
+        },
         "renewalRentPercentOfMarket": 100,
         "notes": "Renewal modeled at full market given the legacy tenant's mark-to-market; low renewal probability reflects the rent shock."
       }
@@ -157,7 +190,11 @@
   },
   "valuation": {
     "analysisStartDate": "2026-06-01",
-    "methods": ["dcf", "direct_cap", "cost"],
+    "methods": [
+      "dcf",
+      "direct_cap",
+      "cost"
+    ],
     "interestAppraised": "leased_fee",
     "valuePremise": "as_is",
     "purpose": "acquisition",
@@ -211,8 +248,22 @@
       "landValue": {
         "perAcreAmount": 2400000,
         "landComparables": [
-          { "name": "Land Comp 1 — Miraloma Ave", "salePrice": 6950000, "saleDate": "2025-12-05", "landAcres": 2.8, "zoning": "I", "notes": "Fully synthetic comparable." },
-          { "name": "Land Comp 2 — La Palma Ave", "salePrice": 5520000, "saleDate": "2026-03-18", "landAcres": 2.3, "zoning": "I", "notes": "Fully synthetic comparable." }
+          {
+            "name": "Land Comp 1 — Miraloma Ave",
+            "salePrice": 6950000,
+            "saleDate": "2025-12-05",
+            "landAcres": 2.8,
+            "zoning": "I",
+            "notes": "Fully synthetic comparable."
+          },
+          {
+            "name": "Land Comp 2 — La Palma Ave",
+            "salePrice": 5520000,
+            "saleDate": "2026-03-18",
+            "landAcres": 2.3,
+            "zoning": "I",
+            "notes": "Fully synthetic comparable."
+          }
         ],
         "notes": "Industrial land in North Orange County concluded at $2.4M/acre."
       },
@@ -261,8 +312,16 @@
       "email": "examples@oreformat.org"
     },
     "sourceDocuments": [
-      { "name": "Synthetic Lease Agreement", "type": "lease", "date": "2016-08-01" },
-      { "name": "Synthetic Tax Bill FY2025-26", "type": "tax_bill", "date": "2025-10-01" }
+      {
+        "name": "Synthetic Lease Agreement",
+        "type": "lease",
+        "date": "2016-08-01"
+      },
+      {
+        "name": "Synthetic Tax Bill FY2025-26",
+        "type": "tax_bill",
+        "date": "2025-10-01"
+      }
     ],
     "confidentiality": "None — fully synthetic example data published with the ORE specification.",
     "notes": "All parties, documents, and figures are fictional."

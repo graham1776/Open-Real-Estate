@@ -1,4 +1,5 @@
 {
+  "$schema": "https://oreformat.org/schema/0.1.0/ore.schema.json",
   "formatVersion": "0.1.0",
   "property": {
     "name": "14250 Marigold Avenue",
@@ -21,7 +22,11 @@
       "submarket": "Mid-Counties"
     },
     "parcels": [
-      { "apn": "8888-001-002", "landAcres": 2.1, "zoning": "M-2" }
+      {
+        "apn": "8888-001-002",
+        "landAcres": 2.1,
+        "zoning": "M-2"
+      }
     ],
     "siteAreaAcres": 2.1,
     "physical": {
@@ -60,7 +65,10 @@
         "baseRent": {
           "unit": "perSFPerMonth",
           "schedule": [
-            { "startDate": "2025-09-01", "amount": 1.42 }
+            {
+              "startDate": "2025-09-01",
+              "amount": 1.42
+            }
           ]
         },
         "escalation": {
@@ -82,7 +90,10 @@
             "notes": "Fair market rent, not less than rent in the final month of the initial term."
           }
         ],
-        "securityDeposit": { "amount": 64070, "form": "cash" },
+        "securityDeposit": {
+          "amount": 64070,
+          "form": "cash"
+        },
         "notes": "Steps prior to the as-of date omitted per spec convention; escalation rule generates 2026-2028 steps."
       }
     ],
@@ -140,8 +151,14 @@
     "asOfDate": "2026-06-01",
     "growth": {
       "marketRent": [
-        { "fromYear": 1, "annualPercent": 4.0 },
-        { "fromYear": 3, "annualPercent": 3.0 }
+        {
+          "fromYear": 1,
+          "annualPercent": 4.0
+        },
+        {
+          "fromYear": 3,
+          "annualPercent": 3.0
+        }
       ],
       "expenses": 3.0,
       "cpi": 2.5
@@ -150,21 +167,38 @@
     "creditLossPercent": 0.5,
     "marketLeasing": {
       "warehouse": {
-        "marketRent": { "amount": 1.55, "unit": "perSFPerMonth" },
+        "marketRent": {
+          "amount": 1.55,
+          "unit": "perSFPerMonth"
+        },
         "termMonths": 60,
-        "escalation": { "type": "fixed_percent", "rate": 3.5, "frequencyMonths": 12 },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 3.5,
+          "frequencyMonths": 12
+        },
         "reimbursementStructure": "NNN",
         "downtimeMonths": 4,
         "renewalProbabilityPercent": 70,
-        "newTenant": { "tiPerSF": 3, "lcPercentOfRent": 5, "freeRentMonths": 1 },
-        "renewal": { "tiPerSF": 0.5, "lcPercentOfRent": 2.5 },
+        "newTenant": {
+          "tiPerSF": 3,
+          "lcPercentOfRent": 5,
+          "freeRentMonths": 1
+        },
+        "renewal": {
+          "tiPerSF": 0.5,
+          "lcPercentOfRent": 2.5
+        },
         "renewalRentPercentOfMarket": 95
       }
     }
   },
   "valuation": {
     "analysisStartDate": "2026-06-01",
-    "methods": ["dcf", "direct_cap"],
+    "methods": [
+      "dcf",
+      "direct_cap"
+    ],
     "interestAppraised": "leased_fee",
     "valuePremise": "as_is",
     "purpose": "acquisition",
@@ -208,8 +242,16 @@
       "email": "examples@oreformat.org"
     },
     "sourceDocuments": [
-      { "name": "Synthetic Lease Agreement", "type": "lease", "date": "2021-08-15" },
-      { "name": "Synthetic Operating Statement CY2025", "type": "operating_statement", "date": "2026-01-15" }
+      {
+        "name": "Synthetic Lease Agreement",
+        "type": "lease",
+        "date": "2021-08-15"
+      },
+      {
+        "name": "Synthetic Operating Statement CY2025",
+        "type": "operating_statement",
+        "date": "2026-01-15"
+      }
     ],
     "confidentiality": "None — fully synthetic example data published with the ORE specification.",
     "notes": "All parties, documents, and figures are fictional."
