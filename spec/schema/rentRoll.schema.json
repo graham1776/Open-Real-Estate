@@ -1,0 +1,286 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreformat.org/schema/0.1.0/rentRoll.schema.json",
+  "title": "ORE Rent Roll Module",
+  "description": "The in-place rent roll: every lease encumbering the property as of `asOfDate`, plus vacant suites available for lease-up. ORE v0.1 covers NNN, NN, and modified gross structures typical of US industrial.",
+  "type": "object",
+  "required": ["asOfDate", "leases"],
+  "additionalProperties": false,
+  "properties": {
+    "asOfDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the rent roll was struck (ISO 8601, YYYY-MM-DD). All leases and vacancies reflect this date."
+    },
+    "leases": {
+      "type": "array",
+      "description": "All leases in place as of asOfDate. Empty array means the property is fully vacant (list the space under vacantSuites).",
+      "items": { "$ref": "#/$defs/lease" }
+    },
+    "vacantSuites": {
+      "type": "array",
+      "description": "Suites vacant as of asOfDate, available for lease-up at market assumptions.",
+      "items": {
+        "type": "object",
+        "required": ["sf"],
+        "additionalProperties": false,
+        "properties": {
+          "suite": { "type": "string", "description": "Suite or unit identifier." },
+          "sf": { "type": "number", "exclusiveMinimum": 0, "description": "Vacant area in square feet." },
+          "spaceType": { "type": "string", "description": "Space type key matching an entry in marketAssumptions.marketRent, used to price lease-up." },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text notes on the rent roll as a whole (estoppel status, pending amendments, etc.)."
+    }
+  },
+  "$defs": {
+    "lease": {
+      "type": "object",
+      "required": ["leaseId", "tenant", "leasedSF", "commencementDate", "expirationDate", "baseRent", "reimbursement"],
+      "additionalProperties": false,
+      "properties": {
+        "leaseId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable identifier for this lease, unique within the file. Referenced by calculation outputs and other modules."
+        },
+        "tenant": { "$ref": "#/$defs/tenant" },
+        "suite": {
+          "type": "string",
+          "description": "Suite or unit identifier. Optional for single-tenant properties."
+        },
+        "leasedSF": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Leased area in square feet. The denominator for this lease's per-SF rent and the numerator for its pro-rata share."
+        },
+        "commencementDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Lease commencement date (ISO 8601)."
+        },
+        "expirationDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Current lease expiration date (ISO 8601), reflecting any executed amendments or exercised options."
+        },
+        "baseRent": { "$ref": "#/$defs/baseRent" },
+        "escalation": { "$ref": "#/$defs/escalation" },
+        "reimbursement": { "$ref": "#/$defs/reimbursement" },
+        "freeRent": {
+          "type": "array",
+          "description": "Abatement periods remaining as of asOfDate (historical burned-off free rent is omitted).",
+          "items": {
+            "type": "object",
+            "required": ["startDate", "endDate"],
+            "additionalProperties": false,
+            "properties": {
+              "startDate": { "type": "string", "format": "date" },
+              "endDate": { "type": "string", "format": "date", "description": "Inclusive last day of the abatement period." },
+              "percentAbated": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 100,
+                "default": 100,
+                "description": "Percentage of base rent abated during the period. 100 = fully free."
+              },
+              "abatesReimbursements": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether expense reimbursements are also abated during the period."
+              }
+            }
+          }
+        },
+        "tenantImprovements": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Unfunded landlord TI obligations remaining as of asOfDate. Provide exactly one of amountPerSF or totalAmount.",
+          "oneOf": [
+            { "required": ["amountPerSF"] },
+            { "required": ["totalAmount"] }
+          ],
+          "properties": {
+            "amountPerSF": { "type": "number", "minimum": 0, "description": "USD per leased square foot." },
+            "totalAmount": { "type": "number", "minimum": 0, "description": "Total USD." },
+            "fundingDate": { "type": "string", "format": "date", "description": "Date the obligation is assumed to be funded. Engines default to the month after asOfDate if omitted." }
+          }
+        },
+        "leasingCommissions": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Unpaid leasing commissions remaining as of asOfDate. Provide exactly one of amountPerSF, totalAmount, or percentOfTotalRent.",
+          "oneOf": [
+            { "required": ["amountPerSF"] },
+            { "required": ["totalAmount"] },
+            { "required": ["percentOfTotalRent"] }
+          ],
+          "properties": {
+            "amountPerSF": { "type": "number", "minimum": 0, "description": "USD per leased square foot." },
+            "totalAmount": { "type": "number", "minimum": 0, "description": "Total USD." },
+            "percentOfTotalRent": { "type": "number", "minimum": 0, "maximum": 100, "description": "Percentage of total scheduled base rent over the lease term." },
+            "fundingDate": { "type": "string", "format": "date", "description": "Date the obligation is assumed to be paid. Engines default to the month after asOfDate if omitted." }
+          }
+        },
+        "options": {
+          "type": "array",
+          "description": "Tenant options under the lease.",
+          "items": { "$ref": "#/$defs/leaseOption" }
+        },
+        "securityDeposit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["amount"],
+          "properties": {
+            "amount": { "type": "number", "minimum": 0, "description": "USD held as of asOfDate." },
+            "form": { "type": "string", "enum": ["cash", "letter_of_credit"], "default": "cash" }
+          }
+        },
+        "guarantor": {
+          "type": "string",
+          "description": "Name of any lease guarantor, if different from the tenant entity."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Free-text notes: co-tenancy quirks, pending amendments, anything a re-underwriter must know that the structured fields cannot carry."
+        }
+      }
+    },
+    "tenant": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "description": "Legal name of the tenant entity on the lease." },
+        "dba": { "type": "string", "description": "Trade name, if different from the legal name." },
+        "parentCompany": { "type": "string", "description": "Parent or credit entity, if rent is supported above the lease entity." },
+        "industry": { "type": "string", "description": "Tenant's business / use of the space, e.g. \"third-party logistics\"." },
+        "creditNotes": { "type": "string", "description": "Free-text credit color: public/private, rating if any, years in occupancy." }
+      }
+    },
+    "baseRent": {
+      "type": "object",
+      "required": ["schedule", "unit"],
+      "additionalProperties": false,
+      "description": "Contractual base rent as a stepped schedule. Each step applies from its startDate until the next step's startDate, or until expirationDate for the last step. Steps must be in ascending startDate order. Historical steps before asOfDate may be omitted.",
+      "properties": {
+        "unit": {
+          "type": "string",
+          "enum": ["perSFPerMonth", "perSFPerYear", "totalPerMonth", "totalPerYear"],
+          "description": "Unit for every `amount` in the schedule. Per-SF units are multiplied by leasedSF. Annual units are divided by 12 for monthly cash flows."
+        },
+        "schedule": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["startDate", "amount"],
+            "additionalProperties": false,
+            "properties": {
+              "startDate": { "type": "string", "format": "date", "description": "First day this rent amount applies." },
+              "amount": { "type": "number", "minimum": 0, "description": "Rent in the unit declared by baseRent.unit." }
+            }
+          }
+        }
+      }
+    },
+    "escalation": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "description": "Rule for generating rent steps not explicitly enumerated in baseRent.schedule. If the schedule already enumerates every step through expiration, set type to \"none\" or omit this object. When present with a non-none type, engines apply the rule starting one frequency-interval after the last enumerated step's startDate, through expiration. Enumerated steps are always authoritative over generated ones.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["fixed_percent", "fixed_amount", "cpi", "none"],
+          "description": "fixed_percent: rent grows by `rate` percent each interval. fixed_amount: rent grows by `amount` (in baseRent.unit) each interval. cpi: rent grows with CPI, subject to floor/cap; engines use the CPI growth assumption from marketAssumptions."
+        },
+        "rate": { "type": "number", "description": "Escalation rate in percent per interval, e.g. 3.5 for 3.5%. Required when type is fixed_percent." },
+        "amount": { "type": "number", "description": "Escalation amount per interval, in baseRent.unit. Required when type is fixed_amount." },
+        "frequencyMonths": { "type": "integer", "exclusiveMinimum": 0, "default": 12, "description": "Months between escalations." },
+        "cpiFloorPercent": { "type": "number", "description": "Minimum CPI escalation in percent per interval. Only meaningful when type is cpi." },
+        "cpiCapPercent": { "type": "number", "description": "Maximum CPI escalation in percent per interval. Only meaningful when type is cpi." }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "fixed_percent" } } },
+          "then": { "required": ["rate"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "fixed_amount" } } },
+          "then": { "required": ["amount"] }
+        }
+      ]
+    },
+    "reimbursement": {
+      "type": "object",
+      "required": ["structure"],
+      "additionalProperties": false,
+      "description": "How operating expenses are recovered from the tenant. Expense-level recoverability flags live in the expenses module; this object describes the lease's side of the bargain.",
+      "properties": {
+        "structure": {
+          "type": "string",
+          "enum": ["NNN", "NN", "MG", "Gross"],
+          "description": "NNN: tenant reimburses its pro-rata share of all recoverable expenses (taxes, insurance, CAM). NN: as NNN except landlord retains responsibility for roof/structure (capital items). MG: tenant reimburses recoverable expense increases over a base year or expense stop. Gross: no reimbursement."
+        },
+        "proRataSharePercent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 100,
+          "description": "Tenant's share of recoverable expenses in percent. Defaults to leasedSF / property.physical.buildingSF × 100 when omitted."
+        },
+        "baseYear": {
+          "type": "integer",
+          "minimum": 1900,
+          "maximum": 2200,
+          "description": "Base year for MG leases: tenant pays its share of expense increases over this calendar year's expenses. Provide baseYear or expenseStopPerSF for MG, not both."
+        },
+        "expenseStopPerSF": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Expense stop in USD per SF per year for MG leases: tenant pays its share of expenses above this amount."
+        },
+        "adminFeePercent": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Administrative/management fee markup on recoverable expenses, in percent, if the lease allows one."
+        },
+        "excludedExpenses": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "expenseIds from the expenses module that this lease excludes from recovery, overriding the expense-level recoverable flag."
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "leaseOption": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["renewal", "termination", "purchase", "expansion", "right_of_first_refusal", "right_of_first_offer"],
+          "description": "Option type. Renewal options carry economic terms engines can model; the others are disclosed for diligence."
+        },
+        "noticeMonths": { "type": "number", "minimum": 0, "description": "Required notice period in months before the option date." },
+        "earliestExerciseDate": { "type": "string", "format": "date", "description": "Earliest date the option may take effect (e.g. termination effective date)." },
+        "renewalTermMonths": { "type": "integer", "exclusiveMinimum": 0, "description": "Length of the renewal term in months. Renewal options only." },
+        "renewalCount": { "type": "integer", "minimum": 1, "default": 1, "description": "Number of successive renewal options on these terms." },
+        "rentBasis": {
+          "type": "string",
+          "enum": ["market", "fixed", "percent_of_market"],
+          "description": "How renewal rent is set. market: fair market rent. fixed: the amount in fixedRent. percent_of_market: percentOfMarket × fair market rent."
+        },
+        "fixedRent": { "type": "number", "minimum": 0, "description": "Renewal rent when rentBasis is fixed, in the lease's baseRent.unit." },
+        "percentOfMarket": { "type": "number", "exclusiveMinimum": 0, "description": "Percent of fair market rent when rentBasis is percent_of_market, e.g. 95." },
+        "terminationFee": { "type": "number", "minimum": 0, "description": "Fee payable on exercise of a termination option, in USD." },
+        "notes": { "type": "string", "description": "Terms the structured fields cannot carry (e.g. expansion premises description, ROFR trigger)." }
+      }
+    }
+  }
+}
