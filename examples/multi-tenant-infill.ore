@@ -1,0 +1,245 @@
+{
+  "formatVersion": "0.1.0",
+  "property": {
+    "name": "Garvey Industrial Park",
+    "propertyType": "industrial",
+    "propertySubtype": "warehouse_distribution",
+    "tenancy": "multi",
+    "description": "Synthetic example: four-suite multi-tenant infill park with one vacancy and a mix of NNN and modified gross leases. All data in this file is fictional.",
+    "address": {
+      "street1": "11800 Garvey Ave",
+      "city": "El Monte",
+      "state": "CA",
+      "postalCode": "91732",
+      "county": "Los Angeles",
+      "country": "US"
+    },
+    "location": {
+      "market": "Los Angeles",
+      "submarket": "San Gabriel Valley"
+    },
+    "parcels": [
+      { "apn": "8577-014-021", "landAcres": 3.6, "zoning": "M-1" }
+    ],
+    "siteAreaAcres": 3.6,
+    "physical": {
+      "buildingSF": 78400,
+      "officeSF": 7100,
+      "clearHeightFt": 18,
+      "dockHighDoors": 8,
+      "gradeLevelDoors": 6,
+      "yearBuilt": 1979,
+      "stories": 1,
+      "construction": "tilt_up",
+      "sprinkler": "wet",
+      "autoParkingStalls": 88,
+      "coverageRatio": 0.5
+    },
+    "notes": "Suite SF per synthetic measurement exhibit; suites 100-400 sum to buildingSF."
+  },
+  "rentRoll": {
+    "asOfDate": "2026-06-01",
+    "leases": [
+      {
+        "leaseId": "L-100",
+        "tenant": {
+          "name": "Hermanos Produce Distribution Inc.",
+          "industry": "food distribution",
+          "creditNotes": "Family-owned distributor, 12 years at the property across two leases."
+        },
+        "suite": "100",
+        "leasedSF": 24600,
+        "commencementDate": "2023-04-01",
+        "expirationDate": "2028-03-31",
+        "baseRent": {
+          "unit": "perSFPerMonth",
+          "schedule": [
+            { "startDate": "2026-04-01", "amount": 1.31 }
+          ]
+        },
+        "escalation": { "type": "fixed_percent", "rate": 4.0, "frequencyMonths": 12 },
+        "reimbursement": { "structure": "NNN" },
+        "securityDeposit": { "amount": 32226, "form": "cash" }
+      },
+      {
+        "leaseId": "L-200",
+        "tenant": {
+          "name": "Brightline Cabinet Works LLC",
+          "industry": "millwork manufacturing"
+        },
+        "suite": "200",
+        "leasedSF": 18900,
+        "commencementDate": "2022-01-01",
+        "expirationDate": "2026-12-31",
+        "baseRent": {
+          "unit": "perSFPerMonth",
+          "schedule": [
+            { "startDate": "2026-01-01", "amount": 1.18 }
+          ]
+        },
+        "escalation": { "type": "none" },
+        "reimbursement": {
+          "structure": "MG",
+          "baseYear": 2022,
+          "notes": "Tenant pays pro-rata share of operating expense increases over the 2022 base year."
+        },
+        "securityDeposit": { "amount": 22302, "form": "cash" },
+        "notes": "Near-term rollover: expires 7 months after the as-of date with no remaining options."
+      },
+      {
+        "leaseId": "L-300",
+        "tenant": {
+          "name": "Sunpath Logistics Corp",
+          "dba": "Sunpath Same-Day",
+          "industry": "courier / last-mile delivery"
+        },
+        "suite": "300",
+        "leasedSF": 20700,
+        "commencementDate": "2025-11-01",
+        "expirationDate": "2030-10-31",
+        "baseRent": {
+          "unit": "perSFPerMonth",
+          "schedule": [
+            { "startDate": "2025-11-01", "amount": 1.45 }
+          ]
+        },
+        "escalation": { "type": "cpi", "frequencyMonths": 12, "cpiFloorPercent": 2.0, "cpiCapPercent": 5.0 },
+        "reimbursement": { "structure": "NNN" },
+        "freeRent": [
+          { "startDate": "2026-11-01", "endDate": "2026-11-30", "percentAbated": 100 }
+        ],
+        "options": [
+          {
+            "type": "renewal",
+            "noticeMonths": 6,
+            "renewalTermMonths": 36,
+            "rentBasis": "market"
+          }
+        ],
+        "securityDeposit": { "amount": 30015, "form": "letter_of_credit" },
+        "notes": "Month 13 of free rent (Nov 2026) remains unburned as of the as-of date."
+      }
+    ],
+    "vacantSuites": [
+      {
+        "suite": "400",
+        "sf": 14200,
+        "spaceType": "small_bay",
+        "notes": "Vacated March 2026; in shell condition pending market TI package."
+      }
+    ],
+    "notes": "Synthetic multi-tenant infill example: NNN, MG base-year, and CPI structures plus one vacant suite."
+  },
+  "expenses": {
+    "items": [
+      {
+        "expenseId": "E-TAX",
+        "name": "Real Estate Taxes",
+        "category": "real_estate_taxes",
+        "amount": 198000,
+        "amountUnit": "totalPerYear",
+        "recoverable": true,
+        "growthOverridePercent": 2.0
+      },
+      {
+        "expenseId": "E-INS",
+        "name": "Insurance",
+        "category": "insurance",
+        "amount": 0.35,
+        "amountUnit": "perSFPerYear",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-CAM",
+        "name": "Common Area Maintenance",
+        "category": "cam",
+        "amount": 0.72,
+        "amountUnit": "perSFPerYear",
+        "recoverable": true,
+        "notes": "Landscaping, sweeping, lighting, fire/life-safety for the shared yard and parking field."
+      },
+      {
+        "expenseId": "E-UTIL",
+        "name": "House Utilities",
+        "category": "utilities",
+        "amount": 0.12,
+        "amountUnit": "perSFPerYear",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-MGMT",
+        "name": "Management Fee",
+        "category": "management_fee",
+        "amount": 3.0,
+        "amountUnit": "percentOfEGR",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-RES",
+        "name": "Capital Reserves",
+        "category": "reserves",
+        "amount": 0.15,
+        "amountUnit": "perSFPerYear",
+        "recoverable": false,
+        "belowTheLine": true
+      }
+    ]
+  },
+  "marketAssumptions": {
+    "asOfDate": "2026-06-01",
+    "growth": {
+      "marketRent": 3.5,
+      "expenses": 3.0,
+      "cpi": 2.5
+    },
+    "generalVacancyPercent": 3.0,
+    "creditLossPercent": 0.5,
+    "marketLeasing": {
+      "small_bay": {
+        "marketRent": { "amount": 1.5, "unit": "perSFPerMonth" },
+        "termMonths": 48,
+        "escalation": { "type": "fixed_percent", "rate": 4.0, "frequencyMonths": 12 },
+        "reimbursementStructure": "NNN",
+        "downtimeMonths": 5,
+        "renewalProbabilityPercent": 65,
+        "newTenant": { "tiPerSF": 4, "lcPercentOfRent": 6, "freeRentMonths": 1 },
+        "renewal": { "tiPerSF": 1, "lcPercentOfRent": 3 },
+        "renewalRentPercentOfMarket": 95,
+        "notes": "Single profile applies to all suites; park leases out in comparable small-bay increments."
+      }
+    }
+  },
+  "valuation": {
+    "analysisStartDate": "2026-06-01",
+    "methods": ["dcf", "direct_cap"],
+    "purchasePrice": 21200000,
+    "acquisitionCostsPercent": 0.5,
+    "dcf": {
+      "holdPeriodYears": 7,
+      "discountRatePercent": 7.25,
+      "reversionCapRatePercent": 6.0,
+      "sellingCostsPercent": 1.5,
+      "discountTiming": "monthly"
+    },
+    "directCap": {
+      "capRatePercent": 5.6,
+      "noiBasis": "year1"
+    },
+    "notes": "Debt module intentionally omitted: unlevered underwriting."
+  },
+  "provenance": {
+    "generatedAt": "2026-06-10T17:00:00Z",
+    "generatedBy": {
+      "name": "ORE Project Examples",
+      "organization": "ORE (Open Real Estate)",
+      "role": "other",
+      "email": "examples@oreformat.org"
+    },
+    "sourceDocuments": [
+      { "name": "Synthetic Rent Roll June 2026", "type": "rent_roll", "date": "2026-06-01" },
+      { "name": "Synthetic CY2025 Operating Statement", "type": "operating_statement", "date": "2026-01-20" }
+    ],
+    "confidentiality": "None — fully synthetic example data published with the ORE specification.",
+    "notes": "All parties, documents, and figures are fictional."
+  }
+}

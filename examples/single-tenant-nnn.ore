@@ -88,5 +88,120 @@
     ],
     "vacantSuites": [],
     "notes": "Synthetic single-tenant NNN example for schema validation and engine golden files."
+  },
+  "expenses": {
+    "items": [
+      {
+        "expenseId": "E-TAX",
+        "name": "Real Estate Taxes",
+        "category": "real_estate_taxes",
+        "amount": 169200,
+        "amountUnit": "totalPerYear",
+        "recoverable": true,
+        "growthOverridePercent": 2.0,
+        "notes": "Synthetic; modeled at 1.2% of assumed price, statutory 2% annual growth."
+      },
+      {
+        "expenseId": "E-INS",
+        "name": "Insurance",
+        "category": "insurance",
+        "amount": 0.3,
+        "amountUnit": "perSFPerYear",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-CAM",
+        "name": "CAM / Repairs & Maintenance",
+        "category": "cam",
+        "amount": 0.5,
+        "amountUnit": "perSFPerYear",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-MGMT",
+        "name": "Management Fee",
+        "category": "management_fee",
+        "amount": 2.5,
+        "amountUnit": "percentOfEGR",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-RES",
+        "name": "Capital Reserves",
+        "category": "reserves",
+        "amount": 0.1,
+        "amountUnit": "perSFPerYear",
+        "recoverable": false,
+        "belowTheLine": true
+      }
+    ]
+  },
+  "marketAssumptions": {
+    "asOfDate": "2026-06-01",
+    "growth": {
+      "marketRent": [
+        { "fromYear": 1, "annualPercent": 4.0 },
+        { "fromYear": 3, "annualPercent": 3.0 }
+      ],
+      "expenses": 3.0,
+      "cpi": 2.5
+    },
+    "generalVacancyPercent": 0,
+    "creditLossPercent": 0.5,
+    "marketLeasing": {
+      "warehouse": {
+        "marketRent": { "amount": 1.55, "unit": "perSFPerMonth" },
+        "termMonths": 60,
+        "escalation": { "type": "fixed_percent", "rate": 3.5, "frequencyMonths": 12 },
+        "reimbursementStructure": "NNN",
+        "downtimeMonths": 4,
+        "renewalProbabilityPercent": 70,
+        "newTenant": { "tiPerSF": 3, "lcPercentOfRent": 5, "freeRentMonths": 1 },
+        "renewal": { "tiPerSF": 0.5, "lcPercentOfRent": 2.5 },
+        "renewalRentPercentOfMarket": 95
+      }
+    }
+  },
+  "valuation": {
+    "analysisStartDate": "2026-06-01",
+    "methods": ["dcf", "direct_cap"],
+    "purchasePrice": 14100000,
+    "acquisitionCostsPercent": 0.5,
+    "dcf": {
+      "holdPeriodYears": 10,
+      "discountRatePercent": 6.75,
+      "reversionCapRatePercent": 5.75,
+      "sellingCostsPercent": 1.5,
+      "discountTiming": "monthly"
+    },
+    "directCap": {
+      "capRatePercent": 5.45,
+      "noiBasis": "year1"
+    }
+  },
+  "debt": {
+    "ltvPercent": 55,
+    "interestRatePercent": 5.85,
+    "rateType": "fixed",
+    "termMonths": 120,
+    "amortizationMonths": 360,
+    "interestOnlyMonths": 24,
+    "originationFeePercent": 1.0,
+    "fundingDate": "2026-06-01"
+  },
+  "provenance": {
+    "generatedAt": "2026-06-10T17:00:00Z",
+    "generatedBy": {
+      "name": "ORE Project Examples",
+      "organization": "ORE (Open Real Estate)",
+      "role": "other",
+      "email": "examples@oreformat.org"
+    },
+    "sourceDocuments": [
+      { "name": "Synthetic Lease Agreement", "type": "lease", "date": "2021-08-15" },
+      { "name": "Synthetic Operating Statement CY2025", "type": "operating_statement", "date": "2026-01-15" }
+    ],
+    "confidentiality": "None — fully synthetic example data published with the ORE specification.",
+    "notes": "All parties, documents, and figures are fictional."
   }
 }

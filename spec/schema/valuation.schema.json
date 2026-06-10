@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreformat.org/schema/0.1.0/valuation.schema.json",
+  "title": "ORE Valuation Module",
+  "description": "Valuation method parameters. ORE v0.1 supports discounted cash flow and direct capitalization. Each method listed in `methods` must have its parameter object present.",
+  "type": "object",
+  "required": ["analysisStartDate", "methods"],
+  "additionalProperties": false,
+  "properties": {
+    "analysisStartDate": {
+      "type": "string",
+      "format": "date",
+      "description": "First day of analysis month 1. Conventionally equals rentRoll.asOfDate; all growth, downtime, and discounting measure from this date."
+    },
+    "methods": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "enum": ["dcf", "direct_cap"] },
+      "description": "Valuation methods this file is prepared for."
+    },
+    "purchasePrice": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Assumed or actual purchase price, USD. Optional: when present, engines report IRR/NPV against it; when absent, engines report concluded value only."
+    },
+    "acquisitionCostsPercent": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0,
+      "description": "Closing costs at acquisition as a percent of purchase price, added to the initial outflow."
+    },
+    "dcf": {
+      "type": "object",
+      "required": ["holdPeriodYears", "discountRatePercent", "reversionCapRatePercent"],
+      "additionalProperties": false,
+      "properties": {
+        "holdPeriodYears": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30,
+          "description": "Hold period in whole years from analysisStartDate. Reversion occurs at the end of the final year."
+        },
+        "discountRatePercent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Annual discount rate applied to unlevered cash flows, in percent."
+        },
+        "reversionCapRatePercent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Cap rate applied to forward (hold + 1 year) NOI to compute gross reversion value, in percent."
+        },
+        "sellingCostsPercent": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0,
+          "description": "Costs of sale as a percent of gross reversion value, deducted to reach net reversion."
+        },
+        "discountTiming": {
+          "type": "string",
+          "enum": ["monthly", "annual"],
+          "default": "monthly",
+          "description": "Discounting convention. monthly: end-of-month cash flows discounted at the equivalent monthly rate ((1+r)^(1/12)-1). annual: end-of-year aggregated cash flows discounted annually. Declared explicitly so every engine produces the identical NPV."
+        }
+      }
+    },
+    "directCap": {
+      "type": "object",
+      "required": ["capRatePercent"],
+      "additionalProperties": false,
+      "properties": {
+        "capRatePercent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Overall capitalization rate, in percent."
+        },
+        "noiBasis": {
+          "type": "string",
+          "enum": ["year1", "inPlace"],
+          "default": "year1",
+          "description": "NOI to capitalize. year1: forward 12 months from analysisStartDate per the full assumption set. inPlace: annualized contractual rent in force at analysisStartDate less annualized expenses, ignoring rollover and lease-up."
+        }
+      }
+    },
+    "notes": { "type": "string" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "methods": { "type": "array", "contains": { "const": "dcf" } } }, "required": ["methods"] },
+      "then": { "required": ["dcf"] }
+    },
+    {
+      "if": { "properties": { "methods": { "type": "array", "contains": { "const": "direct_cap" } } }, "required": ["methods"] },
+      "then": { "required": ["directCap"] }
+    }
+  ]
+}

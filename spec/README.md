@@ -15,14 +15,17 @@ validated against the published JSON Schema in [`schema/`](schema/).
 | root | `schema/ore.schema.json` | Draft |
 | `property` | `schema/property.schema.json` | Draft |
 | `rentRoll` / `leases[]` | `schema/rentRoll.schema.json` | Draft |
-| `expenses` | — | Not yet specified |
-| `marketAssumptions` | — | Not yet specified |
-| `valuation` | — | Not yet specified |
-| `debt` | — | Not yet specified |
-| `provenance` | — | Not yet specified |
+| `expenses` | `schema/expenses.schema.json` | Draft |
+| `marketAssumptions` | `schema/marketAssumptions.schema.json` | Draft |
+| `valuation` | `schema/valuation.schema.json` | Draft |
+| `debt` | `schema/debt.schema.json` | Draft |
+| `provenance` | `schema/provenance.schema.json` | Draft |
 
-Modules marked "not yet specified" are accepted as free-form objects by the root
-schema so early files can carry them; their schemas will land before v0.1.0 is tagged.
+All v0.1 modules are drafted. `property` and `rentRoll` are required in every file;
+the rest are optional so a file can carry exactly what its producer knows (e.g. a
+broker may omit `valuation` and let the buyer add their own assumptions). A deal is
+always a **single self-contained `.ore` file** — modules are sections of one JSON
+document, never separate files.
 
 ## Conventions
 

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://oreformat.org/schema/0.1.0/ore.schema.json",
   "title": "ORE Deal File",
-  "description": "Root schema for an ORE (Open Real Estate) deal file. A .ore file is standard JSON conforming to this schema. v0.1 scope: US industrial, DCF and direct capitalization.",
+  "description": "Root schema for an ORE (Open Real Estate) deal file. A .ore file is a single, self-contained JSON document conforming to this schema — all deal data and calculation assumptions travel together in one file. v0.1 scope: US industrial, DCF and direct capitalization.",
   "type": "object",
   "required": ["formatVersion", "property", "rentRoll"],
   "additionalProperties": false,
@@ -14,25 +14,10 @@
     },
     "property": { "$ref": "property.schema.json" },
     "rentRoll": { "$ref": "rentRoll.schema.json" },
-    "expenses": {
-      "type": "object",
-      "description": "Operating expense schedule, recoverable flags, management fee basis. Module schema in development — see spec/README.md for status."
-    },
-    "marketAssumptions": {
-      "type": "object",
-      "description": "Market rent by space type, growth curves, downtime, renewal probability, market TI/LC. Module schema in development."
-    },
-    "valuation": {
-      "type": "object",
-      "description": "Method, discount rate, reversion cap, hold period, selling costs. Module schema in development."
-    },
-    "debt": {
-      "type": "object",
-      "description": "Optional simple loan terms for levered returns. Module schema in development."
-    },
-    "provenance": {
-      "type": "object",
-      "description": "Who produced the file, when, source documents, broker contact. Module schema in development."
-    }
+    "expenses": { "$ref": "expenses.schema.json" },
+    "marketAssumptions": { "$ref": "marketAssumptions.schema.json" },
+    "valuation": { "$ref": "valuation.schema.json" },
+    "debt": { "$ref": "debt.schema.json" },
+    "provenance": { "$ref": "provenance.schema.json" }
   }
 }

@@ -30,10 +30,10 @@ direct capitalization. See [ROADMAP.md](ROADMAP.md).
 
 | Component | Where | State |
 |---|---|---|
-| Format spec & JSON Schema | [`spec/`](spec/) | `property` and `rentRoll` modules drafted |
+| Format spec & JSON Schema | [`spec/`](spec/) | All v0.1 modules drafted |
 | Reference engine (TypeScript) | [`engine/`](engine/) | Not started |
-| Example deal files | [`examples/`](examples/) | First example drafted |
-| Validator (CLI + browser) | [`validator/`](validator/) | Not started |
+| Example deal files | [`examples/`](examples/) | Three examples, all validating (`npm run validate`) |
+| Validator (CLI + browser) | [`validator/`](validator/) | Example-validation script; CLI not started |
 | Drag-and-drop DCF demo | [`demo/`](demo/) | Not started |
 | Documentation site | [`docs/`](docs/) | Not started |
 

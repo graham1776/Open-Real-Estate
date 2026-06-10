@@ -11,7 +11,11 @@ are listed as JSON paths from the file root. **(R)** marks required fields.
 | `formatVersion` **(R)** | string | ORE format version (semver). `0.1.x` files validate against the 0.1.0 schema. |
 | `property` **(R)** | object | Property module — see below. |
 | `rentRoll` **(R)** | object | Rent roll module — see below. |
-| `expenses`, `marketAssumptions`, `valuation`, `debt`, `provenance` | object | Accepted but not yet specified; schemas land before v0.1.0 is tagged. |
+| `expenses` | object | Expenses module — see below. |
+| `marketAssumptions` | object | Market assumptions module — see below. |
+| `valuation` | object | Valuation module — see below. |
+| `debt` | object | Optional debt module — see below. |
+| `provenance` | object | Provenance module — see below. |
 
 ## `property`
 
@@ -165,8 +169,116 @@ authoritative over generated ones.
 | `terminationFee` | number | USD payable on exercise (termination only). |
 | `notes` | string | Terms structured fields cannot carry. |
 
+## `expenses`
+
+Operating expense schedule. Amounts are annualized as of `rentRoll.asOfDate` and grow
+per `marketAssumptions.growth.expenses` unless an item carries its own override.
+
+| Field | Type | Definition |
+|---|---|---|
+| `items[]` **(R)** | array | Expense items — see below. Min 1. |
+| `notes` | string | Schedule-level notes (source statements, normalization adjustments). |
+
+### `expenses.items[]`
+
+| Field | Type | Definition |
+|---|---|---|
+| `expenseId` **(R)** | string | Stable identifier, unique within the file. Referenced by `lease.reimbursement.excludedExpenses`. |
+| `name` **(R)** | string | Display name, e.g. "Real Estate Taxes". |
+| `category` | enum | `real_estate_taxes`, `insurance`, `cam`, `repairs_maintenance`, `utilities`, `management_fee`, `administrative`, `reserves`, `other`. For cross-file comparability and standards mapping. |
+| `amount` **(R)** | number | Annual amount in `amountUnit`, as of `rentRoll.asOfDate`. |
+| `amountUnit` **(R)** | enum | `totalPerYear` (USD/yr), `perSFPerYear` (USD per `buildingSF` per yr), `percentOfEGR` (percent of effective gross revenue — the conventional management fee basis; `amount` is the percent value, e.g. `2.5`). |
+| `recoverable` **(R)** | boolean | Recoverable from tenants, subject to each lease's reimbursement structure and exclusions. |
+| `belowTheLine` | boolean | Excluded from NOI but included in cash flow (conventionally capital reserves). Default false. |
+| `growthOverridePercent` | number | Item-specific annual growth, percent. No effect on `percentOfEGR` items, which float with revenue. |
+
+## `marketAssumptions`
+
+| Field | Type | Definition |
+|---|---|---|
+| `asOfDate` | date | When the assumptions were struck. Defaults to `rentRoll.asOfDate`. |
+| `growth` **(R)** | object | `marketRent` **(R)**, `expenses` **(R)**, `cpi` — each a growth curve (below). `cpi` required if any lease escalates on CPI. |
+| `generalVacancyPercent` | number | Percent of potential gross revenue, in addition to explicit downtime. Engines must not double-count downtime months. Default 0. |
+| `creditLossPercent` | number | Percent of scheduled revenue. Default 0. |
+| `marketLeasing` **(R)** | map | Leasing profiles keyed by space type (min 1) — see below. Keys are matched by `vacantSuites[].spaceType` and by leases at rollover. |
+
+**Growth curve:** either a flat annual rate in percent (`3.0`), or a stepped array of
+`{ fromYear, annualPercent }` where `fromYear` is the 1-based analysis year and each
+entry applies until the next. The first entry must have `fromYear: 1`. Growth
+compounds annually on each anniversary of the analysis start.
+
+### `marketAssumptions.marketLeasing.<spaceType>`
+
+At each lease expiration, engines blend the renewal and new-tenant outcomes by
+`renewalProbabilityPercent`.
+
+| Field | Type | Definition |
+|---|---|---|
+| `marketRent` **(R)** | object | `amount` **(R)** + `unit` **(R)** (`perSFPerMonth` or `perSFPerYear`). As of `asOfDate`, grown by `growth.marketRent` thereafter. |
+| `termMonths` **(R)** | integer | Market lease term. |
+| `escalation` | object | Same shape as `lease.escalation`. Defaults to none. |
+| `reimbursementStructure` | enum | `NNN` (default), `NN`, `MG`, `Gross`. MG market leases use the first calendar year of the new lease as base year. |
+| `downtimeMonths` **(R)** | number | Vacant months before a new-tenant lease commences. Not applied to renewals. |
+| `renewalProbabilityPercent` **(R)** | number | 0–100. 100 disables new-tenant outcomes; 0 disables renewals. |
+| `newTenant` / `renewal` | object | Leasing costs per outcome: `tiPerSF`, `lcPercentOfRent`, `freeRentMonths` — all default 0. |
+| `renewalRentPercentOfMarket` | number | Renewal rent as percent of market, default 100. |
+
+## `valuation`
+
+| Field | Type | Definition |
+|---|---|---|
+| `analysisStartDate` **(R)** | date | First day of analysis month 1; conventionally `rentRoll.asOfDate`. All growth, downtime, and discounting measure from here. |
+| `methods` **(R)** | array | `dcf` and/or `direct_cap`. Each listed method's parameter object is required. |
+| `purchasePrice` | number | USD. When present, engines report IRR/NPV against it; when absent, concluded value only. |
+| `acquisitionCostsPercent` | number | Closing costs, percent of price, added to initial outflow. Default 0. |
+
+### `valuation.dcf`
+
+| Field | Type | Definition |
+|---|---|---|
+| `holdPeriodYears` **(R)** | integer | 1–30 whole years from `analysisStartDate`; reversion at end of final year. |
+| `discountRatePercent` **(R)** | number | Annual rate applied to unlevered cash flows. |
+| `reversionCapRatePercent` **(R)** | number | Applied to forward (hold + 1 year) NOI for gross reversion value. |
+| `sellingCostsPercent` | number | Percent of gross reversion, default 0. |
+| `discountTiming` | enum | `monthly` (default): end-of-month cash flows at the equivalent monthly rate ((1+r)^(1/12)−1). `annual`: end-of-year aggregation, annual discounting. Declared so every engine produces the identical NPV. |
+
+### `valuation.directCap`
+
+| Field | Type | Definition |
+|---|---|---|
+| `capRatePercent` **(R)** | number | Overall capitalization rate. |
+| `noiBasis` | enum | `year1` (default): forward 12 months per the full assumption set. `inPlace`: annualized contractual rent at `analysisStartDate` less annualized expenses, ignoring rollover and lease-up. |
+
+## `debt` (optional)
+
+Single fixed-rate loan; waterfalls and floating rates are out of scope for v0.1.
+Size by exactly one of `loanAmount` or `ltvPercent`.
+
+| Field | Type | Definition |
+|---|---|---|
+| `loanAmount` | number | USD. |
+| `ltvPercent` | number | Percent of `valuation.purchasePrice` (which must be present when sizing by LTV). |
+| `interestRatePercent` **(R)** | number | Fixed annual rate. |
+| `rateType` | `"fixed"` | v0.1 is fixed-only. |
+| `termMonths` **(R)** | integer | From `fundingDate`. If shorter than the hold, engines assume payoff refinanced on identical terms. |
+| `amortizationMonths` | integer | E.g. 360. Omit for interest-only through the term. |
+| `interestOnlyMonths` | integer | IO period before amortization begins. Default 0. |
+| `originationFeePercent` | number | Percent of loan amount, deducted from proceeds. Default 0. |
+| `fundingDate` | date | Defaults to `analysisStartDate`. |
+
+## `provenance`
+
+| Field | Type | Definition |
+|---|---|---|
+| `generatedAt` **(R)** | date-time | When the file was produced (ISO 8601 with timezone). |
+| `generatedBy` **(R)** | object | `name` **(R)**, `organization`, `role` (`listing_broker`, `buyer`, `appraiser`, `owner`, `lender`, `other`), `email`, `phone`. |
+| `software` | object | `name`, `version` of the tool that wrote the file. |
+| `sourceDocuments[]` | array | `name` **(R)**, `type` **(R)** (`lease`, `lease_amendment`, `rent_roll`, `operating_statement`, `budget`, `tax_bill`, `offering_memorandum`, `site_plan`, `estoppel`, `other`), `date`, `description`. Listed for diligence; documents do not travel in the file. |
+| `contacts[]` | array | `name` **(R)**, `organization`, `role` (free text), `email`, `phone`. |
+| `confidentiality` | string | Confidentiality statement or NDA reference. |
+
 ## Standards mappings
 
 Mappings to NCREIF PREA Reporting Standards and REDI field definitions will be added
-field-by-field as the `expenses` and `valuation` modules are specified, since most
-overlap (NOI composition, expense categories) lives there.
+field-by-field, anchored on `expenses.items[].category` and the valuation parameters,
+before v0.1.0 is tagged.

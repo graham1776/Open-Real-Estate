@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreformat.org/schema/0.1.0/marketAssumptions.schema.json",
+  "title": "ORE Market Assumptions Module",
+  "description": "Market rent, growth, and rollover assumptions. These travel with the file so any conforming engine reproduces identical lease-up and rollover cash flows.",
+  "type": "object",
+  "required": ["growth", "marketLeasing"],
+  "additionalProperties": false,
+  "properties": {
+    "asOfDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the market assumptions were struck. Defaults to rentRoll.asOfDate."
+    },
+    "growth": {
+      "type": "object",
+      "required": ["marketRent", "expenses"],
+      "additionalProperties": false,
+      "description": "Annual growth assumptions. Growth compounds annually on each anniversary of the analysis start.",
+      "properties": {
+        "marketRent": { "$ref": "#/$defs/growthCurve", "description": "Market rent growth." },
+        "expenses": { "$ref": "#/$defs/growthCurve", "description": "Operating expense growth (items may carry their own override)." },
+        "cpi": { "$ref": "#/$defs/growthCurve", "description": "CPI assumption used by leases with cpi escalations. Required if any lease escalates on CPI." }
+      }
+    },
+    "generalVacancyPercent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0,
+      "description": "General vacancy allowance as a percent of potential gross revenue, applied in addition to explicit downtime. Engines must not double-count: months absorbed by explicit downtime are excluded from the general vacancy base."
+    },
+    "creditLossPercent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0,
+      "description": "Credit loss allowance as a percent of scheduled revenue."
+    },
+    "marketLeasing": {
+      "type": "object",
+      "minProperties": 1,
+      "description": "Market leasing profiles keyed by space type. Keys are matched by rentRoll.vacantSuites[].spaceType and by leases at rollover (via leaseSpaceType or the file's single profile).",
+      "additionalProperties": { "$ref": "#/$defs/leasingProfile" }
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "growthCurve": {
+      "description": "Either a flat annual rate in percent (e.g. 3.0), or a stepped curve: entries apply from analysis year fromYear (1-based) until the next entry. The first entry must have fromYear 1.",
+      "oneOf": [
+        { "type": "number" },
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["fromYear", "annualPercent"],
+            "additionalProperties": false,
+            "properties": {
+              "fromYear": { "type": "integer", "minimum": 1 },
+              "annualPercent": { "type": "number" }
+            }
+          }
+        }
+      ]
+    },
+    "leasingProfile": {
+      "type": "object",
+      "required": ["marketRent", "termMonths", "downtimeMonths", "renewalProbabilityPercent"],
+      "additionalProperties": false,
+      "description": "Assumptions for a new market lease of this space type, used for vacant-suite lease-up and lease rollover. At each lease expiration, engines blend renewal and new-tenant outcomes by renewalProbabilityPercent.",
+      "properties": {
+        "marketRent": {
+          "type": "object",
+          "required": ["amount", "unit"],
+          "additionalProperties": false,
+          "properties": {
+            "amount": { "type": "number", "exclusiveMinimum": 0, "description": "Market rent as of marketAssumptions.asOfDate, grown by growth.marketRent thereafter." },
+            "unit": {
+              "type": "string",
+              "enum": ["perSFPerMonth", "perSFPerYear"],
+              "description": "Unit for amount. Declared explicitly — never inferred from market convention."
+            }
+          }
+        },
+        "termMonths": { "type": "integer", "exclusiveMinimum": 0, "description": "Market lease term in months." },
+        "escalation": {
+          "$ref": "rentRoll.schema.json#/$defs/escalation",
+          "description": "Escalation pattern for market leases. Defaults to none."
+        },
+        "reimbursementStructure": {
+          "type": "string",
+          "enum": ["NNN", "NN", "MG", "Gross"],
+          "default": "NNN",
+          "description": "Reimbursement structure for market leases. MG market leases use the first calendar year of the new lease as the base year."
+        },
+        "downtimeMonths": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Vacant months before a new-tenant lease commences (after expiration, or from analysis start for vacant suites). Not applied to renewals."
+        },
+        "renewalProbabilityPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Probability an expiring tenant renews. 100 disables new-tenant outcomes; 0 disables renewals."
+        },
+        "newTenant": { "$ref": "#/$defs/leasingCosts", "description": "Leasing costs for the new-tenant outcome. Omitted fields default to 0." },
+        "renewal": { "$ref": "#/$defs/leasingCosts", "description": "Leasing costs for the renewal outcome. Omitted fields default to 0. Renewal rent is market rent unless renewalRentPercentOfMarket is set." },
+        "renewalRentPercentOfMarket": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 100,
+          "description": "Renewal rent as a percent of market rent, e.g. 95."
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "leasingCosts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tiPerSF": { "type": "number", "minimum": 0, "default": 0, "description": "Tenant improvement allowance, USD per SF." },
+        "lcPercentOfRent": { "type": "number", "minimum": 0, "maximum": 100, "default": 0, "description": "Leasing commission as a percent of total scheduled base rent over the lease term." },
+        "freeRentMonths": { "type": "number", "minimum": 0, "default": 0, "description": "Months of full base rent abatement at lease start." }
+      }
+    }
+  }
+}
