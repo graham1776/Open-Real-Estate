@@ -780,7 +780,7 @@ export function computeSensitivity(deal, model, warnings) {
     }
     return { discountRatesPercent: discounts, exitCapRatesPercent: caps, values };
 }
-function annualTable(model, H) {
+export function annualTable(model, H) {
     const rows = [];
     for (let y = 0; y * 12 < H; y++) {
         const a = y * 12, b = Math.min(H, a + 12);
@@ -891,6 +891,193 @@ export function computeAll(deal) {
         } : null,
         returns, sensitivity,
         concluded: { value: concludedValue != null ? round0(concludedValue) : null, source: concludedSource },
+        warnings: warnings.list,
+    };
+}
+export function computePortfolio(entries) {
+    const warnings = new Warnings();
+    const per = entries.map((e) => ({ label: e.label, deal: e.deal, out: computeAll(e.deal) }));
+    for (const p of per) {
+        for (const w of p.out.warnings) {
+            warnings.add(w.code, `[${p.label}] ${w.message}`, p.label + "|" + w.code + "|" + w.message);
+        }
+    }
+    const starts = new Set(per.map((p) => p.deal.valuation?.analysisStartDate ?? p.deal.rentRoll.asOfDate));
+    if (starts.size > 1) {
+        warnings.add("start_dates_differ", "Deals have different analysis start dates; combined cash flows are aligned by analysis year index, not calendar year.");
+    }
+    // ---- totals
+    let buildingSF = 0, occupiedSF = 0, vacantSF = 0, inPlaceAnnual = 0, y1NOI = 0;
+    let stabSum = 0, stabCount = 0, priceSum = 0, priceCount = 0, concludedSum = 0, concludedCount = 0;
+    let mktWeighted = 0, mktSF = 0;
+    for (const p of per) {
+        buildingSF += p.out.occupancy.buildingSF;
+        occupiedSF += p.out.occupancy.occupiedSF;
+        vacantSF += p.out.occupancy.vacantSF;
+        inPlaceAnnual += p.out.rent.inPlaceAnnualBaseRent;
+        y1NOI += p.out.noi.year1NOI;
+        if (p.out.noi.stabilizedAtMarketNOI != null) {
+            stabSum += p.out.noi.stabilizedAtMarketNOI;
+            stabCount++;
+        }
+        if (p.deal.valuation?.purchasePrice != null) {
+            priceSum += p.deal.valuation.purchasePrice;
+            priceCount++;
+        }
+        if (p.out.concluded.value != null) {
+            concludedSum += p.out.concluded.value;
+            concludedCount++;
+        }
+        if (p.out.rent.marketRentPerSFPerMonth != null) {
+            mktWeighted += p.out.rent.marketRentPerSFPerMonth * p.out.occupancy.buildingSF;
+            mktSF += p.out.occupancy.buildingSF;
+        }
+    }
+    const waInPlace = occupiedSF > 0 ? inPlaceAnnual / 12 / occupiedSF : null;
+    const waMarket = mktSF > 0 ? mktWeighted / mktSF : null;
+    // ---- combined monthly model (each deal contributes through its own hold)
+    const dealHs = per.map((p) => p.deal.valuation?.dcf ? (p.deal.valuation.dcf.holdPeriodMonths ?? p.deal.valuation.dcf.holdPeriodYears * 12) : 12);
+    const maxH = Math.max(...dealHs);
+    const modelKeys = [
+        "sched", "free", "pot", "occSF", "recoveries", "generalVacancyLoss", "creditLoss",
+        "egr", "opexFixed", "mgmtFee", "noi", "belowLine", "ti", "lc", "cashFlow", "contractVsMarket",
+    ];
+    const combined = Object.fromEntries(modelKeys.map((k) => [k, new Array(maxH).fill(0)]));
+    // ---- portfolio returns (deals with purchasePrice + computable DCF)
+    const cfU = new Array(maxH + 1).fill(0);
+    const cfL = new Array(maxH + 1).fill(0);
+    let costSum = 0, equitySum = 0, anyDebt = false;
+    const includedDeals = [];
+    const excludedDeals = [];
+    per.forEach((p, i) => {
+        const wLocal = new Warnings();
+        const H = dealHs[i];
+        const model = buildModel(p.deal, Math.max(H + 36, 48), wLocal);
+        for (const k of modelKeys) {
+            for (let m = 0; m < H; m++)
+                combined[k][m] += model[k][m];
+        }
+        const dcfRes = computeDCF(p.deal, model, wLocal);
+        const price = p.deal.valuation?.purchasePrice;
+        if (dcfRes && price != null) {
+            const cost = price * (1 + (p.deal.valuation?.acquisitionCostsPercent ?? 0) / 100);
+            costSum += cost;
+            cfU[0] -= cost;
+            for (let m = 0; m < H; m++)
+                cfU[m + 1] += model.cashFlow[m];
+            cfU[H] += dcfRes.terminalNet;
+            const debt = buildDebt(p.deal, model, H, wLocal);
+            const net = debt?.netProceeds ?? 0;
+            if (debt)
+                anyDebt = true;
+            equitySum += cost - net;
+            cfL[0] -= cost - net;
+            for (let m = 0; m < H; m++)
+                cfL[m + 1] += model.cashFlow[m] - (debt ? debt.service[m] : 0);
+            cfL[H] += dcfRes.terminalNet - (debt ? (debt.balance[H - 1] ?? 0) : 0);
+            includedDeals.push(p.label);
+        }
+        else {
+            excludedDeals.push(p.label);
+        }
+    });
+    if (excludedDeals.length && includedDeals.length) {
+        warnings.add("returns_partial", `Portfolio returns include ${includedDeals.length} of ${per.length} deals; excluded (no purchase price or DCF): ${excludedDeals.join(", ")}.`);
+    }
+    const distU = cfU.slice(1).reduce((s, x) => s + x, 0);
+    const distL = cfL.slice(1).reduce((s, x) => s + x, 0);
+    const returns = includedDeals.length === 0 ? null : {
+        unlevered: {
+            irrPercent: irrAnnual(cfU),
+            equityMultiple: costSum > 0 ? round2(distU / costSum) : null,
+            totalProfit: round0(cfU.reduce((s, x) => s + x, 0)),
+            initialInvestment: round0(costSum),
+        },
+        levered: anyDebt ? {
+            irrPercent: irrAnnual(cfL),
+            equityMultiple: equitySum > 0 ? round2(distL / equitySum) : null,
+            totalProfit: round0(cfL.reduce((s, x) => s + x, 0)),
+            initialEquity: round0(equitySum),
+        } : null,
+        includedDeals,
+        excludedDeals,
+    };
+    // ---- lease expirations by calendar year (in-place leases) and top tenants
+    const expir = new Map();
+    const tenants = new Map();
+    for (const p of per) {
+        const start = p.deal.valuation?.analysisStartDate ?? p.deal.rentRoll.asOfDate;
+        for (const lease of p.deal.rentRoll.leases) {
+            const expiryMonth = Math.max(0, monthIndex(lease.expirationDate, start));
+            const ctx = { deal: p.deal, start, buildingSF: p.deal.property.physical.buildingSF, horizon: expiryMonth + 1, warnings: new Warnings(), cpiAnnualPercent: null };
+            const expiringRent = contractRate(lease, expiryMonth, ctx) * 12;
+            const year = yearOf(lease.expirationDate);
+            const e = expir.get(year) ?? { sf: 0, rent: 0 };
+            e.sf += lease.leasedSF;
+            e.rent += expiringRent;
+            expir.set(year, e);
+            const inPlaceRent = contractRate(lease, 0, ctx) * 12;
+            const t = tenants.get(lease.tenant.name) ?? { sf: 0, annualRent: 0, earliestExpiration: lease.expirationDate, deals: new Set() };
+            t.sf += lease.leasedSF;
+            t.annualRent += inPlaceRent;
+            if (lease.expirationDate < t.earliestExpiration)
+                t.earliestExpiration = lease.expirationDate;
+            t.deals.add(p.label);
+            tenants.set(lease.tenant.name, t);
+        }
+    }
+    const leaseExpirations = [...expir.entries()].sort((a, b) => a[0] - b[0]).map(([year, e]) => ({
+        year,
+        sf: round0(e.sf),
+        percentOfPortfolioSF: round2((e.sf / buildingSF) * 100),
+        expiringAnnualRent: round0(e.rent),
+    }));
+    const topTenants = [...tenants.entries()]
+        .sort((a, b) => b[1].annualRent - a[1].annualRent)
+        .slice(0, 10)
+        .map(([name, t]) => ({
+        name,
+        sf: round0(t.sf),
+        annualRent: round0(t.annualRent),
+        percentOfPortfolioRent: inPlaceAnnual > 0 ? round2((t.annualRent / inPlaceAnnual) * 100) : null,
+        earliestExpiration: t.earliestExpiration,
+        deals: [...t.deals].sort(),
+    }));
+    return {
+        engineVersion: ENGINE_VERSION,
+        dealCount: per.length,
+        deals: per.map((p) => ({
+            label: p.label,
+            name: p.out.property.name,
+            cityState: p.out.property.cityState,
+            buildingSF: p.out.occupancy.buildingSF,
+            occupancyPercent: p.out.occupancy.occupancyPercent,
+            inPlaceWARentPerSFPerMonth: p.out.rent.inPlaceWARentPerSFPerMonth,
+            inPlaceVsMarketPercent: p.out.rent.inPlaceVsMarketPercent,
+            year1NOI: p.out.noi.year1NOI,
+            concludedValue: p.out.concluded.value,
+            valuePerSF: p.out.concluded.value != null ? round2(p.out.concluded.value / p.out.occupancy.buildingSF) : null,
+            unleveredIRRPercent: p.out.returns.unlevered?.irrPercent ?? null,
+        })),
+        totals: {
+            buildingSF: round0(buildingSF),
+            occupiedSF: round0(occupiedSF),
+            vacantSF: round0(vacantSF),
+            occupancyPercent: buildingSF > 0 ? round2((occupiedSF / buildingSF) * 100) : null,
+            inPlaceAnnualBaseRent: round0(inPlaceAnnual),
+            inPlaceWARentPerSFPerMonth: waInPlace != null ? round2(waInPlace) : null,
+            marketWARentPerSFPerMonth: waMarket != null ? round2(waMarket) : null,
+            inPlaceVsMarketPercent: waInPlace != null && waMarket ? round2(((waInPlace - waMarket) / waMarket) * 100) : null,
+            year1NOI: round0(y1NOI),
+            stabilizedAtMarketNOI: stabCount === per.length ? round0(stabSum) : null,
+            purchasePrice: priceCount === per.length ? round0(priceSum) : null,
+            concludedValue: concludedCount === per.length ? round0(concludedSum) : null,
+            concludedValuePerSF: concludedCount === per.length && buildingSF > 0 ? round2(concludedSum / buildingSF) : null,
+        },
+        cashFlows: { annual: annualTable(combined, maxH) },
+        returns,
+        leaseExpirations,
+        topTenants,
         warnings: warnings.list,
     };
 }

@@ -10,7 +10,7 @@
 import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
-import { computeAll } from "../dist/index.js";
+import { computeAll, computePortfolio } from "../dist/index.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..", "..");
@@ -51,4 +51,27 @@ for (const f of readdirSync(examplesDir).filter((f) => f.endsWith(".ore")).sort(
     }
   }
 }
+// portfolio golden: all examples combined, sorted by filename
+{
+  const files = readdirSync(examplesDir).filter((f) => f.endsWith(".ore")).sort();
+  const entries = files.map((f) => ({
+    label: basename(f, ".ore"),
+    deal: JSON.parse(readFileSync(join(examplesDir, f), "utf8")),
+  }));
+  const actual = computePortfolio(entries);
+  const goldenPath = join(here, "portfolio.golden.json");
+  if (update) {
+    writeFileSync(goldenPath, JSON.stringify(actual, null, 2) + "\n");
+    console.log("WROTE portfolio.golden.json");
+  } else if (!existsSync(goldenPath)) {
+    failures++;
+    console.error("MISSING portfolio golden (run with --update)");
+  } else if (JSON.stringify(actual, null, 2) === JSON.stringify(JSON.parse(readFileSync(goldenPath, "utf8")), null, 2)) {
+    console.log("PASS  portfolio (all examples combined)");
+  } else {
+    failures++;
+    console.error("FAIL  portfolio — output differs from portfolio.golden.json");
+  }
+}
+
 process.exit(failures ? 1 : 0);

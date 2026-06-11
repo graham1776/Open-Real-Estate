@@ -23,6 +23,12 @@ perfect institutional DCF.
 - [x] Browser demo shell: drag a `.ore` file → tabs for summary, rent roll,
       expenses, assumptions, valuation, computed outputs, and warnings
       (`/demo/index.html`, static, no backend; light editing follows post-v0.1)
+- [x] Multi-file portfolio roll-up: drop several `.ore` files → totals, per-deal
+      comparison, blended returns, lease expiration schedule, top tenants,
+      combined cash flows (`computePortfolio` in the engine, locked by a
+      portfolio golden)
+- [x] Live refresh: the viewer watches loaded files and re-reads on change
+      (~2s), plus a manual refresh — edit the `.ore` in any tool, save, see it
 - [x] Thin calc kernel — shipped, then retired by the reference engine (which
       kept its interface and its warnings-first design)
 - [x] Golden output files locked for all examples (`npm run golden`)
