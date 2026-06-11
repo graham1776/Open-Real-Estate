@@ -9,6 +9,7 @@
     "validate": "node validator/validate-examples.mjs",
     "golden": "node engine/golden/run-golden.mjs",
     "golden:update": "node engine/golden/run-golden.mjs --update",
+    "llms": "node spec/build-llms-txt.mjs",
     "test": "npm run build && npm run validate && npm run golden",
     "demo": "npx -y http-server -c-1 -o /demo/ ."
   },
