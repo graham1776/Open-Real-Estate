@@ -23,6 +23,12 @@ perfect institutional DCF.
 - [x] Browser demo shell: drag a `.ore` file → tabs for summary, rent roll,
       expenses, assumptions, valuation, computed outputs, and warnings
       (`/demo/index.html`, static, no backend; light editing follows post-v0.1)
+- [x] Multi-file portfolio roll-up: drop several `.ore` files → totals, per-deal
+      comparison, blended returns, lease expiration schedule, top tenants,
+      combined cash flows (`computePortfolio` in the engine, locked by a
+      portfolio golden)
+- [x] Live refresh: the viewer watches loaded files and re-reads on change
+      (~2s), plus a manual refresh — edit the `.ore` in any tool, save, see it
 - [x] Thin calc kernel — shipped, then retired by the reference engine (which
       kept its interface and its warnings-first design)
 - [x] Golden output files locked for all examples (`npm run golden`)
@@ -35,9 +41,9 @@ perfect institutional DCF.
       MG base-year/stop recoveries, true two-branch rollover, TI/LC split,
       general-vacancy de-dup, debt schedule, levered/unlevered IRR, NOI bridge,
       annual cash flows, sensitivity grid; goldens consciously re-locked
-- [ ] `llms.txt`: the spec, data dictionary, and an annotated example published as
-      a single LLM-ingestible document (see `docs/design/llm-and-excel.md`)
-- [ ] README leads with a viewer screenshot/GIF
+- [x] `llms.txt`: the spec, data dictionary, and an annotated example published as
+      a single LLM-ingestible document, generated from source (`npm run llms`)
+- [x] README leads with a viewer screenshot/GIF
 - [x] README, CONTRIBUTING, GOVERNANCE, ROADMAP, LICENSE in place
 
 ## v0.1 scope (deliberate constraints)

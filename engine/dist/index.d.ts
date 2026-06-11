@@ -99,6 +99,7 @@ export interface AnnualRow {
     lcCosts: number;
     cashFlow: number;
 }
+export declare function annualTable(model: MonthlyModel, H: number): AnnualRow[];
 export declare function computeAll(deal: OreFile): {
     engineVersion: string;
     property: {
@@ -152,5 +153,76 @@ export declare function computeAll(deal: OreFile): {
     warnings: Warning[];
 };
 export type EngineOutput = ReturnType<typeof computeAll>;
+export interface PortfolioEntry {
+    label: string;
+    deal: OreFile;
+}
+export declare function computePortfolio(entries: PortfolioEntry[]): {
+    engineVersion: string;
+    dealCount: number;
+    deals: {
+        label: string;
+        name: string;
+        cityState: string;
+        buildingSF: number;
+        occupancyPercent: number;
+        inPlaceWARentPerSFPerMonth: number | null;
+        inPlaceVsMarketPercent: number | null;
+        year1NOI: number;
+        concludedValue: number | null;
+        valuePerSF: number | null;
+        unleveredIRRPercent: number | null;
+    }[];
+    totals: {
+        buildingSF: number;
+        occupiedSF: number;
+        vacantSF: number;
+        occupancyPercent: number | null;
+        inPlaceAnnualBaseRent: number;
+        inPlaceWARentPerSFPerMonth: number | null;
+        marketWARentPerSFPerMonth: number | null;
+        inPlaceVsMarketPercent: number | null;
+        year1NOI: number;
+        stabilizedAtMarketNOI: number | null;
+        purchasePrice: number | null;
+        concludedValue: number | null;
+        concludedValuePerSF: number | null;
+    };
+    cashFlows: {
+        annual: AnnualRow[];
+    };
+    returns: {
+        unlevered: {
+            irrPercent: number | null;
+            equityMultiple: number | null;
+            totalProfit: number;
+            initialInvestment: number;
+        };
+        levered: {
+            irrPercent: number | null;
+            equityMultiple: number | null;
+            totalProfit: number;
+            initialEquity: number;
+        } | null;
+        includedDeals: string[];
+        excludedDeals: string[];
+    } | null;
+    leaseExpirations: {
+        year: number;
+        sf: number;
+        percentOfPortfolioSF: number;
+        expiringAnnualRent: number;
+    }[];
+    topTenants: {
+        name: string;
+        sf: number;
+        annualRent: number;
+        percentOfPortfolioRent: number | null;
+        earliestExpiration: string;
+        deals: string[];
+    }[];
+    warnings: Warning[];
+};
+export type PortfolioOutput = ReturnType<typeof computePortfolio>;
 export declare function lint(deal: unknown): Warning[];
 export {};

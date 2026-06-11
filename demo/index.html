@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ORE Viewer — drop a .ore file</title>
+<title>ORE Viewer — drop .ore files</title>
 <style>
   :root {
     --ink: #1a2433; --muted: #5b6b80; --line: #dfe5ec; --bg: #f6f8fa;
@@ -14,6 +14,13 @@
   header { padding: 14px 22px; background: var(--card); border-bottom: 1px solid var(--line); display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
   header h1 { font-size: 16px; margin: 0; }
   header .tag { color: var(--muted); font-size: 12px; }
+  #filebar { display: none; align-items: center; gap: 6px; flex-wrap: wrap; padding: 10px 22px; background: var(--card); border-bottom: 1px solid var(--line); }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); cursor: pointer; font-size: 12px; }
+  .chip.on { border-color: var(--accent); color: var(--accent); font-weight: 600; background: #eef4ff; }
+  .chip .x { color: var(--muted); font-weight: 700; padding: 0 2px; }
+  .chip .x:hover { color: var(--bad); }
+  .chip.action { border-style: dashed; color: var(--muted); }
+  #watchwrap { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
   #drop { margin: 22px; padding: 46px 20px; border: 2px dashed var(--line); border-radius: 10px; background: var(--card); text-align: center; color: var(--muted); cursor: pointer; }
   #drop.hover { border-color: var(--accent); color: var(--accent); }
   #drop strong { color: var(--ink); }
@@ -34,6 +41,9 @@
   th { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); background: #fbfcfd; }
   tr:last-child td { border-bottom: none; }
   td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.rowlink { cursor: pointer; }
+  tr.rowlink:hover td { background: #f3f7ff; }
+  .bar { display: inline-block; height: 9px; background: var(--accent); border-radius: 2px; vertical-align: middle; opacity: .75; }
   .warnbox { border-left: 3px solid var(--warn); background: #fff8eb; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; }
   .errbox { border-left: 3px solid var(--bad); background: #fdf0ef; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; }
   .okbox { border-left: 3px solid var(--good); background: #effaf2; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; }
@@ -43,22 +53,24 @@
   .muted { color: var(--muted); }
   .gap-neg { color: var(--bad); } .gap-pos { color: var(--good); }
   footer { padding: 18px 22px; color: var(--muted); font-size: 12px; }
+  #refreshflash { display: none; position: fixed; right: 18px; bottom: 18px; background: var(--ink); color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 12px; opacity: .92; }
 </style>
 </head>
 <body>
 <header>
   <h1>ORE Viewer</h1>
   <span class="tag">Open Real Estate format — see the deal in 30 seconds. Runs entirely in your browser; nothing is uploaded.</span>
-  <span class="tag" id="filetag"></span>
 </header>
 
+<div id="filebar"></div>
+
 <div id="drop">
-  <strong>Drop a <span class="code">.ore</span> file here</strong> or click to choose one.<br>
+  <strong>Drop <span class="code">.ore</span> files here</strong> or click to choose — one file shows the deal, several show the portfolio.<br>
   <span style="font-size:12px">A .ore file is standard JSON — property, rent roll, expenses, assumptions, and valuation in one self-contained file.</span>
-  <input type="file" id="file" accept=".ore,.json" hidden>
+  <input type="file" id="file" accept=".ore,.json" multiple hidden>
 </div>
 
-<main id="main">
+<main id="single">
   <nav id="tabs"></nav>
   <section id="tab-summary"></section>
   <section id="tab-rentroll"></section>
@@ -70,18 +82,177 @@
   <section id="tab-json"></section>
 </main>
 
+<main id="portfolio"></main>
+
+<div id="refreshflash"></div>
+
 <footer>
-  ORE (Open Real Estate) — open format, open math. Outputs computed by the ORE reference engine; any simplification applied to this file is named in the Warnings tab.
+  ORE (Open Real Estate) — open format, open math. Outputs computed by the ORE reference engine; any simplification applied to a file is named in its Warnings tab.
 </footer>
 
 <script type="module">
-import { computeAll, lint } from "../engine/dist/index.js";
+import { computeAll, computePortfolio, lint } from "../engine/dist/index.js";
 
 const $ = (id) => document.getElementById(id);
 const usd = (n) => n == null ? "—" : n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 const num = (n, d = 0) => n == null ? "—" : n.toLocaleString("en-US", { maximumFractionDigits: d });
 const pct = (n) => n == null ? "—" : `${num(n, 2)}%`;
 const esc = (s) => String(s ?? "—").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const gapSpan = (n) => n == null ? "—" : `<span class="${n < 0 ? "gap-neg" : "gap-pos"}">${pct(n)}</span>`;
+
+// ---------------------------------------------------------------- state
+
+const state = { files: [], active: null, tab: "summary", watch: true };
+let nextId = 1;
+
+function makeEntry(name, text, source) {
+  const entry = { id: nextId++, name, source, text: null, deal: null, out: null, problems: [], error: null };
+  applyText(entry, text);
+  return entry;
+}
+
+function applyText(entry, text) {
+  entry.text = text;
+  entry.deal = null; entry.out = null; entry.error = null; entry.problems = [];
+  try {
+    entry.deal = JSON.parse(text);
+  } catch (e) {
+    entry.error = `Not valid JSON: ${e.message}. A .ore file is standard JSON — check for trailing commas or comments.`;
+    return;
+  }
+  entry.problems = lint(entry.deal);
+  if (entry.problems.filter((p) => p.code !== "advice").length === 0) {
+    try { entry.out = computeAll(entry.deal); } catch (e) { entry.error = `Engine error: ${e.message}`; }
+  }
+}
+
+function addEntry(entry) {
+  state.files.push(entry);
+  state.active = state.files.length > 1 ? "portfolio" : entry.id;
+  render();
+}
+
+function removeEntry(id) {
+  state.files = state.files.filter((f) => f.id !== id);
+  if (state.files.length === 0) state.active = null;
+  else if (state.active === id) state.active = state.files.length > 1 ? "portfolio" : state.files[0].id;
+  else if (state.active === "portfolio" && state.files.length === 1) state.active = state.files[0].id;
+  render();
+}
+
+// ---------------------------------------------------------------- sources
+// Three ways a file arrives, each with its own re-read story:
+//  - fetch (the bundled examples): re-fetch with cache: no-store
+//  - handle (File System Access API — Chromium picker or drag): re-read from disk
+//  - plain File (other browsers' input/drag): snapshot only, not watchable
+
+async function loadFetch(name, url) {
+  const text = await fetch(url, { cache: "no-store" }).then((r) => r.text());
+  addEntry(makeEntry(name, text, { kind: "fetch", url }));
+}
+
+async function loadHandle(handle) {
+  const file = await handle.getFile();
+  addEntry(makeEntry(file.name, await file.text(), { kind: "handle", handle, lastModified: file.lastModified }));
+}
+
+async function loadFile(file) {
+  addEntry(makeEntry(file.name, await file.text(), { kind: "static", file }));
+}
+
+async function reread(entry) {
+  const s = entry.source;
+  if (s.kind === "fetch") return fetch(s.url, { cache: "no-store" }).then((r) => r.text());
+  if (s.kind === "handle") {
+    const file = await s.handle.getFile();
+    if (file.lastModified === s.lastModified) return entry.text;
+    s.lastModified = file.lastModified;
+    return file.text();
+  }
+  return s.file.text(); // may throw if the underlying file changed; caller catches
+}
+
+let refreshing = false;
+async function refreshAll(manual = false) {
+  if (refreshing) return;
+  refreshing = true;
+  let changed = 0;
+  for (const entry of state.files) {
+    if (!manual && entry.source.kind === "static") continue; // not watchable
+    try {
+      const text = await reread(entry);
+      if (text !== entry.text) { applyText(entry, text); changed++; }
+    } catch { /* file mid-save or snapshot invalidated; try again next tick */ }
+  }
+  refreshing = false;
+  if (changed) {
+    render();
+    flash(`${changed} file${changed > 1 ? "s" : ""} reloaded`);
+  } else if (manual) {
+    flash("No changes");
+  }
+}
+
+setInterval(() => { if (state.watch && state.files.length) refreshAll(false); }, 2000);
+
+let flashTimer = null;
+function flash(msg) {
+  const el = $("refreshflash");
+  el.textContent = msg;
+  el.style.display = "block";
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => { el.style.display = "none"; }, 1800);
+}
+
+// ---------------------------------------------------------------- render
+
+function render() {
+  const has = state.files.length > 0;
+  $("drop").style.display = has ? "none" : "block";
+  $("filebar").style.display = has ? "flex" : "none";
+  renderChips();
+  if (!has) { $("single").style.display = "none"; $("portfolio").style.display = "none"; return; }
+  if (state.active === "portfolio" && state.files.length > 1) {
+    $("single").style.display = "none";
+    $("portfolio").style.display = "block";
+    renderPortfolio();
+  } else {
+    const entry = state.files.find((f) => f.id === state.active) ?? state.files[0];
+    state.active = entry.id;
+    $("portfolio").style.display = "none";
+    $("single").style.display = "block";
+    renderSingle(entry);
+  }
+}
+
+function renderChips() {
+  const bits = [];
+  if (state.files.length > 1) {
+    bits.push(`<span class="chip ${state.active === "portfolio" ? "on" : ""}" data-act="portfolio">Portfolio (${state.files.length})</span>`);
+  }
+  for (const f of state.files) {
+    const bad = f.error || f.problems.some((p) => p.code !== "advice");
+    bits.push(`<span class="chip ${state.active === f.id ? "on" : ""}" data-act="file" data-id="${f.id}">${bad ? "⚠ " : ""}${esc(f.name)}<span class="x" data-act="remove" data-id="${f.id}" title="Remove">×</span></span>`);
+  }
+  bits.push(`<span class="chip action" data-act="add">+ Add files</span>`);
+  bits.push(`<span class="chip action" data-act="refresh" title="Re-read all files from source">↻ Refresh</span>`);
+  bits.push(`<span id="watchwrap"><label><input type="checkbox" id="watchbox" ${state.watch ? "checked" : ""}> watch files for changes</label></span>`);
+  $("filebar").innerHTML = bits.join("");
+  $("filebar").querySelectorAll("[data-act]").forEach((el) => {
+    el.onclick = (e) => {
+      const act = el.dataset.act;
+      if (act === "portfolio") { state.active = "portfolio"; render(); }
+      else if (act === "file") { state.active = Number(el.dataset.id); render(); }
+      else if (act === "remove") { e.stopPropagation(); removeEntry(Number(el.dataset.id)); }
+      else if (act === "add") pickFiles();
+      else if (act === "refresh") refreshAll(true);
+    };
+  });
+  const wb = $("watchbox");
+  if (wb) { wb.onclick = (e) => e.stopPropagation(); wb.onchange = () => { state.watch = wb.checked; }; }
+}
+
+// ------------------------------------------------------------ single deal
 
 const TABS = [
   ["summary", "Summary"], ["rentroll", "Rent Roll"], ["expenses", "Expenses"],
@@ -89,35 +260,33 @@ const TABS = [
   ["warnings", "Warnings"], ["json", "Raw JSON"],
 ];
 
-function show(deal, fileName) {
-  const problems = lint(deal);
-  const fatal = problems.filter((p) => p.code !== "advice");
-  let out = null, computeError = null;
-  if (fatal.length === 0) {
-    try { out = computeAll(deal); } catch (e) { computeError = e; }
+function renderSingle(entry) {
+  if (entry.error && !entry.deal) {
+    $("tabs").innerHTML = "";
+    TABS.forEach(([id]) => $("tab-" + id).innerHTML = "");
+    $("tab-summary").innerHTML = `<div class="errbox">${esc(entry.error)}</div>`;
+    $("tab-summary").classList.add("on");
+    return;
   }
-
-  $("filetag").textContent = fileName;
-  $("drop").style.display = "none";
-  $("main").style.display = "block";
-
-  const warnCount = (out?.warnings.length ?? 0) + problems.length + (computeError ? 1 : 0);
+  const { deal, out, problems, error } = entry;
+  const warnCount = (out?.warnings.length ?? 0) + problems.length + (error ? 1 : 0);
   $("tabs").innerHTML = TABS.map(([id, label]) =>
     `<button data-t="${id}">${label}${id === "warnings" && warnCount ? `<span class="pill">${warnCount}</span>` : ""}</button>`).join("");
-  $("tabs").querySelectorAll("button").forEach((b) => b.onclick = () => activate(b.dataset.t));
+  $("tabs").querySelectorAll("button").forEach((b) => b.onclick = () => { state.tab = b.dataset.t; activate(state.tab); });
 
   renderSummary(deal, out);
   renderRentRoll(deal);
   renderExpenses(deal);
   renderMarket(deal);
   renderValuation(deal);
-  renderOutputs(deal, out, computeError);
-  renderWarnings(problems, out, computeError);
+  renderOutputs(deal, out, error);
+  renderWarnings(problems, out, error);
   $("tab-json").innerHTML = `<pre>${esc(JSON.stringify(deal, null, 2))}</pre>`;
-  activate("summary");
+  activate(state.tab);
 }
 
 function activate(t) {
+  if (!TABS.some(([id]) => id === t)) t = "summary";
   $("tabs").querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.t === t));
   TABS.forEach(([id]) => $("tab-" + id).classList.toggle("on", id === t));
 }
@@ -127,14 +296,13 @@ function card(k, v, s) { return `<div class="card"><div class="k">${k}</div><div
 function renderSummary(deal, out) {
   const p = deal.property, ph = p.physical;
   const o = out?.occupancy, r = out?.rent;
-  const gapCls = r?.inPlaceVsMarketPercent == null ? "" : r.inPlaceVsMarketPercent < 0 ? "gap-neg" : "gap-pos";
   $("tab-summary").innerHTML = `
     <h2>${esc(p.name)} — ${esc(p.address.city)}, ${esc(p.address.state)} <span class="muted">(${esc(p.propertySubtype ?? p.propertyType)}, ${esc(p.tenancy ?? "—")}-tenant)</span></h2>
     <div class="cards">
       ${card("Building SF", num(ph.buildingSF))}
       ${card("Occupancy", o ? pct(o.occupancyPercent) : "—", o ? `${num(o.vacantSF)} SF vacant` : "")}
       ${card("In-place rent", r ? usd(r.inPlaceAnnualBaseRent) : "—", r?.inPlaceWARentPerSFPerMonth != null ? `$${num(r.inPlaceWARentPerSFPerMonth, 2)}/SF/mo` : "")}
-      ${card("Vs market", r?.inPlaceVsMarketPercent != null ? `<span class="${gapCls}">${pct(r.inPlaceVsMarketPercent)}</span>` : "—", r?.marketRentPerSFPerMonth != null ? `market $${num(r.marketRentPerSFPerMonth, 2)}/SF/mo` : "")}
+      ${card("Vs market", r ? gapSpan(r.inPlaceVsMarketPercent) : "—", r?.marketRentPerSFPerMonth != null ? `market $${num(r.marketRentPerSFPerMonth, 2)}/SF/mo` : "")}
       ${card("Year built", num(ph.yearBuilt), ph.yearRenovated ? `renovated ${ph.yearRenovated}` : "")}
       ${card("Clear height", ph.clearHeightFt ? `${ph.clearHeightFt} ft` : "—")}
       ${card("Loading", `${num(ph.dockHighDoors)} DH / ${num(ph.gradeLevelDoors)} GL`)}
@@ -260,7 +428,7 @@ function renderValuation(deal) {
 }
 
 function renderOutputs(deal, out, err) {
-  if (err) { $("tab-outputs").innerHTML = `<div class="errbox">Kernel could not compute outputs: <span class="code">${esc(err.message)}</span></div>`; return; }
+  if (err) { $("tab-outputs").innerHTML = `<div class="errbox">Engine could not compute outputs: <span class="code">${esc(err)}</span></div>`; return; }
   if (!out) { $("tab-outputs").innerHTML = `<div class="errbox">File failed structural checks (see Warnings tab); outputs not computed.</div>`; return; }
   const d = out.directCap, c = out.dcf;
   $("tab-outputs").innerHTML = `
@@ -292,57 +460,145 @@ function renderOutputs(deal, out, err) {
       ${out.debt ? card("Loan", usd(out.debt.loanAmount), `Year-1 DSCR ${num(out.debt.dscrYear1, 2)}`) : ""}
       ${out.returns.unlevered ? card("NPV vs price", usd(out.returns.unlevered.npvAtDiscountRate)) : ""}
     </div>` : ""}
-    ${out.cashFlows?.annual?.length ? `<h2>Annual cash flows</h2>
-    <div style="overflow-x:auto"><table><thead><tr><th>Year</th><th class="num">Base rent</th><th class="num">Free rent</th><th class="num">Vacancy</th><th class="num">Recoveries</th><th class="num">Gen vac / credit</th><th class="num">EGR</th><th class="num">Opex + mgmt</th><th class="num">NOI</th><th class="num">TI + LC</th><th class="num">Cash flow</th></tr></thead><tbody>
-      ${out.cashFlows.annual.map((r) => `<tr><td>${r.year}${r.months < 12 ? ` <span class="muted">(${r.months} mo)</span>` : ""}</td><td class="num">${usd(r.scheduledBaseRent)}</td><td class="num">${usd(r.freeRent)}</td><td class="num">${usd(r.absorptionVacancy)}</td><td class="num">${usd(r.expenseRecoveries)}</td><td class="num">${usd(r.generalVacancy + r.creditLoss)}</td><td class="num">${usd(r.effectiveGrossRevenue)}</td><td class="num">${usd(r.operatingExpenses + r.managementFee)}</td><td class="num"><strong>${usd(r.noi)}</strong></td><td class="num">${usd(r.tiCosts + r.lcCosts)}</td><td class="num">${usd(r.cashFlow)}</td></tr>`).join("")}
-    </tbody></table></div>` : ""}
+    ${out.cashFlows?.annual?.length ? annualCfTable(out.cashFlows.annual) : ""}
     ${out.sensitivity ? `<h2>Sensitivity <span class="muted">(DCF value: discount rate × ${out.sensitivity.exitCapRatesPercent ? "exit cap rate" : "—"})</span></h2>
     <table><thead><tr><th>Discount \\ Exit cap</th>${(out.sensitivity.exitCapRatesPercent ?? ["value"]).map((c2) => `<th class="num">${typeof c2 === "number" ? c2 + "%" : c2}</th>`).join("")}</tr></thead><tbody>
       ${out.sensitivity.values.map((row, i) => `<tr><td>${out.sensitivity.discountRatesPercent[i]}%</td>${row.map((v) => `<td class="num">${usd(v)}</td>`).join("")}</tr>`).join("")}
     </tbody></table>` : ""}`;
 }
 
+function annualCfTable(rows) {
+  return `<h2>Annual cash flows</h2>
+    <div style="overflow-x:auto"><table><thead><tr><th>Year</th><th class="num">Base rent</th><th class="num">Free rent</th><th class="num">Vacancy</th><th class="num">Recoveries</th><th class="num">Gen vac / credit</th><th class="num">EGR</th><th class="num">Opex + mgmt</th><th class="num">NOI</th><th class="num">TI + LC</th><th class="num">Cash flow</th></tr></thead><tbody>
+      ${rows.map((r) => `<tr><td>${r.year}${r.months < 12 ? ` <span class="muted">(${r.months} mo)</span>` : ""}</td><td class="num">${usd(r.scheduledBaseRent)}</td><td class="num">${usd(r.freeRent)}</td><td class="num">${usd(r.absorptionVacancy)}</td><td class="num">${usd(r.expenseRecoveries)}</td><td class="num">${usd(r.generalVacancy + r.creditLoss)}</td><td class="num">${usd(r.effectiveGrossRevenue)}</td><td class="num">${usd(r.operatingExpenses + r.managementFee)}</td><td class="num"><strong>${usd(r.noi)}</strong></td><td class="num">${usd(r.tiCosts + r.lcCosts)}</td><td class="num">${usd(r.cashFlow)}</td></tr>`).join("")}
+    </tbody></table></div>`;
+}
+
 function renderWarnings(problems, out, err) {
   const blocks = [];
   for (const p of problems) blocks.push(`<div class="${p.code === "advice" ? "warnbox" : "errbox"}"><span class="code">${esc(p.code)}</span> — ${esc(p.message)}</div>`);
-  if (err) blocks.push(`<div class="errbox"><span class="code">compute_error</span> — ${esc(err.message)}</div>`);
+  if (err) blocks.push(`<div class="errbox"><span class="code">compute_error</span> — ${esc(err)}</div>`);
   for (const w of out?.warnings ?? []) blocks.push(`<div class="warnbox"><span class="code">${esc(w.code)}</span> — ${esc(w.message)}</div>`);
   $("tab-warnings").innerHTML = blocks.length
     ? `<p class="muted">ORE treats disclosed uncertainty as a feature: every simplification or estimate the engine applied to <em>this file</em> is named here.</p>` + blocks.join("")
     : `<div class="okbox">No warnings — file is structurally complete and all requested outputs were computable.</div>`;
 }
 
-// ---- file loading ----
-function load(file) {
-  file.text().then((text) => {
-    let deal;
-    try { deal = JSON.parse(text); }
-    catch (e) {
-      $("drop").innerHTML = `<div class="errbox" style="text-align:left">Not valid JSON: <span class="code">${esc(e.message)}</span>. A .ore file is standard JSON — check for trailing commas or comments.</div>`;
-      return;
-    }
-    show(deal, file.name);
+// -------------------------------------------------------------- portfolio
+
+function renderPortfolio() {
+  const valid = state.files.filter((f) => f.deal && !f.error && f.problems.filter((p) => p.code !== "advice").length === 0);
+  const invalid = state.files.filter((f) => !valid.includes(f));
+  if (valid.length < 2) {
+    $("portfolio").innerHTML = `<div class="errbox">Portfolio view needs at least two valid files. ${invalid.length ? "Fix or remove: " + invalid.map((f) => esc(f.name)).join(", ") : ""}</div>`;
+    return;
+  }
+  let p;
+  try {
+    p = computePortfolio(valid.map((f) => ({ label: f.name.replace(/\.ore$/, ""), deal: f.deal })));
+  } catch (e) {
+    $("portfolio").innerHTML = `<div class="errbox">Portfolio computation failed: <span class="code">${esc(e.message)}</span></div>`;
+    return;
+  }
+  const t = p.totals;
+  const maxExpSF = Math.max(...p.leaseExpirations.map((e) => e.sf), 1);
+  $("portfolio").innerHTML = `
+    <h2>Portfolio — ${p.dealCount} deals${invalid.length ? ` <span class="muted">(${invalid.length} invalid file${invalid.length > 1 ? "s" : ""} excluded)</span>` : ""}</h2>
+    <div class="cards">
+      ${card("Building SF", num(t.buildingSF), `${num(t.vacantSF)} SF vacant`)}
+      ${card("Occupancy", pct(t.occupancyPercent))}
+      ${card("In-place rent", usd(t.inPlaceAnnualBaseRent), t.inPlaceWARentPerSFPerMonth != null ? `$${num(t.inPlaceWARentPerSFPerMonth, 2)}/SF/mo` : "")}
+      ${card("Vs market", gapSpan(t.inPlaceVsMarketPercent), t.marketWARentPerSFPerMonth != null ? `market $${num(t.marketWARentPerSFPerMonth, 2)}/SF/mo (wtd)` : "")}
+      ${card("Year-1 NOI", usd(t.year1NOI))}
+      ${card("Stabilized NOI", usd(t.stabilizedAtMarketNOI))}
+      ${card("Total value", usd(t.concludedValue), t.concludedValuePerSF != null ? `$${num(t.concludedValuePerSF, 0)}/SF` : "")}
+      ${card("Total price", usd(t.purchasePrice))}
+    </div>
+
+    <h2>Deals <span class="muted">(click a row to open the deal)</span></h2>
+    <table><thead><tr><th>Deal</th><th>Location</th><th class="num">SF</th><th class="num">Occ %</th><th class="num">$/SF/mo</th><th class="num">Vs market</th><th class="num">Year-1 NOI</th><th class="num">Value</th><th class="num">$/SF</th><th class="num">Unlev IRR</th></tr></thead><tbody>
+      ${p.deals.map((d, i) => `<tr class="rowlink" data-deal="${valid[i].id}"><td>${esc(d.name)}<div class="muted code">${esc(d.label)}</div></td><td>${esc(d.cityState)}</td><td class="num">${num(d.buildingSF)}</td><td class="num">${num(d.occupancyPercent, 1)}</td><td class="num">${num(d.inPlaceWARentPerSFPerMonth, 2)}</td><td class="num">${gapSpan(d.inPlaceVsMarketPercent)}</td><td class="num">${usd(d.year1NOI)}</td><td class="num">${usd(d.concludedValue)}</td><td class="num">${num(d.valuePerSF, 0)}</td><td class="num">${pct(d.unleveredIRRPercent)}</td></tr>`).join("")}
+    </tbody></table>
+
+    ${p.returns ? `<h2>Portfolio returns <span class="muted">(${p.returns.includedDeals.length} of ${p.dealCount} deals${p.returns.excludedDeals.length ? "; excluded: " + p.returns.excludedDeals.map(esc).join(", ") : ""})</span></h2>
+    <div class="cards">
+      ${card("Unlevered IRR", pct(p.returns.unlevered.irrPercent), `${num(p.returns.unlevered.equityMultiple, 2)}x on ${usd(p.returns.unlevered.initialInvestment)}`)}
+      ${p.returns.levered ? card("Levered IRR", pct(p.returns.levered.irrPercent), `${num(p.returns.levered.equityMultiple, 2)}x on ${usd(p.returns.levered.initialEquity)} equity`) : ""}
+      ${card("Unlevered profit", usd(p.returns.unlevered.totalProfit))}
+    </div>` : ""}
+
+    <h2>Lease expirations <span class="muted">(in-place leases, calendar year)</span></h2>
+    <table><thead><tr><th>Year</th><th class="num">SF expiring</th><th class="num">% of portfolio</th><th class="num">Expiring rent</th><th style="width:30%"></th></tr></thead><tbody>
+      ${p.leaseExpirations.map((e) => `<tr><td>${e.year}</td><td class="num">${num(e.sf)}</td><td class="num">${pct(e.percentOfPortfolioSF)}</td><td class="num">${usd(e.expiringAnnualRent)}</td><td><span class="bar" style="width:${Math.max(2, (e.sf / maxExpSF) * 100)}%"></span></td></tr>`).join("")}
+    </tbody></table>
+
+    <h2>Top tenants</h2>
+    <table><thead><tr><th>Tenant</th><th class="num">SF</th><th class="num">Annual rent</th><th class="num">% of rent</th><th>Earliest expiry</th><th>Deals</th></tr></thead><tbody>
+      ${p.topTenants.map((tt) => `<tr><td>${esc(tt.name)}</td><td class="num">${num(tt.sf)}</td><td class="num">${usd(tt.annualRent)}</td><td class="num">${pct(tt.percentOfPortfolioRent)}</td><td>${esc(tt.earliestExpiration)}</td><td class="muted">${tt.deals.map(esc).join(", ")}</td></tr>`).join("")}
+    </tbody></table>
+
+    ${p.cashFlows.annual.length ? annualCfTable(p.cashFlows.annual) : ""}
+
+    ${p.warnings.length ? `<h2>Warnings</h2>` + p.warnings.map((w) => `<div class="warnbox"><span class="code">${esc(w.code)}</span> — ${esc(w.message)}</div>`).join("") : ""}
+  `;
+  $("portfolio").querySelectorAll("tr.rowlink").forEach((tr) => {
+    tr.onclick = () => { state.active = Number(tr.dataset.deal); render(); };
   });
 }
-const drop = $("drop");
-drop.onclick = () => $("file").click();
-$("file").onchange = (e) => e.target.files[0] && load(e.target.files[0]);
-drop.ondragover = (e) => { e.preventDefault(); drop.classList.add("hover"); };
-drop.ondragleave = () => drop.classList.remove("hover");
-drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove("hover"); e.dataTransfer.files[0] && load(e.dataTransfer.files[0]); };
 
-// when served from the repo (e.g. `npx serve` at root), offer the bundled examples
-fetch("../examples/single-tenant-nnn.ore").then((r) => {
+// ------------------------------------------------------------ file intake
+
+async function pickFiles() {
+  if (window.showOpenFilePicker) {
+    try {
+      const handles = await window.showOpenFilePicker({
+        multiple: true,
+        types: [{ description: "ORE deal files", accept: { "application/json": [".ore", ".json"] } }],
+      });
+      for (const h of handles) await loadHandle(h);
+      return;
+    } catch (e) {
+      if (e.name === "AbortError") return;
+    }
+  }
+  $("file").click();
+}
+
+$("drop").onclick = () => pickFiles();
+$("file").onchange = async (e) => { for (const f of e.target.files) await loadFile(f); e.target.value = ""; };
+
+async function handleDrop(e) {
+  e.preventDefault();
+  $("drop").classList.remove("hover");
+  for (const item of e.dataTransfer.items) {
+    if (item.kind !== "file") continue;
+    if (item.getAsFileSystemHandle) {
+      try { await loadHandle(await item.getAsFileSystemHandle()); continue; } catch { /* fall through */ }
+    }
+    const f = item.getAsFile();
+    if (f) await loadFile(f);
+  }
+}
+for (const target of [$("drop"), document.body]) {
+  target.addEventListener("dragover", (e) => { e.preventDefault(); $("drop").classList.add("hover"); });
+  target.addEventListener("dragleave", () => $("drop").classList.remove("hover"));
+  target.addEventListener("drop", handleDrop);
+}
+
+// when served from the repo, offer the bundled examples
+fetch("../examples/single-tenant-nnn.ore", { cache: "no-store" }).then((r) => {
   if (!r.ok) return;
+  const names = ["single-tenant-nnn", "multi-tenant-infill", "value-add-rollover"];
   const div = document.createElement("div");
   div.style.marginTop = "14px";
-  div.innerHTML = `<span class="muted" style="font-size:12px">or load an example: </span>` +
-    ["single-tenant-nnn", "multi-tenant-infill", "value-add-rollover"].map((n) =>
-      `<button class="code" style="margin:0 4px;cursor:pointer" data-x="${n}">${n}.ore</button>`).join("");
-  drop.appendChild(div);
-  div.querySelectorAll("button").forEach((b) => b.onclick = (e) => {
+  div.innerHTML = `<span class="muted" style="font-size:12px">or load examples: </span>` +
+    names.map((n) => `<button class="code" style="margin:0 4px;cursor:pointer" data-x="${n}">${n}.ore</button>`).join("") +
+    `<button class="code" style="margin:0 4px;cursor:pointer" data-x="__all">all three (portfolio)</button>`;
+  $("drop").appendChild(div);
+  div.querySelectorAll("button").forEach((b) => b.onclick = async (e) => {
     e.stopPropagation();
-    fetch(`../examples/${b.dataset.x}.ore`).then((r) => r.json()).then((deal) => show(deal, b.dataset.x + ".ore"));
+    const which = b.dataset.x === "__all" ? names : [b.dataset.x];
+    for (const n of which) await loadFetch(n + ".ore", `../examples/${n}.ore`);
   });
 }).catch(() => {});
 </script>
