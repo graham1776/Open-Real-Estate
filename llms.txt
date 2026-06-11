@@ -1,0 +1,2129 @@
+# ORE (Open Real Estate) — format reference for LLMs
+
+This is the complete definition of the ORE `.ore` file format, version 0.1.0,
+assembled as a single document you can read or author from. ORE is an open,
+JSON-based format for US-industrial commercial real estate underwriting data.
+
+## How to use this document
+
+- **Reading a `.ore` file:** it is standard JSON. Every field name spells out its
+  units (`clearHeightFt`, `amountPerSF`, `...Percent`) and conventions are declared
+  in the file (e.g. `baseRent.unit`), never inferred. You can reason over a `.ore`
+  file directly. Do NOT compute a multi-year DCF by hand — arithmetic over monthly
+  cash flows is the engine's job, not yours; see "Calculation" below.
+- **Authoring a `.ore` file:** produce one self-contained JSON object conforming to
+  the schemas below. `formatVersion`, `property`, and `rentRoll` are required; every
+  other module is optional. Validate your output against the JSON Schema and run it
+  through the reference engine before trusting any computed figure.
+
+## Core rules
+
+1. A deal is a SINGLE self-contained `.ore` file. Modules are top-level keys of one
+   JSON object, never separate files. Calculation assumptions travel WITH the data.
+2. `formatVersion` must be `0.1.0` (semver; this document defines 0.1.x).
+3. Optionally include a root `$schema` URL so any reader resolves definitions from
+   the file alone: `"$schema": "https://oreformat.org/schema/0.1.0/ore.schema.json"`.
+4. Dates are ISO 8601 (`YYYY-MM-DD`). Money is USD. Percentages are percent values
+   (`3.5` = 3.5%) except ratios documented as decimals. Areas are square feet; land is acres.
+5. The file carries INPUTS ONLY. Outputs (NOI, DCF, IRR) are never stored in the
+   file; they are produced by a conforming engine from the inputs.
+
+## Calculation
+
+ORE ships an open-source TypeScript reference engine that consumes a `.ore` file and
+produces NOI, monthly/annual cash flows, direct cap and DCF value, debt schedule,
+levered/unlevered IRR, and sensitivity — with a first-class `warnings` array naming
+any simplification or estimate it applied. Conformance is defined by golden-file
+tests: a conforming implementation reproduces locked expected outputs exactly. When
+an LLM needs a number from a `.ore` file, call the engine (or the forthcoming
+`@ore-format/mcp` server) rather than computing it yourself.
+
+## Scope (v0.1)
+
+US industrial (single- and multi-tenant); NNN/NN/modified-gross leases. The
+valuation module carries inputs for all four approaches (DCF, direct cap, sales
+comparison, cost); the v0.1 engine computes DCF and direct cap. Out of scope:
+retail percentage rent, office reimbursement pools, hotel, multifamily unit-level,
+international conventions, debt waterfalls.
+
+---
+
+
+---
+
+# Human specification
+
+# ORE Specification
+
+ORE (Open Real Estate) is an open, JSON-based file format for property-level
+underwriting data. A `.ore` file is standard JSON — `cat deal.ore | jq` just works —
+validated against the published JSON Schema in [`schema/`](schema/).
+
+- Current format version: **0.1.0** (pre-release, unstable until tagged)
+- Schema dialect: JSON Schema draft 2020-12
+- v0.1 scope: US industrial (single- and multi-tenant), DCF and direct capitalization
+
+## Module status
+
+| Module | Schema file | Status |
+|---|---|---|
+| root | `schema/ore.schema.json` | Draft |
+| `property` | `schema/property.schema.json` | Draft |
+| `rentRoll` / `leases[]` | `schema/rentRoll.schema.json` | Draft |
+| `expenses` | `schema/expenses.schema.json` | Draft |
+| `marketAssumptions` | `schema/marketAssumptions.schema.json` | Draft |
+| `valuation` | `schema/valuation.schema.json` | Draft |
+| `debt` | `schema/debt.schema.json` | Draft |
+| `provenance` | `schema/provenance.schema.json` | Draft |
+
+All v0.1 modules are drafted. `property` and `rentRoll` are required in every file;
+the rest are optional so a file can carry exactly what its producer knows (e.g. a
+broker may omit `valuation` and let the buyer add their own assumptions). A deal is
+always a **single self-contained `.ore` file** — modules are sections of one JSON
+document, never separate files.
+
+## Conventions
+
+- **Dates** are ISO 8601 (`YYYY-MM-DD`) strings.
+- **Self-description:** files may carry a root `$schema` URL pointing at the
+  published schema, and field names spell out their units (`clearHeightFt`,
+  `...Percent`) — a reader (human, tool, or LLM) should understand a `.ore` file
+  cold, with no external lookup. See `docs/design/llm-and-excel.md`.
+- **Money** is USD. Per-SF rent units are declared explicitly per lease via
+  `baseRent.unit` — never inferred from market convention.
+- **Percentages** are expressed as percent values (`3.5` = 3.5%), except ratios
+  documented as decimals (e.g. `coverageRatio`).
+- **Areas** are square feet; **land** is acres.
+- Calculation assumptions travel with the data so any conforming engine reproduces
+  identical outputs from the same file.
+
+## Documents
+
+- [`data-dictionary.md`](data-dictionary.md) — every field defined, typed, and documented
+- `schema/` — the normative JSON Schema files
+- [`../llms.txt`](../llms.txt) — the entire format (this spec + data dictionary +
+  schemas + an annotated example) assembled as one LLM-ingestible document.
+  Generated by `npm run llms` (`build-llms-txt.mjs`); regenerate after any spec change.
+
+Where a field corresponds to a concept in an existing open standard (NCREIF PREA
+Reporting Standards, REDI), the data dictionary notes the mapping.
+
+---
+
+# Data dictionary
+
+# ORE Data Dictionary — v0.1 (draft)
+
+Normative definitions live in the JSON Schema files under [`schema/`](schema/); this
+dictionary restates them for human readers and adds interpretation guidance. Fields
+are listed as JSON paths from the file root. **(R)** marks required fields.
+
+## Root
+
+| Field | Type | Definition |
+|---|---|---|
+| `$schema` | uri | Optional URL of the published ORE JSON Schema the file conforms to. Carrying it lets any reader — editor, validator, or LLM — resolve field definitions from the file alone. |
+| `formatVersion` **(R)** | string | ORE format version (semver). `0.1.x` files validate against the 0.1.0 schema. |
+| `property` **(R)** | object | Property module — see below. |
+| `rentRoll` **(R)** | object | Rent roll module — see below. |
+| `expenses` | object | Expenses module — see below. |
+| `marketAssumptions` | object | Market assumptions module — see below. |
+| `valuation` | object | Valuation module — see below. |
+| `debt` | object | Optional debt module — see below. |
+| `provenance` | object | Provenance module — see below. |
+
+## `property`
+
+| Field | Type | Definition |
+|---|---|---|
+| `name` **(R)** | string | Display name of the property. |
+| `propertyType` **(R)** | `"industrial"` | Asset class. v0.1 is industrial-only. |
+| `propertySubtype` | enum | `warehouse_distribution`, `manufacturing`, `flex`, `cold_storage`, `truck_terminal`, `industrial_outdoor_storage`, `other`. |
+| `tenancy` | enum | `single` or `multi`, as currently operated. |
+| `description` | string | Free-text narrative. |
+| `notes` | string | Measurement conventions, entitlements, anything needed to interpret the module. |
+
+### `property.address` **(R)**
+
+| Field | Type | Definition |
+|---|---|---|
+| `street1` **(R)** | string | Primary street address line. |
+| `street2` | string | Secondary line (suite, building). |
+| `city` **(R)** | string | City. |
+| `state` **(R)** | string | Two-letter USPS code, e.g. `CA`. |
+| `postalCode` **(R)** | string | 5-digit ZIP or ZIP+4. |
+| `county` | string | County name, without the word "County". |
+| `country` | `"US"` | v0.1 is US-only. |
+
+### `property.location`
+
+| Field | Type | Definition |
+|---|---|---|
+| `latitude` / `longitude` | number | WGS 84 decimal degrees. |
+| `market` | string | Metro market, e.g. "Los Angeles". |
+| `submarket` | string | Submarket, e.g. "San Gabriel Valley". |
+
+### `property.parcels[]`
+
+| Field | Type | Definition |
+|---|---|---|
+| `apn` **(R)** | string | Assessor's parcel number as it appears on the assessor roll. |
+| `landAcres` | number | Land area of the parcel, acres. |
+| `zoning` | string | Zoning designation, e.g. `M-1`. |
+
+`property.siteAreaAcres` (number) is the total site area; when `parcels[].landAcres`
+are provided it should equal their sum.
+
+### `property.physical` **(R)**
+
+| Field | Type | Definition |
+|---|---|---|
+| `buildingSF` **(R)** | number | Total rentable building area, SF. Default denominator for per-SF metrics and pro-rata shares. |
+| `officeSF` | number | Office build-out, SF, included within `buildingSF`. |
+| `mezzanineSF` | number | Mezzanine area, SF. |
+| `clearHeightFt` | number | Minimum clear height, feet, at the first interior column line. |
+| `dockHighDoors` | integer | Dock-high door count. |
+| `gradeLevelDoors` | integer | Grade-level (drive-in) door count. |
+| `railServed` | boolean | Active rail service. |
+| `yearBuilt` / `yearRenovated` | integer | Calendar years. |
+| `stories` | integer | Default 1. |
+| `construction` | enum | `tilt_up`, `masonry`, `metal`, `wood_frame`, `other`. |
+| `sprinkler` | enum | `esfr`, `wet`, `dry`, `none`. |
+| `powerAmps` | number | Electrical service, amps. |
+| `powerVolts` | string | Voltage/phase, e.g. "277/480V 3-phase". |
+| `truckCourtDepthFt` | number | Truck court depth, feet, at primary loading. |
+| `trailerParkingStalls` / `autoParkingStalls` | integer | Stall counts. |
+| `coverageRatio` | number (decimal) | Building footprint ÷ site area, e.g. `0.45`. |
+| `fencedYard` | boolean | Secured yard present. |
+| `yardAcres` | number | Usable yard area, acres, when a meaningful component of value. |
+
+## `rentRoll`
+
+| Field | Type | Definition |
+|---|---|---|
+| `asOfDate` **(R)** | date | Date the rent roll was struck. All leases and vacancies reflect this date. |
+| `leases` **(R)** | array | All leases in place. Empty array = fully vacant building. |
+| `vacantSuites[]` | array | Vacant space available for lease-up: `suite`, `sf` **(R)**, `spaceType` (keys into `marketAssumptions.marketRent`), `notes`. |
+| `notes` | string | Rent-roll-level notes (estoppel status, pending amendments). |
+
+### `rentRoll.leases[]`
+
+| Field | Type | Definition |
+|---|---|---|
+| `leaseId` **(R)** | string | Stable identifier, unique within the file. |
+| `tenant` **(R)** | object | `name` **(R)**, `dba`, `parentCompany`, `industry`, `creditNotes`. |
+| `suite` | string | Suite/unit identifier; optional for single-tenant. |
+| `leasedSF` **(R)** | number | Leased area, SF. Denominator for per-SF rent; numerator for pro-rata share. |
+| `commencementDate` **(R)** | date | Lease commencement. |
+| `expirationDate` **(R)** | date | Current expiration, reflecting executed amendments and exercised options. |
+| `baseRent` **(R)** | object | Stepped rent schedule — see below. |
+| `escalation` | object | Rule generating steps beyond the enumerated schedule — see below. |
+| `reimbursement` **(R)** | object | Expense recovery structure — see below. |
+| `freeRent[]` | array | Remaining abatement periods: `startDate` **(R)**, `endDate` **(R)** (inclusive), `percentAbated` (default 100), `abatesReimbursements` (default false). |
+| `tenantImprovements` | object | Unfunded TI: exactly one of `amountPerSF` or `totalAmount`; optional `fundingDate` (engines default to the month after `asOfDate`). |
+| `leasingCommissions` | object | Unpaid LCs: exactly one of `amountPerSF`, `totalAmount`, or `percentOfTotalRent`; optional `fundingDate`. |
+| `options[]` | array | Tenant options — see below. |
+| `securityDeposit` | object | `amount` **(R)** (USD), `form` (`cash` or `letter_of_credit`). |
+| `guarantor` | string | Guarantor name, if any. |
+| `notes` | string | Anything a re-underwriter must know that structured fields cannot carry. |
+
+### `lease.baseRent`
+
+Contractual base rent as a stepped schedule. Each step applies from its `startDate`
+until the next step's `startDate`, or until `expirationDate` for the last step.
+Steps are in ascending date order; steps before `asOfDate` may be omitted.
+
+| Field | Type | Definition |
+|---|---|---|
+| `unit` **(R)** | enum | `perSFPerMonth`, `perSFPerYear`, `totalPerMonth`, `totalPerYear`. Applies to every `amount` in the schedule. Per-SF units are multiplied by `leasedSF`; annual units divided by 12 for monthly cash flows. |
+| `schedule[]` **(R)** | array | Steps of `{ startDate, amount }`, min 1. |
+
+> **Why an explicit unit?** Industrial rents are quoted per-SF-per-month in some
+> markets and per-SF-per-year in others. ORE never infers the convention — the file
+> states it, so every engine computes the same cash flow.
+
+### `lease.escalation`
+
+Rule for generating rent steps **not** enumerated in `baseRent.schedule`. If the
+schedule enumerates every step through expiration, omit this or use type `none`.
+When present, engines apply the rule starting one frequency-interval after the last
+enumerated step's `startDate`, through expiration. Enumerated steps are always
+authoritative over generated ones.
+
+| Field | Type | Definition |
+|---|---|---|
+| `type` **(R)** | enum | `fixed_percent`, `fixed_amount`, `cpi`, `none`. |
+| `rate` | number | Percent per interval (required for `fixed_percent`), e.g. `3.5`. |
+| `amount` | number | Amount per interval in `baseRent.unit` (required for `fixed_amount`). |
+| `frequencyMonths` | integer | Months between escalations, default 12. |
+| `cpiFloorPercent` / `cpiCapPercent` | number | CPI collar per interval (`cpi` only). Engines use the CPI growth assumption from `marketAssumptions`. |
+
+### `lease.reimbursement`
+
+| Field | Type | Definition |
+|---|---|---|
+| `structure` **(R)** | enum | `NNN` — tenant reimburses pro-rata share of all recoverable expenses. `NN` — as NNN, except landlord retains roof/structure. `MG` — tenant reimburses increases over a base year or expense stop. `Gross` — no reimbursement. |
+| `proRataSharePercent` | number | Tenant's share, percent. Defaults to `leasedSF / property.physical.buildingSF × 100`. |
+| `baseYear` | integer | MG base year (provide this **or** `expenseStopPerSF`, not both). |
+| `expenseStopPerSF` | number | MG expense stop, USD/SF/yr. |
+| `adminFeePercent` | number | Admin/management markup on recoveries, percent. |
+| `excludedExpenses[]` | string[] | `expenseId`s this lease excludes from recovery, overriding expense-level flags. |
+
+### `lease.options[]`
+
+| Field | Type | Definition |
+|---|---|---|
+| `type` **(R)** | enum | `renewal`, `termination`, `purchase`, `expansion`, `right_of_first_refusal`, `right_of_first_offer`. Renewal options carry modelable economics; the rest are disclosed for diligence. |
+| `noticeMonths` | number | Required notice before the option date. |
+| `earliestExerciseDate` | date | Earliest effective date. |
+| `renewalTermMonths` | integer | Renewal term length (renewal only). |
+| `renewalCount` | integer | Successive renewals on these terms, default 1. |
+| `rentBasis` | enum | `market`, `fixed`, `percent_of_market`. |
+| `fixedRent` | number | Renewal rent in the lease's `baseRent.unit` (when `fixed`). |
+| `percentOfMarket` | number | E.g. `95` (when `percent_of_market`). |
+| `terminationFee` | number | USD payable on exercise (termination only). |
+| `notes` | string | Terms structured fields cannot carry. |
+
+## `expenses`
+
+Operating expense schedule. Amounts are annualized as of `rentRoll.asOfDate` and grow
+per `marketAssumptions.growth.expenses` unless an item carries its own override.
+
+| Field | Type | Definition |
+|---|---|---|
+| `items[]` **(R)** | array | Expense items — see below. Min 1. |
+| `notes` | string | Schedule-level notes (source statements, normalization adjustments). |
+
+### `expenses.items[]`
+
+| Field | Type | Definition |
+|---|---|---|
+| `expenseId` **(R)** | string | Stable identifier, unique within the file. Referenced by `lease.reimbursement.excludedExpenses`. |
+| `name` **(R)** | string | Display name, e.g. "Real Estate Taxes". |
+| `category` | enum | `real_estate_taxes`, `insurance`, `cam`, `repairs_maintenance`, `utilities`, `management_fee`, `administrative`, `reserves`, `other`. For cross-file comparability and standards mapping. |
+| `amount` **(R)** | number | Annual amount in `amountUnit`, as of `rentRoll.asOfDate`. |
+| `amountUnit` **(R)** | enum | `totalPerYear` (USD/yr), `perSFPerYear` (USD per `buildingSF` per yr), `percentOfEGR` (percent of effective gross revenue — the conventional management fee basis; `amount` is the percent value, e.g. `2.5`). |
+| `recoverable` **(R)** | boolean | Recoverable from tenants, subject to each lease's reimbursement structure and exclusions. |
+| `belowTheLine` | boolean | Excluded from NOI but included in cash flow (conventionally capital reserves). Default false. |
+| `growthOverridePercent` | number | Item-specific annual growth, percent. No effect on `percentOfEGR` items, which float with revenue. |
+
+## `marketAssumptions`
+
+| Field | Type | Definition |
+|---|---|---|
+| `asOfDate` | date | When the assumptions were struck. Defaults to `rentRoll.asOfDate`. |
+| `growth` **(R)** | object | `marketRent` **(R)**, `expenses` **(R)**, `cpi` — each a growth curve (below). `cpi` required if any lease escalates on CPI. |
+| `generalVacancyPercent` | number | Percent of potential gross revenue, in addition to explicit downtime. Engines must not double-count downtime months. Default 0. |
+| `creditLossPercent` | number | Percent of scheduled revenue. Default 0. |
+| `marketLeasing` **(R)** | map | Leasing profiles keyed by space type (min 1) — see below. Keys are matched by `vacantSuites[].spaceType` and by leases at rollover. |
+
+**Growth curve:** either a flat annual rate in percent (`3.0`), or a stepped array of
+`{ fromYear, annualPercent }` where `fromYear` is the 1-based analysis year and each
+entry applies until the next. The first entry must have `fromYear: 1`. Growth
+compounds annually on each anniversary of the analysis start.
+
+### `marketAssumptions.marketLeasing.<spaceType>`
+
+At each lease expiration, engines blend the renewal and new-tenant outcomes by
+`renewalProbabilityPercent`.
+
+| Field | Type | Definition |
+|---|---|---|
+| `marketRent` **(R)** | object | `amount` **(R)** + `unit` **(R)** (`perSFPerMonth` or `perSFPerYear`). As of `asOfDate`, grown by `growth.marketRent` thereafter. |
+| `termMonths` **(R)** | integer | Market lease term. |
+| `escalation` | object | Same shape as `lease.escalation`. Defaults to none. |
+| `reimbursementStructure` | enum | `NNN` (default), `NN`, `MG`, `Gross`. MG market leases use the first calendar year of the new lease as base year. |
+| `downtimeMonths` **(R)** | number | Vacant months before a new-tenant lease commences. Not applied to renewals. |
+| `renewalProbabilityPercent` **(R)** | number | 0–100. 100 disables new-tenant outcomes; 0 disables renewals. |
+| `newTenant` / `renewal` | object | Leasing costs per outcome: `tiPerSF`, `lcPercentOfRent`, `freeRentMonths` — all default 0. |
+| `renewalRentPercentOfMarket` | number | Renewal rent as percent of market, default 100. |
+
+## `valuation`
+
+Carries inputs for all four approaches: income (DCF and direct capitalization),
+sales comparison, and cost. Each method listed in `methods` requires its parameter
+object. Reference engine v0.1 computes DCF and direct cap; sales comparison and cost
+inputs travel as structured, auditable disclosure until engine support lands.
+
+| Field | Type | Definition |
+|---|---|---|
+| `analysisStartDate` **(R)** | date | First day of analysis month 1; conventionally `rentRoll.asOfDate`. All growth, downtime, and discounting measure from here. |
+| `valueDate` | date | Effective date of value if different (retrospective/prospective). |
+| `interestAppraised` | enum | `leased_fee` (default — subject to in-place leases), `fee_simple` (unencumbered: engines value as if every lease rolled to market at analysis start), `leasehold`. |
+| `valuePremise` | enum | `as_is` (default), `as_stabilized`, `as_complete` — state assumed dates/conditions in notes. |
+| `purpose` | enum | `acquisition`, `disposition`, `financing`, `appraisal`, `internal`, `other`. |
+| `methods` **(R)** | array | Any of `dcf`, `direct_cap`, `sales_comparison`, `cost` (min 1, unique). |
+| `purchasePrice` | number | USD. When present, engines report IRR/NPV against it; when absent, concluded value only. |
+| `acquisitionCostsPercent` | number | Closing costs, percent of price, added to initial outflow. Default 0. |
+| `reconciliation` | object | Final conclusion across approaches — see below. |
+
+### `valuation.dcf`
+
+| Field | Type | Definition |
+|---|---|---|
+| `holdPeriodYears` / `holdPeriodMonths` **(R)** | integer | Exactly one. Years (1–30) for calendar holds; months (1–360) for exits timed to lease events. Reversion occurs at the end of the final period. |
+| `discountRatePercent` **(R)** | number | Annual rate applied to unlevered operating cash flows. |
+| `reversionDiscountRatePercent` | number | Separate rate for the reversion where terminal risk is priced differently. Defaults to `discountRatePercent`. |
+| `discountTiming` | enum | `monthly` (default): cash flows at the equivalent monthly rate ((1+r)^(1/12)−1). `annual`: year-end aggregation. Declared so every engine produces the identical NPV. |
+| `periodConvention` | enum | `end` (default) or `mid` period discounting (mid is common in appraisal DCF). Reversion always discounts from the end of the final period. |
+| `terminalValue` **(R)** | object | How gross reversion value is computed — see below. |
+
+### `valuation.dcf.terminalValue`
+
+| Field | Type | Definition |
+|---|---|---|
+| `method` **(R)** | enum | `direct_cap`: capitalize terminal NOI. `exit_price_psf`: `exitPricePerSF` × building SF. `fixed_value`: stated value. `grown_purchase_price`: purchase price compounded at `annualAppreciationPercent`. Each method's parameter is conditionally required. |
+| `capRatePercent` | number | Terminal cap rate (required for `direct_cap`). |
+| `noiBasis` | enum | `forwardYear` (default): the 12 months after sale. `trailingYear`: the 12 months before. `stabilizedAtMarket`: all space at market rent/structure at exit — strips residual below-market leases from terminal NOI (the lease-to-market exit). |
+| `deductBelowTheLineItems` | boolean | Capitalize NOI net of reserves. Default false; declared so engines agree. |
+| `exitPricePerSF` / `fixedValue` / `annualAppreciationPercent` | number | Parameter for the respective method. |
+| `sellingCostsPercent` | number | Percent of gross reversion, default 0. |
+| `deductUnfundedObligations` | boolean | Deduct outstanding TI/LC and remaining free rent on leases extending past sale — the buyer-assumed-costs adjustment. Default false. |
+
+### `valuation.directCap`
+
+| Field | Type | Definition |
+|---|---|---|
+| `capRatePercent` **(R)** | number | Overall capitalization rate. |
+| `noiBasis` **(R)** | enum | `year1`: forward 12 months per the full assumption set. `inPlace`: annualized contractual rent less annualized expenses, no rollover or lease-up. `stabilizedAtMarket`: all space at market — the fee-simple / lease-to-market basis, typically paired with `markToMarket` and `nearTermAdjustments` to walk back to as-is leased-fee value. `trailing12` / `custom`: the stated `customNOI` (required for both). |
+| `customNOI` | number | Stated annual NOI for `custom`/`trailing12` bases. |
+| `applyGeneralVacancy` | boolean | Apply general vacancy / credit loss in the basis NOI. Default true. |
+| `deductBelowTheLineItems` | boolean | Capitalize NOI net of reserves. Default false. |
+| `excludeExpenseIds[]` | string[] | Expense items excluded from the capped NOI (e.g. owner-specific costs a buyer won't inherit). |
+| `nearTermAdjustments` | object | Deduct near-term costs from the capped value — the bridge from stabilized to as-is. `periodMonths` **(R)** (e.g. 18); toggles `includeDowntimeLostRent`, `includeFreeRent`, `includeTI`, `includeLC` (all default true); optional `discountRatePercent` to take deductions at PV instead of face. |
+| `markToMarket` | object | Leased-fee adjustment: PV of (contract − market) rent differentials through each lease's expiration, added (above-market) or deducted (below-market). `discountRatePercent` **(R)**. Presence enables it. |
+| `adjustments[]` | array | Explicit lump sums: `name` **(R)**, `type` **(R)** (`deduction`/`addition`), `amount` **(R)** (positive USD; type carries the sign), `category` (`deferred_maintenance`, `capital_costs`, `leasing_costs`, `excess_land`, `entitlements`, `other`). |
+
+### `valuation.salesComparison`
+
+| Field | Type | Definition |
+|---|---|---|
+| `unitBasis` **(R)** | enum | `building_sf` (improved industrial), `land_sf` / `land_acre` (land-driven product, e.g. IOS). |
+| `comparables[]` **(R)** | array | Min 1 — see below. |
+| `concludedValuePerUnit` **(R)** | number | Concluded value per unit after reconciling the adjusted comps. |
+| `indicatedValue` | number | Concluded × subject units; stated so files are self-checking. |
+
+### `valuation.salesComparison.comparables[]`
+
+| Field | Type | Definition |
+|---|---|---|
+| `salePrice` **(R)** / `saleDate` **(R)** | number / date | Transaction facts. |
+| `name`, `address` | — | Comp identification (`street1`, `city`, `state`). |
+| `buildingSF`, `landAcres` | number | Size in the relevant basis. |
+| `pricePerUnit`, `adjustedPricePerUnit` | number | Unadjusted and post-adjustment unit prices, stated for self-checking. |
+| `capRatePercent` | number | Going-in cap at sale — supports cap rate extraction. |
+| `occupancyPercentAtSale`, `yearBuilt`, `clearHeightFt`, `condition` | — | Comparability facts. |
+| `propertyRights` | enum | Interest conveyed: `fee_simple`, `leased_fee`, `leasehold`. |
+| `financingNotes` | string | Non-market financing / conditions-of-sale color. |
+| `adjustments[]` | array | `factor` **(R)** from the standard elements of comparison (`property_rights`, `financing`, `conditions_of_sale`, `market_conditions` (time), `location`, `size`, `age_condition`, `clear_height`, `loading`, `site_coverage`, `yard`, `other`), plus exactly one of `percentAdjustment` (signed) or `amountPerUnitAdjustment` (signed USD/unit), and `rationale`. |
+| `source` | string | Verification source. |
+
+### `valuation.costApproach`
+
+| Field | Type | Definition |
+|---|---|---|
+| `landValue` **(R)** | object | Exactly one of `amount` (USD) or `perAcreAmount` (× `siteAreaAcres`); optional `landComparables[]` (`salePrice` **(R)**, `saleDate` **(R)**, `landAcres` **(R)**, `zoning`). |
+| `improvements` **(R)** | object | Exactly one of `replacementCostNew` (USD) or `replacementCostNewPerSF` (× `buildingSF`); `costBasis` (`replacement` default / `reproduction`); `costSource` free text; `siteImprovementsCost` (paving, fencing, yard, rail); `indirectCostsPercent`; `entrepreneurialProfitPercent`. |
+| `depreciation` | object | `physicalDeteriorationPercent`, `functionalObsolescencePercent` (e.g. inadequate clear height), `externalObsolescencePercent`, plus age-life inputs `effectiveAgeYears` / `economicLifeYears`. Percents apply to RCN + site improvements. |
+| `indicatedValue` | number | Land + depreciated improvements (+ profit); stated for self-checking. |
+
+### `valuation.reconciliation`
+
+| Field | Type | Definition |
+|---|---|---|
+| `concludedValue` **(R)** | number | Final value conclusion, USD. |
+| `concludedValuePerSF` | number | Stated for self-checking. |
+| `primaryMethod` | enum | Approach given most weight. |
+| `exposureTimeMonths` / `marketingTimeMonths` | number | Appraisal context. |
+
+## `debt` (optional)
+
+Single fixed-rate loan; waterfalls and floating rates are out of scope for v0.1.
+Size by exactly one of `loanAmount` or `ltvPercent`.
+
+| Field | Type | Definition |
+|---|---|---|
+| `loanAmount` | number | USD. |
+| `ltvPercent` | number | Percent of `valuation.purchasePrice` (which must be present when sizing by LTV). |
+| `interestRatePercent` **(R)** | number | Fixed annual rate. |
+| `rateType` | `"fixed"` | v0.1 is fixed-only. |
+| `termMonths` **(R)** | integer | From `fundingDate`. If shorter than the hold, engines assume payoff refinanced on identical terms. |
+| `amortizationMonths` | integer | E.g. 360. Omit for interest-only through the term. |
+| `interestOnlyMonths` | integer | IO period before amortization begins. Default 0. |
+| `originationFeePercent` | number | Percent of loan amount, deducted from proceeds. Default 0. |
+| `fundingDate` | date | Defaults to `analysisStartDate`. |
+
+## `provenance`
+
+| Field | Type | Definition |
+|---|---|---|
+| `generatedAt` **(R)** | date-time | When the file was produced (ISO 8601 with timezone). |
+| `generatedBy` **(R)** | object | `name` **(R)**, `organization`, `role` (`listing_broker`, `buyer`, `appraiser`, `owner`, `lender`, `other`), `email`, `phone`. |
+| `software` | object | `name`, `version` of the tool that wrote the file. |
+| `sourceDocuments[]` | array | `name` **(R)**, `type` **(R)** (`lease`, `lease_amendment`, `rent_roll`, `operating_statement`, `budget`, `tax_bill`, `offering_memorandum`, `site_plan`, `estoppel`, `other`), `date`, `description`. Listed for diligence; documents do not travel in the file. |
+| `contacts[]` | array | `name` **(R)**, `organization`, `role` (free text), `email`, `phone`. |
+| `confidentiality` | string | Confidentiality statement or NDA reference. |
+
+## Standards mappings
+
+Mappings to NCREIF PREA Reporting Standards and REDI field definitions will be added
+field-by-field, anchored on `expenses.items[].category` and the valuation parameters,
+before v0.1.0 is tagged.
+
+---
+
+# Normative JSON Schemas (draft 2020-12)
+
+These are authoritative; prose above is explanatory.
+
+### ore.schema.json
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreformat.org/schema/0.1.0/ore.schema.json",
+  "title": "ORE Deal File",
+  "description": "Root schema for an ORE (Open Real Estate) deal file. A .ore file is a single, self-contained JSON document conforming to this schema — all deal data and calculation assumptions travel together in one file. v0.1 scope: US industrial, DCF and direct capitalization.",
+  "type": "object",
+  "required": ["formatVersion", "property", "rentRoll"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri",
+      "description": "Optional URL of the published ORE JSON Schema this file conforms to, e.g. https://oreformat.org/schema/0.1.0/ore.schema.json. Carrying it lets any reader — editor, validator, or LLM — resolve field definitions from the file alone."
+    },
+    "formatVersion": {
+      "type": "string",
+      "pattern": "^0\\.1\\.\\d+$",
+      "description": "ORE format version this file conforms to (semver). This schema validates 0.1.x files."
+    },
+    "property": { "$ref": "property.schema.json" },
+    "rentRoll": { "$ref": "rentRoll.schema.json" },
+    "expenses": { "$ref": "expenses.schema.json" },
+    "marketAssumptions": { "$ref": "marketAssumptions.schema.json" },
+    "valuation": { "$ref": "valuation.schema.json" },
+    "debt": { "$ref": "debt.schema.json" },
+    "provenance": { "$ref": "provenance.schema.json" }
+  }
+}
+```
+
+### debt.schema.json
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreformat.org/schema/0.1.0/debt.schema.json",
+  "title": "ORE Debt Module",
+  "description": "Optional simple loan terms for levered returns. ORE v0.1 supports a single fixed-rate loan sized by amount or LTV; waterfalls and floating rates are out of scope.",
+  "type": "object",
+  "required": ["interestRatePercent", "termMonths"],
+  "additionalProperties": false,
+  "oneOf": [
+    { "required": ["loanAmount"], "not": { "required": ["ltvPercent"] } },
+    { "required": ["ltvPercent"], "not": { "required": ["loanAmount"] } }
+  ],
+  "properties": {
+    "loanAmount": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Loan amount in USD. Provide this or ltvPercent, not both."
+    },
+    "ltvPercent": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 100,
+      "description": "Loan-to-value in percent, applied to valuation.purchasePrice (which must be present when sizing by LTV)."
+    },
+    "interestRatePercent": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Fixed annual interest rate in percent. v0.1 supports fixed rates only."
+    },
+    "rateType": {
+      "const": "fixed",
+      "default": "fixed",
+      "description": "v0.1 supports fixed-rate debt only; future versions will widen this enum."
+    },
+    "termMonths": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "description": "Loan term in months from fundingDate. If the term ends before the hold period, engines assume payoff of the outstanding balance at term end refinanced on identical terms; state deviations in notes."
+    },
+    "amortizationMonths": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "description": "Amortization schedule in months (e.g. 360 for 30-year). Omit for interest-only through the full term."
+    },
+    "interestOnlyMonths": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0,
+      "description": "Interest-only period in months at the start of the loan, before amortization begins."
+    },
+    "originationFeePercent": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0,
+      "description": "Origination fee as a percent of loan amount, deducted from proceeds at funding."
+    },
+    "fundingDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Loan funding date. Defaults to valuation.analysisStartDate."
+    },
+    "notes": { "type": "string" }
+  }
+}
+```
+
+### expenses.schema.json
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreformat.org/schema/0.1.0/expenses.schema.json",
+  "title": "ORE Expenses Module",
+  "description": "Operating expense schedule with recoverability flags. Amounts are annualized as of rentRoll.asOfDate and grow per the expense growth assumption in marketAssumptions unless an item carries its own growth override.",
+  "type": "object",
+  "required": ["items"],
+  "additionalProperties": false,
+  "properties": {
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/expenseItem" }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text notes on the expense schedule as a whole (source statements, normalization adjustments)."
+    }
+  },
+  "$defs": {
+    "expenseItem": {
+      "type": "object",
+      "required": ["expenseId", "name", "amount", "amountUnit", "recoverable"],
+      "additionalProperties": false,
+      "properties": {
+        "expenseId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable identifier, unique within the file. Referenced by leases' reimbursement.excludedExpenses."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Display name, e.g. \"Real Estate Taxes\"."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "real_estate_taxes",
+            "insurance",
+            "cam",
+            "repairs_maintenance",
+            "utilities",
+            "management_fee",
+            "administrative",
+            "reserves",
+            "other"
+          ],
+          "description": "Standard category for cross-file comparability and standards mapping. Use the name field for the shop-specific label."
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Annual amount in the unit declared by amountUnit, as of rentRoll.asOfDate."
+        },
+        "amountUnit": {
+          "type": "string",
+          "enum": ["totalPerYear", "perSFPerYear", "percentOfEGR"],
+          "description": "totalPerYear: USD per year. perSFPerYear: USD per SF of property.physical.buildingSF per year. percentOfEGR: percent of effective gross revenue (the conventional management fee basis) — amount is the percent value, e.g. 2.5."
+        },
+        "recoverable": {
+          "type": "boolean",
+          "description": "Whether the expense is recoverable from tenants, subject to each lease's reimbursement structure and exclusions."
+        },
+        "belowTheLine": {
+          "type": "boolean",
+          "default": false,
+          "description": "True for items excluded from NOI but included in cash flow (conventionally capital reserves)."
+        },
+        "growthOverridePercent": {
+          "type": "number",
+          "description": "Annual growth rate in percent for this item only, overriding marketAssumptions.growth.expenses. Has no effect on percentOfEGR items, which float with revenue."
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}
+```
+
+### marketAssumptions.schema.json
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreformat.org/schema/0.1.0/marketAssumptions.schema.json",
+  "title": "ORE Market Assumptions Module",
+  "description": "Market rent, growth, and rollover assumptions. These travel with the file so any conforming engine reproduces identical lease-up and rollover cash flows.",
+  "type": "object",
+  "required": ["growth", "marketLeasing"],
+  "additionalProperties": false,
+  "properties": {
+    "asOfDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the market assumptions were struck. Defaults to rentRoll.asOfDate."
+    },
+    "growth": {
+      "type": "object",
+      "required": ["marketRent", "expenses"],
+      "additionalProperties": false,
+      "description": "Annual growth assumptions. Growth compounds annually on each anniversary of the analysis start.",
+      "properties": {
+        "marketRent": { "$ref": "#/$defs/growthCurve", "description": "Market rent growth." },
+        "expenses": { "$ref": "#/$defs/growthCurve", "description": "Operating expense growth (items may carry their own override)." },
+        "cpi": { "$ref": "#/$defs/growthCurve", "description": "CPI assumption used by leases with cpi escalations. Required if any lease escalates on CPI." }
+      }
+    },
+    "generalVacancyPercent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0,
+      "description": "General vacancy allowance as a percent of potential gross revenue, applied in addition to explicit downtime. Engines must not double-count: months absorbed by explicit downtime are excluded from the general vacancy base."
+    },
+    "creditLossPercent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0,
+      "description": "Credit loss allowance as a percent of scheduled revenue."
+    },
+    "marketLeasing": {
+      "type": "object",
+      "minProperties": 1,
+      "description": "Market leasing profiles keyed by space type. Keys are matched by rentRoll.vacantSuites[].spaceType and by leases at rollover (via leaseSpaceType or the file's single profile).",
+      "additionalProperties": { "$ref": "#/$defs/leasingProfile" }
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "growthCurve": {
+      "description": "Either a flat annual rate in percent (e.g. 3.0), or a stepped curve: entries apply from analysis year fromYear (1-based) until the next entry. The first entry must have fromYear 1.",
+      "oneOf": [
+        { "type": "number" },
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["fromYear", "annualPercent"],
+            "additionalProperties": false,
+            "properties": {
+              "fromYear": { "type": "integer", "minimum": 1 },
+              "annualPercent": { "type": "number" }
+            }
+          }
+        }
+      ]
+    },
+    "leasingProfile": {
+      "type": "object",
+      "required": ["marketRent", "termMonths", "downtimeMonths", "renewalProbabilityPercent"],
+      "additionalProperties": false,
+      "description": "Assumptions for a new market lease of this space type, used for vacant-suite lease-up and lease rollover. At each lease expiration, engines blend renewal and new-tenant outcomes by renewalProbabilityPercent.",
+      "properties": {
+        "marketRent": {
+          "type": "object",
+          "required": ["amount", "unit"],
+          "additionalProperties": false,
+          "properties": {
+            "amount": { "type": "number", "exclusiveMinimum": 0, "description": "Market rent as of marketAssumptions.asOfDate, grown by growth.marketRent thereafter." },
+            "unit": {
+              "type": "string",
+              "enum": ["perSFPerMonth", "perSFPerYear"],
+              "description": "Unit for amount. Declared explicitly — never inferred from market convention."
+            }
+          }
+        },
+        "termMonths": { "type": "integer", "exclusiveMinimum": 0, "description": "Market lease term in months." },
+        "escalation": {
+          "$ref": "rentRoll.schema.json#/$defs/escalation",
+          "description": "Escalation pattern for market leases. Defaults to none."
+        },
+        "reimbursementStructure": {
+          "type": "string",
+          "enum": ["NNN", "NN", "MG", "Gross"],
+          "default": "NNN",
+          "description": "Reimbursement structure for market leases. MG market leases use the first calendar year of the new lease as the base year."
+        },
+        "downtimeMonths": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Vacant months before a new-tenant lease commences (after expiration, or from analysis start for vacant suites). Not applied to renewals."
+        },
+        "renewalProbabilityPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Probability an expiring tenant renews. 100 disables new-tenant outcomes; 0 disables renewals."
+        },
+        "newTenant": { "$ref": "#/$defs/leasingCosts", "description": "Leasing costs for the new-tenant outcome. Omitted fields default to 0." },
+        "renewal": { "$ref": "#/$defs/leasingCosts", "description": "Leasing costs for the renewal outcome. Omitted fields default to 0. Renewal rent is market rent unless renewalRentPercentOfMarket is set." },
+        "renewalRentPercentOfMarket": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 100,
+          "description": "Renewal rent as a percent of market rent, e.g. 95."
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "leasingCosts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tiPerSF": { "type": "number", "minimum": 0, "default": 0, "description": "Tenant improvement allowance, USD per SF." },
+        "lcPercentOfRent": { "type": "number", "minimum": 0, "maximum": 100, "default": 0, "description": "Leasing commission as a percent of total scheduled base rent over the lease term." },
+        "freeRentMonths": { "type": "number", "minimum": 0, "default": 0, "description": "Months of full base rent abatement at lease start." }
+      }
+    }
+  }
+}
+```
+
+### property.schema.json
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreformat.org/schema/0.1.0/property.schema.json",
+  "title": "ORE Property Module",
+  "description": "Identity, location, and physical characteristics of the property. ORE v0.1 scope is US industrial (single-tenant and multi-tenant).",
+  "type": "object",
+  "required": ["name", "propertyType", "address", "physical"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Display name of the property, e.g. \"4250 Valley Blvd\" or \"Gateway Logistics Center\"."
+    },
+    "propertyType": {
+      "const": "industrial",
+      "description": "Asset class. ORE v0.1 supports industrial only; future versions will widen this enum."
+    },
+    "propertySubtype": {
+      "type": "string",
+      "enum": [
+        "warehouse_distribution",
+        "manufacturing",
+        "flex",
+        "cold_storage",
+        "truck_terminal",
+        "industrial_outdoor_storage",
+        "other"
+      ],
+      "description": "Industrial subtype. Use \"other\" with a note in `description` if none fit."
+    },
+    "tenancy": {
+      "type": "string",
+      "enum": ["single", "multi"],
+      "description": "Single-tenant or multi-tenant configuration as currently operated."
+    },
+    "description": {
+      "type": "string",
+      "description": "Free-text narrative description of the property."
+    },
+    "address": {
+      "type": "object",
+      "required": ["street1", "city", "state", "postalCode"],
+      "additionalProperties": false,
+      "description": "Situs address. ORE v0.1 scope is US properties only.",
+      "properties": {
+        "street1": { "type": "string", "minLength": 1, "description": "Primary street address line." },
+        "street2": { "type": "string", "description": "Secondary address line (suite, building, etc.)." },
+        "city": { "type": "string", "minLength": 1 },
+        "state": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$",
+          "description": "Two-letter USPS state code, e.g. \"CA\"."
+        },
+        "postalCode": {
+          "type": "string",
+          "pattern": "^\\d{5}(-\\d{4})?$",
+          "description": "5-digit ZIP or ZIP+4."
+        },
+        "county": { "type": "string", "description": "County name, without the word \"County\"." },
+        "country": {
+          "const": "US",
+          "default": "US",
+          "description": "ISO 3166-1 alpha-2. v0.1 is US-only."
+        }
+      }
+    },
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Geographic and market context.",
+      "properties": {
+        "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+        "longitude": { "type": "number", "minimum": -180, "maximum": 180 },
+        "market": { "type": "string", "description": "Metro market name, e.g. \"Los Angeles\"." },
+        "submarket": { "type": "string", "description": "Submarket name, e.g. \"San Gabriel Valley\"." }
+      }
+    },
+    "parcels": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Assessor parcels comprising the property.",
+      "items": {
+        "type": "object",
+        "required": ["apn"],
+        "additionalProperties": false,
+        "properties": {
+          "apn": { "type": "string", "minLength": 1, "description": "Assessor's parcel number, formatted as it appears on the assessor roll." },
+          "landAcres": { "type": "number", "exclusiveMinimum": 0, "description": "Land area of this parcel in acres." },
+          "zoning": { "type": "string", "description": "Zoning designation, e.g. \"M-1\"." }
+        }
+      }
+    },
+    "siteAreaAcres": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Total site area in acres across all parcels. If `parcels[].landAcres` are provided, this should equal their sum."
+    },
+    "physical": {
+      "type": "object",
+      "required": ["buildingSF"],
+      "additionalProperties": false,
+      "description": "Physical and functional characteristics of the improvements.",
+      "properties": {
+        "buildingSF": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Total rentable building area in square feet. The denominator for per-SF metrics and pro-rata shares unless a lease overrides it."
+        },
+        "officeSF": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Office build-out area in square feet, included within buildingSF."
+        },
+        "mezzanineSF": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Mezzanine area in square feet. State whether included in buildingSF via `notes` if ambiguous."
+        },
+        "clearHeightFt": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Minimum clear height in feet, measured at the first interior column line or lowest hanging obstruction per market convention."
+        },
+        "dockHighDoors": { "type": "integer", "minimum": 0, "description": "Count of dock-high loading doors." },
+        "gradeLevelDoors": { "type": "integer", "minimum": 0, "description": "Count of grade-level (drive-in) doors." },
+        "railServed": { "type": "boolean", "description": "Whether the property has active rail service." },
+        "yearBuilt": { "type": "integer", "minimum": 1800, "maximum": 2100 },
+        "yearRenovated": { "type": "integer", "minimum": 1800, "maximum": 2100 },
+        "stories": { "type": "integer", "minimum": 1, "default": 1 },
+        "construction": {
+          "type": "string",
+          "enum": ["tilt_up", "masonry", "metal", "wood_frame", "other"],
+          "description": "Primary construction type."
+        },
+        "sprinkler": {
+          "type": "string",
+          "enum": ["esfr", "wet", "dry", "none"],
+          "description": "Fire sprinkler system type. \"wet\" covers calculated/ordinary wet systems that are not ESFR."
+        },
+        "powerAmps": { "type": "number", "exclusiveMinimum": 0, "description": "Electrical service in amps." },
+        "powerVolts": { "type": "string", "description": "Electrical service voltage/phase, e.g. \"277/480V 3-phase\"." },
+        "truckCourtDepthFt": { "type": "number", "exclusiveMinimum": 0, "description": "Truck court depth in feet at the primary loading position." },
+        "trailerParkingStalls": { "type": "integer", "minimum": 0 },
+        "autoParkingStalls": { "type": "integer", "minimum": 0 },
+        "coverageRatio": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "description": "Building footprint divided by site area (floor-area ratio for single-story industrial), expressed as a decimal, e.g. 0.45."
+        },
+        "fencedYard": { "type": "boolean", "description": "Whether the property has a secured/fenced yard area." },
+        "yardAcres": { "type": "number", "minimum": 0, "description": "Usable yard area in acres, if a meaningful component of value (IOS or excess land)." }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text notes on measurement conventions, pending entitlements, or anything else a reader needs to interpret this module correctly."
+    }
+  }
+}
+```
+
+### provenance.schema.json
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreformat.org/schema/0.1.0/provenance.schema.json",
+  "title": "ORE Provenance Module",
+  "description": "Who produced the file, when, from what source documents, and whom to contact. Provenance is how a recipient judges what they can rely on and what to re-verify.",
+  "type": "object",
+  "required": ["generatedAt", "generatedBy"],
+  "additionalProperties": false,
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the file was produced (ISO 8601 date-time with timezone)."
+    },
+    "generatedBy": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "description": "The party responsible for the file's contents.",
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "description": "Person or team name." },
+        "organization": { "type": "string" },
+        "role": {
+          "type": "string",
+          "enum": ["listing_broker", "buyer", "appraiser", "owner", "lender", "other"],
+          "description": "The producer's role in the transaction — recipients read assumptions differently depending on who set them."
+        },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" }
+      }
+    },
+    "software": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Tool that wrote the file, for conformance triage.",
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" }
+      }
+    },
+    "sourceDocuments": {
+      "type": "array",
+      "description": "Documents the file's data was abstracted from. Listed for diligence; the documents themselves do not travel in the file.",
+      "items": {
+        "type": "object",
+        "required": ["name", "type"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "description": "Document title, e.g. \"Lease Agreement dated 2021-08-15\"." },
+          "type": {
+            "type": "string",
+            "enum": [
+              "lease",
+              "lease_amendment",
+              "rent_roll",
+              "operating_statement",
+              "budget",
+              "tax_bill",
+              "offering_memorandum",
+              "site_plan",
+              "estoppel",
+              "other"
+            ]
+          },
+          "date": { "type": "string", "format": "date", "description": "Document date." },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "contacts": {
+      "type": "array",
+      "description": "Deal contacts beyond the producer (e.g. listing team members).",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "organization": { "type": "string" },
+          "role": { "type": "string", "description": "Free-text role, e.g. \"co-listing broker\"." },
+          "email": { "type": "string", "format": "email" },
+          "phone": { "type": "string" }
+        }
+      }
+    },
+    "confidentiality": {
+      "type": "string",
+      "description": "Free-text confidentiality statement or NDA reference governing the file's distribution."
+    },
+    "notes": { "type": "string" }
+  }
+}
+```
+
+### rentRoll.schema.json
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreformat.org/schema/0.1.0/rentRoll.schema.json",
+  "title": "ORE Rent Roll Module",
+  "description": "The in-place rent roll: every lease encumbering the property as of `asOfDate`, plus vacant suites available for lease-up. ORE v0.1 covers NNN, NN, and modified gross structures typical of US industrial.",
+  "type": "object",
+  "required": ["asOfDate", "leases"],
+  "additionalProperties": false,
+  "properties": {
+    "asOfDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the rent roll was struck (ISO 8601, YYYY-MM-DD). All leases and vacancies reflect this date."
+    },
+    "leases": {
+      "type": "array",
+      "description": "All leases in place as of asOfDate. Empty array means the property is fully vacant (list the space under vacantSuites).",
+      "items": { "$ref": "#/$defs/lease" }
+    },
+    "vacantSuites": {
+      "type": "array",
+      "description": "Suites vacant as of asOfDate, available for lease-up at market assumptions.",
+      "items": {
+        "type": "object",
+        "required": ["sf"],
+        "additionalProperties": false,
+        "properties": {
+          "suite": { "type": "string", "description": "Suite or unit identifier." },
+          "sf": { "type": "number", "exclusiveMinimum": 0, "description": "Vacant area in square feet." },
+          "spaceType": { "type": "string", "description": "Space type key matching an entry in marketAssumptions.marketRent, used to price lease-up." },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text notes on the rent roll as a whole (estoppel status, pending amendments, etc.)."
+    }
+  },
+  "$defs": {
+    "lease": {
+      "type": "object",
+      "required": ["leaseId", "tenant", "leasedSF", "commencementDate", "expirationDate", "baseRent", "reimbursement"],
+      "additionalProperties": false,
+      "properties": {
+        "leaseId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable identifier for this lease, unique within the file. Referenced by calculation outputs and other modules."
+        },
+        "tenant": { "$ref": "#/$defs/tenant" },
+        "suite": {
+          "type": "string",
+          "description": "Suite or unit identifier. Optional for single-tenant properties."
+        },
+        "leasedSF": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Leased area in square feet. The denominator for this lease's per-SF rent and the numerator for its pro-rata share."
+        },
+        "commencementDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Lease commencement date (ISO 8601)."
+        },
+        "expirationDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Current lease expiration date (ISO 8601), reflecting any executed amendments or exercised options."
+        },
+        "baseRent": { "$ref": "#/$defs/baseRent" },
+        "escalation": { "$ref": "#/$defs/escalation" },
+        "reimbursement": { "$ref": "#/$defs/reimbursement" },
+        "freeRent": {
+          "type": "array",
+          "description": "Abatement periods remaining as of asOfDate (historical burned-off free rent is omitted).",
+          "items": {
+            "type": "object",
+            "required": ["startDate", "endDate"],
+            "additionalProperties": false,
+            "properties": {
+              "startDate": { "type": "string", "format": "date" },
+              "endDate": { "type": "string", "format": "date", "description": "Inclusive last day of the abatement period." },
+              "percentAbated": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 100,
+                "default": 100,
+                "description": "Percentage of base rent abated during the period. 100 = fully free."
+              },
+              "abatesReimbursements": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether expense reimbursements are also abated during the period."
+              }
+            }
+          }
+        },
+        "tenantImprovements": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Unfunded landlord TI obligations remaining as of asOfDate. Provide exactly one of amountPerSF or totalAmount.",
+          "oneOf": [
+            { "required": ["amountPerSF"] },
+            { "required": ["totalAmount"] }
+          ],
+          "properties": {
+            "amountPerSF": { "type": "number", "minimum": 0, "description": "USD per leased square foot." },
+            "totalAmount": { "type": "number", "minimum": 0, "description": "Total USD." },
+            "fundingDate": { "type": "string", "format": "date", "description": "Date the obligation is assumed to be funded. Engines default to the month after asOfDate if omitted." }
+          }
+        },
+        "leasingCommissions": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Unpaid leasing commissions remaining as of asOfDate. Provide exactly one of amountPerSF, totalAmount, or percentOfTotalRent.",
+          "oneOf": [
+            { "required": ["amountPerSF"] },
+            { "required": ["totalAmount"] },
+            { "required": ["percentOfTotalRent"] }
+          ],
+          "properties": {
+            "amountPerSF": { "type": "number", "minimum": 0, "description": "USD per leased square foot." },
+            "totalAmount": { "type": "number", "minimum": 0, "description": "Total USD." },
+            "percentOfTotalRent": { "type": "number", "minimum": 0, "maximum": 100, "description": "Percentage of total scheduled base rent over the lease term." },
+            "fundingDate": { "type": "string", "format": "date", "description": "Date the obligation is assumed to be paid. Engines default to the month after asOfDate if omitted." }
+          }
+        },
+        "options": {
+          "type": "array",
+          "description": "Tenant options under the lease.",
+          "items": { "$ref": "#/$defs/leaseOption" }
+        },
+        "securityDeposit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["amount"],
+          "properties": {
+            "amount": { "type": "number", "minimum": 0, "description": "USD held as of asOfDate." },
+            "form": { "type": "string", "enum": ["cash", "letter_of_credit"], "default": "cash" }
+          }
+        },
+        "guarantor": {
+          "type": "string",
+          "description": "Name of any lease guarantor, if different from the tenant entity."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Free-text notes: co-tenancy quirks, pending amendments, anything a re-underwriter must know that the structured fields cannot carry."
+        }
+      }
+    },
+    "tenant": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "description": "Legal name of the tenant entity on the lease." },
+        "dba": { "type": "string", "description": "Trade name, if different from the legal name." },
+        "parentCompany": { "type": "string", "description": "Parent or credit entity, if rent is supported above the lease entity." },
+        "industry": { "type": "string", "description": "Tenant's business / use of the space, e.g. \"third-party logistics\"." },
+        "creditNotes": { "type": "string", "description": "Free-text credit color: public/private, rating if any, years in occupancy." }
+      }
+    },
+    "baseRent": {
+      "type": "object",
+      "required": ["schedule", "unit"],
+      "additionalProperties": false,
+      "description": "Contractual base rent as a stepped schedule. Each step applies from its startDate until the next step's startDate, or until expirationDate for the last step. Steps must be in ascending startDate order. Historical steps before asOfDate may be omitted.",
+      "properties": {
+        "unit": {
+          "type": "string",
+          "enum": ["perSFPerMonth", "perSFPerYear", "totalPerMonth", "totalPerYear"],
+          "description": "Unit for every `amount` in the schedule. Per-SF units are multiplied by leasedSF. Annual units are divided by 12 for monthly cash flows."
+        },
+        "schedule": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["startDate", "amount"],
+            "additionalProperties": false,
+            "properties": {
+              "startDate": { "type": "string", "format": "date", "description": "First day this rent amount applies." },
+              "amount": { "type": "number", "minimum": 0, "description": "Rent in the unit declared by baseRent.unit." }
+            }
+          }
+        }
+      }
+    },
+    "escalation": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "description": "Rule for generating rent steps not explicitly enumerated in baseRent.schedule. If the schedule already enumerates every step through expiration, set type to \"none\" or omit this object. When present with a non-none type, engines apply the rule starting one frequency-interval after the last enumerated step's startDate, through expiration. Enumerated steps are always authoritative over generated ones.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["fixed_percent", "fixed_amount", "cpi", "none"],
+          "description": "fixed_percent: rent grows by `rate` percent each interval. fixed_amount: rent grows by `amount` (in baseRent.unit) each interval. cpi: rent grows with CPI, subject to floor/cap; engines use the CPI growth assumption from marketAssumptions."
+        },
+        "rate": { "type": "number", "description": "Escalation rate in percent per interval, e.g. 3.5 for 3.5%. Required when type is fixed_percent." },
+        "amount": { "type": "number", "description": "Escalation amount per interval, in baseRent.unit. Required when type is fixed_amount." },
+        "frequencyMonths": { "type": "integer", "exclusiveMinimum": 0, "default": 12, "description": "Months between escalations." },
+        "cpiFloorPercent": { "type": "number", "description": "Minimum CPI escalation in percent per interval. Only meaningful when type is cpi." },
+        "cpiCapPercent": { "type": "number", "description": "Maximum CPI escalation in percent per interval. Only meaningful when type is cpi." }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "fixed_percent" } } },
+          "then": { "required": ["rate"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "fixed_amount" } } },
+          "then": { "required": ["amount"] }
+        }
+      ]
+    },
+    "reimbursement": {
+      "type": "object",
+      "required": ["structure"],
+      "additionalProperties": false,
+      "description": "How operating expenses are recovered from the tenant. Expense-level recoverability flags live in the expenses module; this object describes the lease's side of the bargain.",
+      "properties": {
+        "structure": {
+          "type": "string",
+          "enum": ["NNN", "NN", "MG", "Gross"],
+          "description": "NNN: tenant reimburses its pro-rata share of all recoverable expenses (taxes, insurance, CAM). NN: as NNN except landlord retains responsibility for roof/structure (capital items). MG: tenant reimburses recoverable expense increases over a base year or expense stop. Gross: no reimbursement."
+        },
+        "proRataSharePercent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 100,
+          "description": "Tenant's share of recoverable expenses in percent. Defaults to leasedSF / property.physical.buildingSF × 100 when omitted."
+        },
+        "baseYear": {
+          "type": "integer",
+          "minimum": 1900,
+          "maximum": 2200,
+          "description": "Base year for MG leases: tenant pays its share of expense increases over this calendar year's expenses. Provide baseYear or expenseStopPerSF for MG, not both."
+        },
+        "expenseStopPerSF": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Expense stop in USD per SF per year for MG leases: tenant pays its share of expenses above this amount."
+        },
+        "adminFeePercent": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Administrative/management fee markup on recoverable expenses, in percent, if the lease allows one."
+        },
+        "excludedExpenses": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "expenseIds from the expenses module that this lease excludes from recovery, overriding the expense-level recoverable flag."
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "leaseOption": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["renewal", "termination", "purchase", "expansion", "right_of_first_refusal", "right_of_first_offer"],
+          "description": "Option type. Renewal options carry economic terms engines can model; the others are disclosed for diligence."
+        },
+        "noticeMonths": { "type": "number", "minimum": 0, "description": "Required notice period in months before the option date." },
+        "earliestExerciseDate": { "type": "string", "format": "date", "description": "Earliest date the option may take effect (e.g. termination effective date)." },
+        "renewalTermMonths": { "type": "integer", "exclusiveMinimum": 0, "description": "Length of the renewal term in months. Renewal options only." },
+        "renewalCount": { "type": "integer", "minimum": 1, "default": 1, "description": "Number of successive renewal options on these terms." },
+        "rentBasis": {
+          "type": "string",
+          "enum": ["market", "fixed", "percent_of_market"],
+          "description": "How renewal rent is set. market: fair market rent. fixed: the amount in fixedRent. percent_of_market: percentOfMarket × fair market rent."
+        },
+        "fixedRent": { "type": "number", "minimum": 0, "description": "Renewal rent when rentBasis is fixed, in the lease's baseRent.unit." },
+        "percentOfMarket": { "type": "number", "exclusiveMinimum": 0, "description": "Percent of fair market rent when rentBasis is percent_of_market, e.g. 95." },
+        "terminationFee": { "type": "number", "minimum": 0, "description": "Fee payable on exercise of a termination option, in USD." },
+        "notes": { "type": "string", "description": "Terms the structured fields cannot carry (e.g. expansion premises description, ROFR trigger)." }
+      }
+    }
+  }
+}
+```
+
+### valuation.schema.json
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreformat.org/schema/0.1.0/valuation.schema.json",
+  "title": "ORE Valuation Module",
+  "description": "Valuation method parameters across the income (DCF and direct capitalization), sales comparison, and cost approaches. Each method listed in `methods` must have its parameter object present. The schema carries inputs for all four approaches; reference engine v0.1 computes DCF and direct cap, and carries the others as structured disclosure.",
+  "type": "object",
+  "required": ["analysisStartDate", "methods"],
+  "additionalProperties": false,
+  "properties": {
+    "analysisStartDate": {
+      "type": "string",
+      "format": "date",
+      "description": "First day of analysis month 1. Conventionally equals rentRoll.asOfDate; all growth, downtime, and discounting measure from this date."
+    },
+    "valueDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Effective date of value, if different from analysisStartDate (e.g. a retrospective or prospective appraisal)."
+    },
+    "interestAppraised": {
+      "type": "string",
+      "enum": ["fee_simple", "leased_fee", "leasehold"],
+      "default": "leased_fee",
+      "description": "Property interest being valued. leased_fee: subject to in-place leases (the default for income-producing property). fee_simple: unencumbered, all space at market — engines value as if every lease rolled to market terms at the analysis start. leasehold: the tenant's interest."
+    },
+    "valuePremise": {
+      "type": "string",
+      "enum": ["as_is", "as_stabilized", "as_complete"],
+      "default": "as_is",
+      "description": "Premise of value. as_stabilized and as_complete values should state their assumed dates and conditions in notes."
+    },
+    "purpose": {
+      "type": "string",
+      "enum": ["acquisition", "disposition", "financing", "appraisal", "internal", "other"],
+      "description": "Why the valuation was prepared. Recipients weight assumptions differently by purpose."
+    },
+    "methods": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "enum": ["dcf", "direct_cap", "sales_comparison", "cost"] },
+      "description": "Valuation methods this file carries inputs for. Each listed method's parameter object is required."
+    },
+    "purchasePrice": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Assumed or actual purchase price, USD. Optional: when present, engines report IRR/NPV against it; when absent, engines report concluded value only."
+    },
+    "acquisitionCostsPercent": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0,
+      "description": "Closing costs at acquisition as a percent of purchase price, added to the initial outflow."
+    },
+    "dcf": { "$ref": "#/$defs/dcf" },
+    "directCap": { "$ref": "#/$defs/directCap" },
+    "salesComparison": { "$ref": "#/$defs/salesComparison" },
+    "costApproach": { "$ref": "#/$defs/costApproach" },
+    "reconciliation": { "$ref": "#/$defs/reconciliation" },
+    "notes": { "type": "string" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "methods": { "type": "array", "contains": { "const": "dcf" } } }, "required": ["methods"] },
+      "then": { "required": ["dcf"] }
+    },
+    {
+      "if": { "properties": { "methods": { "type": "array", "contains": { "const": "direct_cap" } } }, "required": ["methods"] },
+      "then": { "required": ["directCap"] }
+    },
+    {
+      "if": { "properties": { "methods": { "type": "array", "contains": { "const": "sales_comparison" } } }, "required": ["methods"] },
+      "then": { "required": ["salesComparison"] }
+    },
+    {
+      "if": { "properties": { "methods": { "type": "array", "contains": { "const": "cost" } } }, "required": ["methods"] },
+      "then": { "required": ["costApproach"] }
+    }
+  ],
+  "$defs": {
+    "dcf": {
+      "type": "object",
+      "required": ["discountRatePercent", "terminalValue"],
+      "additionalProperties": false,
+      "oneOf": [
+        { "required": ["holdPeriodYears"], "not": { "required": ["holdPeriodMonths"] } },
+        { "required": ["holdPeriodMonths"], "not": { "required": ["holdPeriodYears"] } }
+      ],
+      "properties": {
+        "holdPeriodYears": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30,
+          "description": "Hold period in whole years from analysisStartDate. Provide this or holdPeriodMonths, not both."
+        },
+        "holdPeriodMonths": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 360,
+          "description": "Hold period in months from analysisStartDate, for partial-year holds (e.g. exit timed to a lease event)."
+        },
+        "discountRatePercent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Annual discount rate applied to unlevered operating cash flows, in percent."
+        },
+        "reversionDiscountRatePercent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Separate annual discount rate for the reversion, where the shop rates terminal value risk differently. Defaults to discountRatePercent."
+        },
+        "discountTiming": {
+          "type": "string",
+          "enum": ["monthly", "annual"],
+          "default": "monthly",
+          "description": "monthly: end/mid-month cash flows discounted at the equivalent monthly rate ((1+r)^(1/12)-1). annual: end/mid-year aggregated cash flows discounted annually. Declared explicitly so every engine produces the identical NPV."
+        },
+        "periodConvention": {
+          "type": "string",
+          "enum": ["end", "mid"],
+          "default": "end",
+          "description": "Whether cash flows are discounted as received at period end or mid-period (common in appraisal DCF). The reversion is always discounted from the end of the final period."
+        },
+        "terminalValue": { "$ref": "#/$defs/terminalValue" },
+        "notes": { "type": "string" }
+      }
+    },
+    "terminalValue": {
+      "type": "object",
+      "required": ["method"],
+      "additionalProperties": false,
+      "description": "How the gross reversion value is computed at the end of the hold.",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["direct_cap", "exit_price_psf", "fixed_value", "grown_purchase_price"],
+          "description": "direct_cap: capitalize terminal NOI per noiBasis at capRatePercent. exit_price_psf: exitPricePerSF × property.physical.buildingSF. fixed_value: the stated fixedValue. grown_purchase_price: purchasePrice compounded at annualAppreciationPercent over the hold (purchasePrice required)."
+        },
+        "capRatePercent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Terminal (reversion) cap rate, in percent. Required when method is direct_cap."
+        },
+        "noiBasis": {
+          "type": "string",
+          "enum": ["forwardYear", "trailingYear", "stabilizedAtMarket"],
+          "default": "forwardYear",
+          "description": "NOI capitalized at exit. forwardYear: the 12 months following sale (hold + 1), per the full assumption set. trailingYear: the 12 months preceding sale. stabilizedAtMarket: all space at market rent and structure as of the exit date — a fee-simple-style exit that strips any residual below-market leases out of the terminal NOI."
+        },
+        "deductBelowTheLineItems": {
+          "type": "boolean",
+          "default": false,
+          "description": "Capitalize NOI net of below-the-line items (conventionally capital reserves). Some buyers cap NOI after reserves; declared so engines agree."
+        },
+        "exitPricePerSF": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Gross exit value per building SF. Required when method is exit_price_psf."
+        },
+        "fixedValue": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Stated gross reversion value, USD. Required when method is fixed_value."
+        },
+        "annualAppreciationPercent": {
+          "type": "number",
+          "description": "Annual appreciation applied to purchasePrice. Required when method is grown_purchase_price."
+        },
+        "sellingCostsPercent": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0,
+          "description": "Costs of sale as a percent of gross reversion value, deducted to reach net reversion."
+        },
+        "deductUnfundedObligations": {
+          "type": "boolean",
+          "default": false,
+          "description": "Deduct outstanding TI/LC and the value of remaining free rent on leases extending past the sale date from the gross reversion — the buyer-assumed-costs adjustment."
+        },
+        "notes": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "method": { "const": "direct_cap" } } },
+          "then": { "required": ["capRatePercent"] }
+        },
+        {
+          "if": { "properties": { "method": { "const": "exit_price_psf" } } },
+          "then": { "required": ["exitPricePerSF"] }
+        },
+        {
+          "if": { "properties": { "method": { "const": "fixed_value" } } },
+          "then": { "required": ["fixedValue"] }
+        },
+        {
+          "if": { "properties": { "method": { "const": "grown_purchase_price" } } },
+          "then": { "required": ["annualAppreciationPercent"] }
+        }
+      ]
+    },
+    "directCap": {
+      "type": "object",
+      "required": ["capRatePercent", "noiBasis"],
+      "additionalProperties": false,
+      "properties": {
+        "capRatePercent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Overall capitalization rate, in percent."
+        },
+        "noiBasis": {
+          "type": "string",
+          "enum": ["year1", "inPlace", "stabilizedAtMarket", "trailing12", "custom"],
+          "description": "NOI to capitalize. year1: forward 12 months from analysisStartDate per the full assumption set. inPlace: annualized contractual rent in force at analysisStartDate less annualized expenses, ignoring rollover and lease-up. stabilizedAtMarket: all space leased at market rent and structure — the fee-simple / lease-to-market basis, typically paired with markToMarket and nearTermAdjustments to walk back to leased-fee as-is value. trailing12: not computable from this file alone; provide customNOI alongside. custom: the stated customNOI."
+        },
+        "customNOI": {
+          "type": "number",
+          "description": "Stated annual NOI, USD. Required when noiBasis is custom or trailing12."
+        },
+        "applyGeneralVacancy": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether marketAssumptions.generalVacancyPercent and creditLossPercent are applied in the basis NOI."
+        },
+        "deductBelowTheLineItems": {
+          "type": "boolean",
+          "default": false,
+          "description": "Capitalize NOI net of below-the-line items (conventionally capital reserves)."
+        },
+        "excludeExpenseIds": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "expenseIds excluded from the capped NOI (e.g. an owner-specific expense a buyer would not inherit)."
+        },
+        "nearTermAdjustments": {
+          "type": "object",
+          "required": ["periodMonths"],
+          "additionalProperties": false,
+          "description": "Deduction of near-term costs from the capitalized value — the conventional bridge from a stabilized capped value to an as-is value. Engines compute scheduled costs within the period from the rent roll and market assumptions.",
+          "properties": {
+            "periodMonths": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Horizon over which near-term costs are deducted, in months from analysisStartDate (e.g. 18)."
+            },
+            "includeDowntimeLostRent": {
+              "type": "boolean",
+              "default": true,
+              "description": "Deduct gross rent (and recoveries) lost to vacancy and downtime within the period."
+            },
+            "includeFreeRent": {
+              "type": "boolean",
+              "default": true,
+              "description": "Deduct scheduled and modeled free rent within the period."
+            },
+            "includeTI": {
+              "type": "boolean",
+              "default": true,
+              "description": "Deduct unfunded and modeled tenant improvement costs within the period."
+            },
+            "includeLC": {
+              "type": "boolean",
+              "default": true,
+              "description": "Deduct unpaid and modeled leasing commissions within the period."
+            },
+            "discountRatePercent": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "When present, deductions are taken at present value discounted at this annual rate; when omitted, at face value."
+            },
+            "notes": { "type": "string" }
+          }
+        },
+        "markToMarket": {
+          "type": "object",
+          "required": ["discountRatePercent"],
+          "additionalProperties": false,
+          "description": "Leased-fee adjustment when capping a market-basis NOI: the present value of (contract − market) rent differentials on each lease through its expiration is added to (above-market) or deducted from (below-market) the capitalized value. Presence of this object enables the adjustment.",
+          "properties": {
+            "discountRatePercent": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Annual rate at which rent differentials are discounted."
+            },
+            "notes": { "type": "string" }
+          }
+        },
+        "adjustments": {
+          "type": "array",
+          "description": "Explicit lump-sum additions or deductions to the capitalized value: deferred maintenance, capital projects, excess land, entitlement value.",
+          "items": {
+            "type": "object",
+            "required": ["name", "type", "amount"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "type": { "type": "string", "enum": ["deduction", "addition"] },
+              "amount": { "type": "number", "exclusiveMinimum": 0, "description": "USD, always positive; type carries the sign." },
+              "category": {
+                "type": "string",
+                "enum": ["deferred_maintenance", "capital_costs", "leasing_costs", "excess_land", "entitlements", "other"]
+              },
+              "notes": { "type": "string" }
+            }
+          }
+        },
+        "notes": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "noiBasis": { "enum": ["custom", "trailing12"] } }, "required": ["noiBasis"] },
+          "then": { "required": ["customNOI"] }
+        }
+      ]
+    },
+    "salesComparison": {
+      "type": "object",
+      "required": ["unitBasis", "comparables", "concludedValuePerUnit"],
+      "additionalProperties": false,
+      "properties": {
+        "unitBasis": {
+          "type": "string",
+          "enum": ["building_sf", "land_sf", "land_acre"],
+          "description": "Unit of comparison. building_sf for improved industrial; land_sf or land_acre for land-driven product (e.g. industrial outdoor storage)."
+        },
+        "comparables": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/saleComparable" }
+        },
+        "concludedValuePerUnit": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Concluded value per unitBasis unit after reconciling the adjusted comparables."
+        },
+        "indicatedValue": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Concluded value × subject units. Stated explicitly so files are self-checking; engines verify against concludedValuePerUnit."
+        },
+        "notes": { "type": "string", "description": "Reconciliation narrative: which comps were weighted and why." }
+      }
+    },
+    "saleComparable": {
+      "type": "object",
+      "required": ["salePrice", "saleDate"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "description": "Identifier or address line for the comp." },
+        "address": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "street1": { "type": "string" },
+            "city": { "type": "string" },
+            "state": { "type": "string", "pattern": "^[A-Z]{2}$" }
+          }
+        },
+        "salePrice": { "type": "number", "exclusiveMinimum": 0, "description": "USD." },
+        "saleDate": { "type": "string", "format": "date" },
+        "buildingSF": { "type": "number", "exclusiveMinimum": 0 },
+        "landAcres": { "type": "number", "exclusiveMinimum": 0 },
+        "pricePerUnit": { "type": "number", "exclusiveMinimum": 0, "description": "Unadjusted price per the parent unitBasis. Stated for self-checking; derivable from salePrice and size." },
+        "capRatePercent": { "type": "number", "exclusiveMinimum": 0, "description": "Going-in cap rate at sale, if known — supports cap rate extraction for the income approach." },
+        "occupancyPercentAtSale": { "type": "number", "minimum": 0, "maximum": 100 },
+        "yearBuilt": { "type": "integer", "minimum": 1800, "maximum": 2100 },
+        "clearHeightFt": { "type": "number", "exclusiveMinimum": 0 },
+        "condition": { "type": "string", "description": "Free-text condition/quality note." },
+        "propertyRights": { "type": "string", "enum": ["fee_simple", "leased_fee", "leasehold"], "description": "Interest conveyed in the comp sale." },
+        "financingNotes": { "type": "string", "description": "Non-market financing or other conditions-of-sale color." },
+        "adjustments": {
+          "type": "array",
+          "description": "Adjustments to the comp toward the subject, applied in listed order. Use either percent or amount per adjustment, not both.",
+          "items": {
+            "type": "object",
+            "required": ["factor"],
+            "additionalProperties": false,
+            "oneOf": [
+              { "required": ["percentAdjustment"], "not": { "required": ["amountPerUnitAdjustment"] } },
+              { "required": ["amountPerUnitAdjustment"], "not": { "required": ["percentAdjustment"] } }
+            ],
+            "properties": {
+              "factor": {
+                "type": "string",
+                "enum": [
+                  "property_rights",
+                  "financing",
+                  "conditions_of_sale",
+                  "market_conditions",
+                  "location",
+                  "size",
+                  "age_condition",
+                  "clear_height",
+                  "loading",
+                  "site_coverage",
+                  "yard",
+                  "other"
+                ],
+                "description": "Element of comparison. market_conditions is the time adjustment."
+              },
+              "percentAdjustment": { "type": "number", "description": "Signed percent, e.g. -5 adjusts the comp down 5%." },
+              "amountPerUnitAdjustment": { "type": "number", "description": "Signed USD per unitBasis unit." },
+              "rationale": { "type": "string" }
+            }
+          }
+        },
+        "adjustedPricePerUnit": { "type": "number", "exclusiveMinimum": 0, "description": "Price per unit after adjustments. Stated for self-checking." },
+        "source": { "type": "string", "description": "Verification source, e.g. \"public record\", \"buyer's broker (confirmed)\"." },
+        "notes": { "type": "string" }
+      }
+    },
+    "costApproach": {
+      "type": "object",
+      "required": ["landValue", "improvements"],
+      "additionalProperties": false,
+      "properties": {
+        "landValue": {
+          "type": "object",
+          "additionalProperties": false,
+          "oneOf": [
+            { "required": ["amount"], "not": { "required": ["perAcreAmount"] } },
+            { "required": ["perAcreAmount"], "not": { "required": ["amount"] } }
+          ],
+          "properties": {
+            "amount": { "type": "number", "exclusiveMinimum": 0, "description": "Land value as if vacant, USD. Provide this or perAcreAmount, not both." },
+            "perAcreAmount": { "type": "number", "exclusiveMinimum": 0, "description": "USD per acre, applied to property.siteAreaAcres." },
+            "landComparables": {
+              "type": "array",
+              "description": "Land sales supporting the conclusion.",
+              "items": {
+                "type": "object",
+                "required": ["salePrice", "saleDate", "landAcres"],
+                "additionalProperties": false,
+                "properties": {
+                  "name": { "type": "string" },
+                  "salePrice": { "type": "number", "exclusiveMinimum": 0 },
+                  "saleDate": { "type": "string", "format": "date" },
+                  "landAcres": { "type": "number", "exclusiveMinimum": 0 },
+                  "zoning": { "type": "string" },
+                  "notes": { "type": "string" }
+                }
+              }
+            },
+            "notes": { "type": "string" }
+          }
+        },
+        "improvements": {
+          "type": "object",
+          "additionalProperties": false,
+          "oneOf": [
+            { "required": ["replacementCostNew"], "not": { "required": ["replacementCostNewPerSF"] } },
+            { "required": ["replacementCostNewPerSF"], "not": { "required": ["replacementCostNew"] } }
+          ],
+          "properties": {
+            "replacementCostNew": { "type": "number", "exclusiveMinimum": 0, "description": "Direct cost of improvements, USD. Provide this or replacementCostNewPerSF, not both." },
+            "replacementCostNewPerSF": { "type": "number", "exclusiveMinimum": 0, "description": "USD per building SF, applied to property.physical.buildingSF." },
+            "costBasis": {
+              "type": "string",
+              "enum": ["replacement", "reproduction"],
+              "default": "replacement",
+              "description": "Replacement (modern equivalent utility) or reproduction (exact replica) cost."
+            },
+            "costSource": { "type": "string", "description": "Basis of the cost estimate, e.g. a published cost service and section, or contractor budget." },
+            "siteImprovementsCost": { "type": "number", "minimum": 0, "description": "Paving, fencing, yard lighting, rail spur — site work beyond the building shell, USD." },
+            "indirectCostsPercent": { "type": "number", "minimum": 0, "description": "Soft costs (A&E, permits, financing, lease-up) as a percent of direct costs, if not already in the cost source." },
+            "entrepreneurialProfitPercent": { "type": "number", "minimum": 0, "description": "Developer profit as a percent of total cost." }
+          }
+        },
+        "depreciation": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Accrued depreciation on the improvements. Percent fields apply to replacement cost new (plus site improvements); the age-life inputs document how physical deterioration was derived.",
+          "properties": {
+            "physicalDeteriorationPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+            "functionalObsolescencePercent": { "type": "number", "minimum": 0, "maximum": 100, "description": "E.g. inadequate clear height or loading for the modern market." },
+            "externalObsolescencePercent": { "type": "number", "minimum": 0, "maximum": 100, "description": "Value loss from outside the property: market conditions, surrounding uses." },
+            "effectiveAgeYears": { "type": "number", "minimum": 0, "description": "Age-life input behind physical deterioration." },
+            "economicLifeYears": { "type": "number", "exclusiveMinimum": 0, "description": "Total economic life used in the age-life calculation." },
+            "notes": { "type": "string" }
+          }
+        },
+        "indicatedValue": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Land + depreciated improvements (+ profit). Stated for self-checking; engines verify against components."
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "reconciliation": {
+      "type": "object",
+      "required": ["concludedValue"],
+      "additionalProperties": false,
+      "description": "Final value conclusion across the approaches carried in this file.",
+      "properties": {
+        "concludedValue": { "type": "number", "exclusiveMinimum": 0, "description": "USD." },
+        "concludedValuePerSF": { "type": "number", "exclusiveMinimum": 0, "description": "Stated for self-checking against property.physical.buildingSF." },
+        "primaryMethod": { "type": "string", "enum": ["dcf", "direct_cap", "sales_comparison", "cost"], "description": "The approach given most weight." },
+        "exposureTimeMonths": { "type": "number", "minimum": 0, "description": "Estimated exposure time supporting the conclusion (appraisal context)." },
+        "marketingTimeMonths": { "type": "number", "minimum": 0 },
+        "notes": { "type": "string", "description": "Reconciliation narrative: weighting rationale across approaches." }
+      }
+    }
+  }
+}
+```
+
+---
+
+# Annotated example
+
+A complete, valid `.ore` file populating every module (synthetic data). This is the single-tenant NNN example from the repository; study it as a template.
+
+```json
+{
+  "$schema": "https://oreformat.org/schema/0.1.0/ore.schema.json",
+  "formatVersion": "0.1.0",
+  "property": {
+    "name": "14250 Marigold Avenue",
+    "propertyType": "industrial",
+    "propertySubtype": "warehouse_distribution",
+    "tenancy": "single",
+    "description": "Synthetic example: single-tenant infill distribution building on a fenced 2.1-acre site. All data in this file is fictional.",
+    "address": {
+      "street1": "14250 Marigold Ave",
+      "city": "Santa Fe Springs",
+      "state": "CA",
+      "postalCode": "90670",
+      "county": "Los Angeles",
+      "country": "US"
+    },
+    "location": {
+      "latitude": 33.9325,
+      "longitude": -118.0631,
+      "market": "Los Angeles",
+      "submarket": "Mid-Counties"
+    },
+    "parcels": [
+      {
+        "apn": "8888-001-002",
+        "landAcres": 2.1,
+        "zoning": "M-2"
+      }
+    ],
+    "siteAreaAcres": 2.1,
+    "physical": {
+      "buildingSF": 45120,
+      "officeSF": 3800,
+      "clearHeightFt": 24,
+      "dockHighDoors": 6,
+      "gradeLevelDoors": 2,
+      "railServed": false,
+      "yearBuilt": 1988,
+      "yearRenovated": 2019,
+      "stories": 1,
+      "construction": "tilt_up",
+      "sprinkler": "wet",
+      "powerAmps": 1200,
+      "powerVolts": "277/480V 3-phase",
+      "truckCourtDepthFt": 110,
+      "autoParkingStalls": 42,
+      "coverageRatio": 0.49,
+      "fencedYard": true
+    }
+  },
+  "rentRoll": {
+    "asOfDate": "2026-06-01",
+    "leases": [
+      {
+        "leaseId": "L-001",
+        "tenant": {
+          "name": "Pacific Coast Fulfillment LLC",
+          "industry": "third-party logistics",
+          "creditNotes": "Private regional 3PL, in occupancy since 2021, no late payments per synthetic ledger."
+        },
+        "leasedSF": 45120,
+        "commencementDate": "2021-09-01",
+        "expirationDate": "2028-08-31",
+        "baseRent": {
+          "unit": "perSFPerMonth",
+          "schedule": [
+            {
+              "startDate": "2025-09-01",
+              "amount": 1.42
+            }
+          ]
+        },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 3.5,
+          "frequencyMonths": 12
+        },
+        "reimbursement": {
+          "structure": "NNN",
+          "proRataSharePercent": 100
+        },
+        "options": [
+          {
+            "type": "renewal",
+            "noticeMonths": 9,
+            "renewalTermMonths": 60,
+            "renewalCount": 1,
+            "rentBasis": "market",
+            "notes": "Fair market rent, not less than rent in the final month of the initial term."
+          }
+        ],
+        "securityDeposit": {
+          "amount": 64070,
+          "form": "cash"
+        },
+        "notes": "Steps prior to the as-of date omitted per spec convention; escalation rule generates 2026-2028 steps."
+      }
+    ],
+    "vacantSuites": [],
+    "notes": "Synthetic single-tenant NNN example for schema validation and engine golden files."
+  },
+  "expenses": {
+    "items": [
+      {
+        "expenseId": "E-TAX",
+        "name": "Real Estate Taxes",
+        "category": "real_estate_taxes",
+        "amount": 169200,
+        "amountUnit": "totalPerYear",
+        "recoverable": true,
+        "growthOverridePercent": 2.0,
+        "notes": "Synthetic; modeled at 1.2% of assumed price, statutory 2% annual growth."
+      },
+      {
+        "expenseId": "E-INS",
+        "name": "Insurance",
+        "category": "insurance",
+        "amount": 0.3,
+        "amountUnit": "perSFPerYear",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-CAM",
+        "name": "CAM / Repairs & Maintenance",
+        "category": "cam",
+        "amount": 0.5,
+        "amountUnit": "perSFPerYear",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-MGMT",
+        "name": "Management Fee",
+        "category": "management_fee",
+        "amount": 2.5,
+        "amountUnit": "percentOfEGR",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-RES",
+        "name": "Capital Reserves",
+        "category": "reserves",
+        "amount": 0.1,
+        "amountUnit": "perSFPerYear",
+        "recoverable": false,
+        "belowTheLine": true
+      }
+    ]
+  },
+  "marketAssumptions": {
+    "asOfDate": "2026-06-01",
+    "growth": {
+      "marketRent": [
+        {
+          "fromYear": 1,
+          "annualPercent": 4.0
+        },
+        {
+          "fromYear": 3,
+          "annualPercent": 3.0
+        }
+      ],
+      "expenses": 3.0,
+      "cpi": 2.5
+    },
+    "generalVacancyPercent": 0,
+    "creditLossPercent": 0.5,
+    "marketLeasing": {
+      "warehouse": {
+        "marketRent": {
+          "amount": 1.55,
+          "unit": "perSFPerMonth"
+        },
+        "termMonths": 60,
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 3.5,
+          "frequencyMonths": 12
+        },
+        "reimbursementStructure": "NNN",
+        "downtimeMonths": 4,
+        "renewalProbabilityPercent": 70,
+        "newTenant": {
+          "tiPerSF": 3,
+          "lcPercentOfRent": 5,
+          "freeRentMonths": 1
+        },
+        "renewal": {
+          "tiPerSF": 0.5,
+          "lcPercentOfRent": 2.5
+        },
+        "renewalRentPercentOfMarket": 95
+      }
+    }
+  },
+  "valuation": {
+    "analysisStartDate": "2026-06-01",
+    "methods": [
+      "dcf",
+      "direct_cap"
+    ],
+    "interestAppraised": "leased_fee",
+    "valuePremise": "as_is",
+    "purpose": "acquisition",
+    "purchasePrice": 14100000,
+    "acquisitionCostsPercent": 0.5,
+    "dcf": {
+      "holdPeriodYears": 10,
+      "discountRatePercent": 6.75,
+      "discountTiming": "monthly",
+      "periodConvention": "end",
+      "terminalValue": {
+        "method": "direct_cap",
+        "capRatePercent": 5.75,
+        "noiBasis": "forwardYear",
+        "deductBelowTheLineItems": false,
+        "sellingCostsPercent": 1.5
+      }
+    },
+    "directCap": {
+      "capRatePercent": 5.45,
+      "noiBasis": "year1",
+      "applyGeneralVacancy": true
+    }
+  },
+  "debt": {
+    "ltvPercent": 55,
+    "interestRatePercent": 5.85,
+    "rateType": "fixed",
+    "termMonths": 120,
+    "amortizationMonths": 360,
+    "interestOnlyMonths": 24,
+    "originationFeePercent": 1.0,
+    "fundingDate": "2026-06-01"
+  },
+  "provenance": {
+    "generatedAt": "2026-06-10T17:00:00Z",
+    "generatedBy": {
+      "name": "ORE Project Examples",
+      "organization": "ORE (Open Real Estate)",
+      "role": "other",
+      "email": "examples@oreformat.org"
+    },
+    "sourceDocuments": [
+      {
+        "name": "Synthetic Lease Agreement",
+        "type": "lease",
+        "date": "2021-08-15"
+      },
+      {
+        "name": "Synthetic Operating Statement CY2025",
+        "type": "operating_statement",
+        "date": "2026-01-15"
+      }
+    ],
+    "confidentiality": "None — fully synthetic example data published with the ORE specification.",
+    "notes": "All parties, documents, and figures are fictional."
+  }
+}
+```
