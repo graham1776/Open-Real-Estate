@@ -41,9 +41,9 @@ perfect institutional DCF.
       MG base-year/stop recoveries, true two-branch rollover, TI/LC split,
       general-vacancy de-dup, debt schedule, levered/unlevered IRR, NOI bridge,
       annual cash flows, sensitivity grid; goldens consciously re-locked
-- [ ] `llms.txt`: the spec, data dictionary, and an annotated example published as
-      a single LLM-ingestible document (see `docs/design/llm-and-excel.md`)
-- [ ] README leads with a viewer screenshot/GIF
+- [x] `llms.txt`: the spec, data dictionary, and an annotated example published as
+      a single LLM-ingestible document, generated from source (`npm run llms`)
+- [x] README leads with a viewer screenshot/GIF
 - [x] README, CONTRIBUTING, GOVERNANCE, ROADMAP, LICENSE in place
 
 ## v0.1 scope (deliberate constraints)
