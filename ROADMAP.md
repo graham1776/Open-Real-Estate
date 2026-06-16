@@ -57,6 +57,15 @@ disclosure until engine support lands. Out of scope for v0.1: retail percentage
 rent, office complex reimbursement pools, hotel, multifamily unit-level,
 international conventions, debt waterfalls.
 
+**Field-level coverage and the v0.2 gap backlog** — what the format represents and
+what the engine actually computes, element by element — live in
+[`spec/coverage.md`](spec/coverage.md), the single source of truth for "is *X*
+supported?". The headline v0.2 priorities from that audit: honor tenant options in
+the engine (a silent overvaluation bug today), controllable-expense caps, expense
+gross-up, property-tax reassessment on sale, actual MG base-year, dated capital
+expenditures, and reserving the property→building→suite→lease hierarchy field names
+(the one change with a clock on it — see the coverage doc's open-decisions section).
+
 ## After v0.1
 
 Strategy for the AI and Excel tracks: `docs/design/llm-and-excel.md`.
