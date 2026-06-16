@@ -38,9 +38,10 @@ exists.
 |---|---|---|---|---|
 | Name, situs address, market/submarket, lat-long | ✅ | — | | |
 | Parcels / APNs / zoning (per parcel) | ✅ | — | | |
-| Asset type / industrial subtype | ✅ | ✅ | | |
-| Owner / title-holding entity (SPE) | ✗ | — | v0.2 | provenance names the *producer*, not the owner; map to REDI asset-ownership fields |
-| Ground-lease vs fee; ground-rent payment stream | ◐ | ⚠️ | v0.2 | `interestAppraised: leasehold` flag exists; no ground-rent outflow modeled |
+| Asset type / industrial subtype | ✅ | ✅ | v0.x | crosswalk to REDI *Industrial – {Manufacturing, Warehouse, Flex/R&D, Cold Storage, Life Science, Specialized}*; ORE adds IOS & truck-terminal granularity but **lacks `life_science`** — add it |
+| Owner / title-holding entity (SPE) | ✗ | — | v0.2 | provenance names the *producer*, not the owner |
+| Ownership share / JV partner / investment structure | ✗ | — | v0.x | REDI *Legal Ownership Share*, *JV Partner*, *Investment Structure* — needed when an ORE file backs a partial-interest valuation |
+| Ground-lease vs fee; ground-rent payment stream | ◐ | ⚠️ | v0.2 | `interestAppraised: leasehold` flag exists; no ground-rent outflow modeled. REDI *Ownership Type* = Freehold/Leasehold |
 | Multi-building campus / business park as one asset | ✗ | — | v0.2 | see [§10 hierarchy decision](#10-structural-open-decisions) |
 | Legal description, easements, encroachments | ✗ | — | v0.x | notes only |
 | Flood zone / environmental (Phase I, contamination) | ✗ | — | v0.x | notes only |
@@ -53,8 +54,10 @@ exists.
 | RBA, office SF, mezzanine SF | ✅ | ✅ | | RBA is the per-SF / pro-rata denominator |
 | Clear height, dock/grade doors, truck court, trailer & auto parking | ✅ | — | | |
 | Year built/renovated, construction, sprinkler, power, rail, coverage/FAR, fenced yard | ✅ | — | | |
-| **Rentable-vs-usable / load factor** | ✗ | — | v0.2 | BOMA / SIOR; pro-rata share & $/SF both depend on it |
+| **Gross area vs net rentable area / load factor** | ✗ | — | v0.2 | REDI splits *Gross Area* and *Net Rentable Area*; ORE's single `buildingSF` conflates them. BOMA/SIOR; pro-rata share & $/SF both depend on it |
 | **Measurement standard declaration (BOMA/SIOR/gross)** | ✗ | — | v0.2 | BOMA 2017; today only free-text in `notes` |
+| Cross-dock configuration; number of leasable units | ✗ | — | v0.x | REDI *Cross Dock* (bool), *Number of Units* |
+| Area unit (SF vs m²) | ✗ | — | scope | REDI *Area/Size Unit of Measurement*; ORE is SF-only by US charter |
 | **Remeasurement (event or restated RBA)** | ✗ | — | v0.x | changes $/SF rent and shares mid-hold |
 | `sf_mismatch` tolerance vs loaded buildings | ✅ | ◐ | v0.2 | engine warns at >0.5%; false-positives on any load-factored multi-tenant building |
 | Column spacing, floor load, HVAC / cold-storage spec, roof age, condition / PCA | ✗ | — | v0.x | `cold_storage` subtype exists with no temp spec |
@@ -155,6 +158,27 @@ thoroughly and **recovery income** and **lease optionality** crudely.
 | Data-as-of dates (`asOfDate`, `analysisStartDate`) | ✅ | ✅ | | |
 | Currency declaration | ✗ | — | v0.x | USD implicit; fine for US-only v0.1 |
 
+## 9a. Engine output metrics & REDI asset-reporting alignment
+
+REDI's asset-level **Operations** and **Valuation** domains are, field-for-field,
+the *outputs* an ORE engine run produces from lease-level inputs — the "REDI for
+reporting, ORE for transactions" thesis made literal: one ORE file → engine → a
+populated REDI asset record, no re-keying.
+
+| REDI asset field | ORE today | Target |
+|---|---|---|
+| Percent Leased | ✅ `occupancy.occupancyPercent` | |
+| Contract Rent / Market Rent (Next 12 Months) | ✅ in-place vs market rent | |
+| Going-in / Terminal / Stabilized Cap Rate, Discount Rate | ✅ valuation inputs & direct-cap/DCF outputs | |
+| Lease Roll (Next 12 Months), % by rent | ◐ portfolio expiration schedule by year; not a single 12-mo % per asset | v0.2 |
+| **Weighted Average Lease Term (WALT)** | ✗ not emitted | **v0.2** |
+| Weighted Average Lease to Break | ✗ (needs break-option dates) | v0.x |
+| Net Initial Yield, Reversionary Potential | ✗ (INREV metrics; derivable) | v0.x |
+
+A future `ore export-redi` mapping (engine output → REDI asset fields) would hand an
+ORE-transacting shop's LP-reporting team a populated REDI record directly — the
+cleanest demonstration that the two layers compose.
+
 ---
 
 ## 10. Structural open decisions
@@ -195,18 +219,24 @@ backlog — every other gap below is purely additive and can land any time.
 Ordered by credibility risk — the items most likely to make ORE's NOI visibly
 disagree with a real underwrite on the first industrial deal, which is what would
 undercut the "same inputs → same NOI" thesis. All are **additive** to the schema
-unless noted.
+unless noted. **IDs are stable** — reference them when scoping work ("do G2"); each
+is one chunk = schema change + engine change + example coverage + golden re-lock +
+one PR.
 
-1. **Honor tenant options in the engine** — a below-market fixed renewal currently
-   overvalues silently. *(Correctness bug, not a missing feature.)*
-2. **Controllable-expense caps** + controllable/non-controllable classification.
-3. **Expense gross-up to occupancy.**
-4. **Property-tax reassessment on sale** (going-in and at reversion).
-5. **Actual MG base-year amount** (stop estimating by deflation).
-6. **One-time / dated capital expenditures** in the DCF.
-7. **Fix silent Gross recoveries** + apply `adminFeePercent`.
-8. **Reserve the hierarchy field names** (§10) — the one item with a clock.
-9. Ground-lease payment stream; parking / IOS-yard other-income line.
+| ID | Item | Why |
+|---|---|---|
+| **G1** | Honor tenant options in the engine | a below-market fixed renewal overvalues silently — a correctness bug, not a missing feature |
+| **G2** | Controllable-expense caps + controllable/non-controllable classification | biggest recovery-income gap for industrial NNN |
+| **G3** | Expense gross-up to occupancy | under-collects on partially-occupied multi-tenant |
+| **G4** | Property-tax reassessment on sale (going-in & reversion) | often the largest expense swing in a CA hold |
+| **G5** | Actual MG base-year amount (stop estimating by deflation) | correctness of MG recoveries |
+| **G6** | One-time / dated capital expenditures in the DCF | only a recurring reserve today |
+| **G7** | Fix silent `Gross` recoveries + apply `adminFeePercent` | silent zero-recovery and ignored CAM admin load |
+| **G8** | Reserve the hierarchy field names (§10) | the one item with a clock |
+| **G9** | Ground-lease payment stream; parking / IOS other-income line | missing income & outflow streams |
+| **G10** | Gross area vs net rentable area + load factor (REDI naming) | pro-rata share & $/SF depend on it |
+| **G11** | Emit WALT + 12-month lease-roll % (engine output) | REDI asset-reporting alignment (§9a) |
+| **G12** | Add `life_science` subtype; write the ORE→REDI field crosswalk | REDI-surfaced; small, additive |
 
 ## Deliberately out of scope (v0.1 charter)
 
@@ -218,16 +248,28 @@ conventions and multi-currency; office / multifamily / hotel structures.
 ## Standards alignment
 
 Following REDI's discipline, each ORE field should map to an existing standard where
-one exists, rather than inventing a definition:
+one exists, rather than inventing a definition. Reviewed against the **REDI Data
+Model v1.0** (376 fields across Fund / Asset / Loan / Portfolio domains, each mapped
+to NCREIF Reporting Standards and INREV):
 
 - **Expense categories** → NCREIF / PREA Reporting Standards expense taxonomy.
-- **Area measurement** → BOMA 2017 / SIOR industrial conventions (the §2 load-factor
-  and measurement-standard rows).
-- **Asset & ownership identity** → REDI asset-level fields (exact field IDs pending —
-  the REDI data model is gated; align on the published v1.0 dictionary when
-  accessible).
+- **Area measurement** → BOMA 2017 / SIOR; adopt REDI's *Gross Area* vs *Net
+  Rentable Area* split (G10).
+- **Asset identity & physical** → REDI Asset Data *Informational* fields (Asset
+  Type/Subtype, Street Address, Year Built/Last Renovated, Clear Height, Cross Dock,
+  Net Rentable Area, Ownership Type, Investment Structure, Gross/Net Purchase Price).
+- **Valuation & operations metrics** → REDI Asset *Valuation* / *Operations* fields
+  (Going-in/Terminal/Stabilized Cap Rate, Discount Rate, Percent Leased, Lease Roll,
+  WALT) — these are ORE engine *outputs*; see §9a.
 
-REDI standardizes the *reporting* layer (GP→LP, backward-looking); ORE standardizes
-the *transaction* layer (broker↔buyer↔appraiser, forward-looking). The overlap is
-exactly the asset-identity and operating-financials rows above — aligning their
-definitions is the field-level form of "REDI for reporting, ORE for transactions."
+**Key structural finding:** REDI stops at the **asset level** — there is no
+lease/tenant-level granularity in its model (it aggregates to Percent Leased, WALT,
+Lease Roll). ORE operates one level *below* that, at the individual lease, and
+*produces* REDI's asset-level rollups. That is the complementary relationship made
+concrete: REDI standardizes the *reporting* layer (GP→LP, backward-looking,
+asset-aggregated); ORE standardizes the *transaction* layer (broker↔buyer↔appraiser,
+forward-looking, lease-level). "REDI for reporting, ORE for transactions" is not just
+a slogan — the two models meet exactly at the asset-summary boundary, which is why an
+`ore export-redi` mapping (§9a) is clean.
+
+*Source: REDI Data Model v1.0 workbook (Guide / REDI Data Fields / REDI Lists tabs).*
