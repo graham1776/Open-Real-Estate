@@ -71,7 +71,8 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "NNN",
+          "adminFeePercent": 15
         },
         "securityDeposit": {
           "amount": 32226,

@@ -406,9 +406,8 @@ export function buildModel(deal, horizon, warnings) {
                 warnings.add("mg_no_base", `Lease ${lease.leaseId}: MG lease has neither baseYear nor expenseStopPerSF; zero recoveries modeled.`, "mgnb:" + lease.leaseId);
             }
         }
-        if (lease.reimbursement.adminFeePercent) {
-            warnings.add("admin_fee_not_modeled", `Lease ${lease.leaseId}: reimbursement.adminFeePercent not modeled in engine v0.1.`, "adm:" + lease.leaseId);
-        }
+        // admin/management fee markup the lease lets the landlord add to recoveries
+        const adminMarkup = 1 + (lease.reimbursement.adminFeePercent ?? 0) / 100;
         for (let m = 0; m < Math.min(expiry, horizon); m++) {
             const rate = contractRate(lease, m, ctx);
             const ab = abatement(lease, m, ctx);
@@ -418,18 +417,26 @@ export function buildModel(deal, horizon, warnings) {
             total.free[m] += rate * (1 - ab.rentFactor);
             const reimbursing = !(ab.abatesReimb && ab.rentFactor < 1);
             if ((structure === "NNN" || structure === "NN") && reimbursing) {
-                // per-lease exclusions: recover share of (recoverable − excluded)
+                // Base recovery: an exclusion list forces the direct-dollar path (the
+                // aggregate SF-fraction path can't carry it); otherwise stay aggregate so
+                // the recoverable-management-fee gross-up still reaches this lease.
                 if (lease.reimbursement.excludedExpenses?.length) {
-                    mgRecov[m] += share * leaseRecovBase(ctx, m, lease); // direct dollars, bypasses aggregate frac
+                    mgRecov[m] += share * leaseRecovBase(ctx, m, lease);
                 }
                 else {
                     total.recovNNN[m] += lease.leasedSF * (share / (lease.leasedSF / ctx.buildingSF)); // normalized SF honoring stated share
                 }
+                // Admin/management-fee markup on recoverable expenses — additional income
+                // the landlord adds on top, taken as direct dollars over the base.
+                if (adminMarkup !== 1)
+                    mgRecov[m] += share * leaseRecovBase(ctx, m, lease) * (adminMarkup - 1);
             }
             if (structure === "MG" && mgBaseMonthly != null && reimbursing) {
                 const recovNow = leaseRecovBase(ctx, m, lease);
-                mgRecov[m] += Math.max(0, share * (recovNow - mgBaseMonthly * growthFactor(0, m)));
+                mgRecov[m] += Math.max(0, share * (recovNow - mgBaseMonthly * growthFactor(0, m))) * adminMarkup;
             }
+            // Gross: tenant pays gross rent, landlord absorbs operating expenses — no
+            // reimbursement (an intentional $0 recovery, not a missing case).
             if (profile)
                 contractVsMarket[m] += rate - marketRate(profile, lease.leasedSF, m, ctx);
         }

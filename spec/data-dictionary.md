@@ -152,7 +152,7 @@ authoritative over generated ones.
 | `proRataSharePercent` | number | Tenant's share, percent. Defaults to `leasedSF / property.physical.buildingSF × 100`. |
 | `baseYear` | integer | MG base year (provide this **or** `expenseStopPerSF`, not both). |
 | `expenseStopPerSF` | number | MG expense stop, USD/SF/yr. |
-| `adminFeePercent` | number | Admin/management markup on recoveries, percent. |
+| `adminFeePercent` | number | Admin/management markup on recoverable expenses, percent. The engine adds it as additional recovery income on top of the tenant's recoverable-expense share (e.g. `15` = the tenant reimburses 115% of its share). |
 | `excludedExpenses[]` | string[] | `expenseId`s this lease excludes from recovery, overriding expense-level flags. |
 
 ### `lease.options[]`
