@@ -157,9 +157,18 @@ authoritative over generated ones.
 
 ### `lease.options[]`
 
+The reference engine models **renewal** options: at the lease's expiry the renewal
+branch of rollover uses the option's stated rent (`fixed` or `percent_of_market`,
+capped at market — a rational tenant won't renew above market) and `renewalTermMonths`,
+instead of the generic market-leasing assumptions. A `market`-basis renewal stays on
+the generic path. Renewal *probability* remains the market profile's
+`renewalProbabilityPercent`; when an option is below market the engine warns that real
+exercise is likely higher. termination/expansion/purchase/ROFR/ROFO are carried for
+diligence and do not yet affect cash flows.
+
 | Field | Type | Definition |
 |---|---|---|
-| `type` **(R)** | enum | `renewal`, `termination`, `purchase`, `expansion`, `right_of_first_refusal`, `right_of_first_offer`. Renewal options carry modelable economics; the rest are disclosed for diligence. |
+| `type` **(R)** | enum | `renewal`, `termination`, `purchase`, `expansion`, `right_of_first_refusal`, `right_of_first_offer`. Renewal options carry modelable economics (above); the rest are disclosed for diligence. |
 | `noticeMonths` | number | Required notice before the option date. |
 | `earliestExerciseDate` | date | Earliest effective date. |
 | `renewalTermMonths` | integer | Renewal term length (renewal only). |

@@ -86,8 +86,9 @@
             "noticeMonths": 9,
             "renewalTermMonths": 60,
             "renewalCount": 1,
-            "rentBasis": "market",
-            "notes": "Fair market rent, not less than rent in the final month of the initial term."
+            "rentBasis": "fixed",
+            "fixedRent": 1.50,
+            "notes": "Below-market fixed renewal at $1.50/SF/mo. The engine models the renewal branch at the option rent (capped at market), so this in-the-money option drags reversion value; before honoring options it rolled to full market."
           }
         ],
         "securityDeposit": {

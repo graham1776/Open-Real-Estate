@@ -324,7 +324,7 @@ function renderRentRoll(deal) {
       <td class="num">${num(step.amount, 2)} <span class="muted">${esc(l.baseRent.unit)}</span></td>
       <td>${esc(l.escalation?.type ?? "none")}${l.escalation?.rate != null ? ` ${l.escalation.rate}%` : ""}</td>
       <td>${esc(l.reimbursement.structure)}</td>
-      <td>${(l.options ?? []).map((o) => esc(o.type)).join(", ") || "—"}</td>
+      <td>${(l.options ?? []).map((o) => esc(o.type) + (o.type === "renewal" && o.rentBasis ? ` @ ${esc(o.rentBasis)}${o.rentBasis === "fixed" && o.fixedRent != null ? " " + o.fixedRent : o.rentBasis === "percent_of_market" && o.percentOfMarket != null ? " " + o.percentOfMarket + "%" : ""}` : "")).join(", ") || "—"}</td>
     </tr>`;
   }).join("");
   const vac = (rr.vacantSuites ?? []).map((v) =>
