@@ -10,10 +10,10 @@
       "occupancyPercent": 81.89,
       "inPlaceWARentPerSFPerMonth": 1.32,
       "inPlaceVsMarketPercent": -12.21,
-      "year1NOI": 1002906,
+      "year1NOI": 1016371,
       "concludedValue": 21200000,
       "valuePerSF": 270.41,
-      "unleveredIRRPercent": 8.79
+      "unleveredIRRPercent": 8.81
     },
     {
       "label": "single-tenant-nnn",
@@ -51,11 +51,17 @@
     "inPlaceWARentPerSFPerMonth": 1.18,
     "marketWARentPerSFPerMonth": 1.55,
     "inPlaceVsMarketPercent": -23.97,
-    "year1NOI": 2398238,
+    "year1NOI": 2411703,
     "stabilizedAtMarketNOI": 3347326,
     "purchasePrice": 50800000,
     "concludedValue": 52371489,
     "concludedValuePerSF": 282.3
+  },
+  "leaseMetrics": {
+    "waltYearsByRent": 2.06,
+    "waltYearsBySF": 1.91,
+    "rollNext12ByRentPercent": 11.08,
+    "rollNext12BySFPercent": 11.03
   },
   "cashFlows": {
     "annual": [
@@ -65,17 +71,17 @@
         "scheduledBaseRent": 2516829,
         "freeRent": -52065,
         "absorptionVacancy": -156112,
-        "expenseRecoveries": 711680,
-        "generalVacancy": -7679,
-        "creditLoss": -20402,
-        "effectiveGrossRevenue": 3200427,
+        "expenseRecoveries": 725706,
+        "generalVacancy": -7750,
+        "creditLoss": -20472,
+        "effectiveGrossRevenue": 3214313,
         "operatingExpenses": -714732,
-        "managementFee": -87458,
-        "noi": 2398237,
+        "managementFee": -87879,
+        "noi": 2411702,
         "belowTheLine": -28672,
         "tiCosts": -69085,
         "lcCosts": -91886,
-        "cashFlow": 2208595
+        "cashFlow": 2222059
       },
       {
         "year": 2,
@@ -83,17 +89,17 @@
         "scheduledBaseRent": 2755123,
         "freeRent": -134667,
         "absorptionVacancy": -399924,
-        "expenseRecoveries": 740141,
-        "generalVacancy": -43047,
-        "creditLoss": -21037,
-        "effectiveGrossRevenue": 3431180,
+        "expenseRecoveries": 752192,
+        "generalVacancy": -43408,
+        "creditLoss": -21096,
+        "effectiveGrossRevenue": 3442812,
         "operatingExpenses": -730922,
-        "managementFee": -95818,
-        "noi": 2604440,
+        "managementFee": -96180,
+        "noi": 2615710,
         "belowTheLine": -29532,
         "tiCosts": -278050,
         "lcCosts": -531964,
-        "cashFlow": 1764894
+        "cashFlow": 1776164
       },
       {
         "year": 3,
@@ -245,13 +251,13 @@
     "unlevered": {
       "irrPercent": 9.71,
       "equityMultiple": 1.79,
-      "totalProfit": 40194561,
+      "totalProfit": 40219296,
       "initialInvestment": 51092750
     },
     "levered": {
-      "irrPercent": 11.01,
+      "irrPercent": 11.03,
       "equityMultiple": 1.94,
-      "totalProfit": 32980142,
+      "totalProfit": 33004877,
       "initialEquity": 35000300
     },
     "includedDeals": [

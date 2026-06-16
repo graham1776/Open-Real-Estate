@@ -458,9 +458,8 @@ export function buildModel(deal: OreFile, horizon: number, warnings: Warnings): 
         warnings.add("mg_no_base", `Lease ${lease.leaseId}: MG lease has neither baseYear nor expenseStopPerSF; zero recoveries modeled.`, "mgnb:" + lease.leaseId);
       }
     }
-    if (lease.reimbursement.adminFeePercent) {
-      warnings.add("admin_fee_not_modeled", `Lease ${lease.leaseId}: reimbursement.adminFeePercent not modeled in engine v0.1.`, "adm:" + lease.leaseId);
-    }
+    // admin/management fee markup the lease lets the landlord add to recoveries
+    const adminMarkup = 1 + (lease.reimbursement.adminFeePercent ?? 0) / 100;
 
     for (let m = 0; m < Math.min(expiry, horizon); m++) {
       const rate = contractRate(lease, m, ctx);
@@ -471,17 +470,24 @@ export function buildModel(deal: OreFile, horizon: number, warnings: Warnings): 
       total.free[m]! += rate * (1 - ab.rentFactor);
       const reimbursing = !(ab.abatesReimb && ab.rentFactor < 1);
       if ((structure === "NNN" || structure === "NN") && reimbursing) {
-        // per-lease exclusions: recover share of (recoverable − excluded)
+        // Base recovery: an exclusion list forces the direct-dollar path (the
+        // aggregate SF-fraction path can't carry it); otherwise stay aggregate so
+        // the recoverable-management-fee gross-up still reaches this lease.
         if (lease.reimbursement.excludedExpenses?.length) {
-          mgRecov[m]! += share * leaseRecovBase(ctx, m, lease); // direct dollars, bypasses aggregate frac
+          mgRecov[m]! += share * leaseRecovBase(ctx, m, lease);
         } else {
           total.recovNNN[m]! += lease.leasedSF * (share / (lease.leasedSF / ctx.buildingSF)); // normalized SF honoring stated share
         }
+        // Admin/management-fee markup on recoverable expenses — additional income
+        // the landlord adds on top, taken as direct dollars over the base.
+        if (adminMarkup !== 1) mgRecov[m]! += share * leaseRecovBase(ctx, m, lease) * (adminMarkup - 1);
       }
       if (structure === "MG" && mgBaseMonthly != null && reimbursing) {
         const recovNow = leaseRecovBase(ctx, m, lease);
-        mgRecov[m]! += Math.max(0, share * (recovNow - mgBaseMonthly * growthFactor(0, m)));
+        mgRecov[m]! += Math.max(0, share * (recovNow - mgBaseMonthly * growthFactor(0, m))) * adminMarkup;
       }
+      // Gross: tenant pays gross rent, landlord absorbs operating expenses — no
+      // reimbursement (an intentional $0 recovery, not a missing case).
       if (profile) contractVsMarket[m]! += rate - marketRate(profile, lease.leasedSF, m, ctx);
     }
 
@@ -964,6 +970,39 @@ export function annualTable(model: MonthlyModel, H: number): AnnualRow[] {
   return rows;
 }
 
+// ----------------------------------------------------- lease term metrics
+//
+// WALT and lease-roll, the standard occupancy-quality measures (and REDI asset
+// Operations fields). Weighted by in-place contract rent (the REDI convention)
+// and, separately, by SF. Remaining term runs from the analysis start to the end
+// of the expiration month; vacant space is excluded.
+
+export interface LeaseMetrics {
+  waltYearsByRent: number | null;
+  waltYearsBySF: number | null;
+  rollNext12ByRentPercent: number;
+  rollNext12BySFPercent: number;
+}
+
+function computeLeaseMetrics(deal: OreFile, start: string, ctx0: EngineCtx): LeaseMetrics {
+  let remRent = 0, totRent = 0, remSF = 0, totSF = 0, rollRent = 0, rollSF = 0;
+  for (const lease of deal.rentRoll.leases) {
+    const remMonths = Math.max(0, monthIndex(lease.expirationDate, start) + 1);
+    const remYears = remMonths / 12;
+    const rentAnnual = contractRate(lease, 0, ctx0) * 12;
+    const sf = lease.leasedSF;
+    remRent += remYears * rentAnnual; totRent += rentAnnual;
+    remSF += remYears * sf; totSF += sf;
+    if (monthIndex(lease.expirationDate, start) < 12) { rollRent += rentAnnual; rollSF += sf; }
+  }
+  return {
+    waltYearsByRent: totRent > 0 ? round2(remRent / totRent) : null,
+    waltYearsBySF: totSF > 0 ? round2(remSF / totSF) : null,
+    rollNext12ByRentPercent: totRent > 0 ? round2((rollRent / totRent) * 100) : 0,
+    rollNext12BySFPercent: totSF > 0 ? round2((rollSF / totSF) * 100) : 0,
+  };
+}
+
 // ------------------------------------------------------------- computeAll
 
 export function computeAll(deal: OreFile) {
@@ -1033,6 +1072,7 @@ export function computeAll(deal: OreFile) {
       buildingSF: sf, occupiedSF, vacantSF,
       occupancyPercent: round2((occupiedSF / sf) * 100),
     },
+    leaseMetrics: computeLeaseMetrics(deal, start, ctx0),
     rent: {
       inPlaceAnnualBaseRent: round0(inPlaceMonthly * 12),
       inPlaceWARentPerSFPerMonth: waInPlace != null ? round2(waInPlace) : null,
@@ -1093,12 +1133,18 @@ export function computePortfolio(entries: PortfolioEntry[]) {
   let buildingSF = 0, occupiedSF = 0, vacantSF = 0, inPlaceAnnual = 0, y1NOI = 0;
   let stabSum = 0, stabCount = 0, priceSum = 0, priceCount = 0, concludedSum = 0, concludedCount = 0;
   let mktWeighted = 0, mktSF = 0;
+  let waltRentNum = 0, waltRentDen = 0, waltSFNum = 0, waltSFDen = 0, rollRentNum = 0, rollSFNum = 0;
   for (const p of per) {
     buildingSF += p.out.occupancy.buildingSF;
     occupiedSF += p.out.occupancy.occupiedSF;
     vacantSF += p.out.occupancy.vacantSF;
     inPlaceAnnual += p.out.rent.inPlaceAnnualBaseRent;
     y1NOI += p.out.noi.year1NOI;
+    const lm = p.out.leaseMetrics, rentI = p.out.rent.inPlaceAnnualBaseRent, sfI = p.out.occupancy.occupiedSF;
+    if (lm.waltYearsByRent != null) { waltRentNum += lm.waltYearsByRent * rentI; waltRentDen += rentI; }
+    if (lm.waltYearsBySF != null) { waltSFNum += lm.waltYearsBySF * sfI; waltSFDen += sfI; }
+    rollRentNum += (lm.rollNext12ByRentPercent / 100) * rentI;
+    rollSFNum += (lm.rollNext12BySFPercent / 100) * sfI;
     if (p.out.noi.stabilizedAtMarketNOI != null) { stabSum += p.out.noi.stabilizedAtMarketNOI; stabCount++; }
     if (p.deal.valuation?.purchasePrice != null) { priceSum += p.deal.valuation.purchasePrice; priceCount++; }
     if (p.out.concluded.value != null) { concludedSum += p.out.concluded.value; concludedCount++; }
@@ -1109,6 +1155,12 @@ export function computePortfolio(entries: PortfolioEntry[]) {
   }
   const waInPlace = occupiedSF > 0 ? inPlaceAnnual / 12 / occupiedSF : null;
   const waMarket = mktSF > 0 ? mktWeighted / mktSF : null;
+  const portfolioLeaseMetrics: LeaseMetrics = {
+    waltYearsByRent: waltRentDen > 0 ? round2(waltRentNum / waltRentDen) : null,
+    waltYearsBySF: waltSFDen > 0 ? round2(waltSFNum / waltSFDen) : null,
+    rollNext12ByRentPercent: inPlaceAnnual > 0 ? round2((rollRentNum / inPlaceAnnual) * 100) : 0,
+    rollNext12BySFPercent: occupiedSF > 0 ? round2((rollSFNum / occupiedSF) * 100) : 0,
+  };
 
   // ---- combined monthly model (each deal contributes through its own hold)
   const dealHs = per.map((p) =>
@@ -1249,6 +1301,7 @@ export function computePortfolio(entries: PortfolioEntry[]) {
       concludedValue: concludedCount === per.length ? round0(concludedSum) : null,
       concludedValuePerSF: concludedCount === per.length && buildingSF > 0 ? round2(concludedSum / buildingSF) : null,
     },
+    leaseMetrics: portfolioLeaseMetrics,
     cashFlows: { annual: annualTable(combined, maxH) },
     returns,
     leaseExpirations,

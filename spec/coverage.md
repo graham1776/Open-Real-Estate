@@ -81,11 +81,11 @@ thoroughly and **recovery income** and **lease optionality** crudely.
 | Reimbursement — NN (landlord roof/structure) | ✅ | ◐ | v0.2 | modeled as NNN; carve-out only via per-expense `recoverable:false` — not enforced by structure |
 | Reimbursement — MG base year | ✅ | ◐ | v0.2 | **base-year $ estimated by deflation; no field for the actual base-year amount** |
 | Reimbursement — MG expense stop | ✅ | ✅ | | |
-| Reimbursement — Gross | ✅ | ⚠️ | v0.2 | **recovers $0 silently** (no warning, unlike MG/market) |
+| Reimbursement — Gross | ✅ | ✅ | done (G7) | recovers $0 (correct for Gross) — now handled explicitly, not by fall-through |
 | **Controllable-expense cap (cap % + basis: non-cumulative / cumulative / cumulative-compounded)** | ✗ | — | **v0.2** | the single biggest recovery-income gap for industrial NNN |
 | **Controllable vs non-controllable classification** | ✗ | — | **v0.2** | taxes & insurance normally uncapped; pairs with the cap |
 | **Gross-up of variable expenses to occupancy (~95%)** | ✗ | — | **v0.2** | under-collects on partially-occupied multi-tenant |
-| Admin / management fee load on CAM (`adminFeePercent`) | ✅ | ◐ | v0.2 | parsed, warned, **not applied to recoveries** |
+| Admin / management fee load on CAM (`adminFeePercent`) | ✅ | ✅ | done (G7) | markup applied to recoverable expenses as additional recovery income |
 | Pro-rata share — building vs occupied-share basis | ◐ | ⚠️ | v0.2 | `proRataSharePercent` honored; no occupied-share / gross-up toggle |
 | Excluded expenses (per lease) | ✅ | ✅ | | |
 | In-place unfunded TI / unpaid LC | ✅ | ✅ | | |
@@ -170,8 +170,8 @@ populated REDI asset record, no re-keying.
 | Percent Leased | ✅ `occupancy.occupancyPercent` | |
 | Contract Rent / Market Rent (Next 12 Months) | ✅ in-place vs market rent | |
 | Going-in / Terminal / Stabilized Cap Rate, Discount Rate | ✅ valuation inputs & direct-cap/DCF outputs | |
-| Lease Roll (Next 12 Months), % by rent | ◐ portfolio expiration schedule by year; not a single 12-mo % per asset | v0.2 |
-| **Weighted Average Lease Term (WALT)** | ✗ not emitted | **v0.2** |
+| Lease Roll (Next 12 Months), % by rent | ✅ `leaseMetrics.rollNext12ByRentPercent` (and BySF) — done (G11) | |
+| **Weighted Average Lease Term (WALT)** | ✅ `leaseMetrics.waltYearsByRent` (and BySF) — done (G11) | |
 | Weighted Average Lease to Break | ✗ (needs break-option dates) | v0.x |
 | Net Initial Yield, Reversionary Potential | ✗ (INREV metrics; derivable) | v0.x |
 
@@ -231,11 +231,11 @@ one PR.
 | **G4** | Property-tax reassessment on sale (going-in & reversion) | often the largest expense swing in a CA hold |
 | **G5** | Actual MG base-year amount (stop estimating by deflation) | correctness of MG recoveries |
 | **G6** | One-time / dated capital expenditures in the DCF | only a recurring reserve today |
-| **G7** | Fix silent `Gross` recoveries + apply `adminFeePercent` | silent zero-recovery and ignored CAM admin load |
+| ~~**G7**~~ | ~~Fix silent `Gross` recoveries + apply `adminFeePercent`~~ | **done** — `adminFeePercent` now adds a markup on recoverable expenses (kept on the aggregate path so the lease still recovers its management fee); `Gross` handled explicitly as $0 |
 | **G8** | Reserve the hierarchy field names (§10) | the one item with a clock |
 | **G9** | Ground-lease payment stream; parking / IOS other-income line | missing income & outflow streams |
 | **G10** | Gross area vs net rentable area + load factor (REDI naming) | pro-rata share & $/SF depend on it |
-| **G11** | Emit WALT + 12-month lease-roll % (engine output) | REDI asset-reporting alignment (§9a) |
+| ~~**G11**~~ | ~~Emit WALT + 12-month lease-roll % (engine output)~~ | **done** — `leaseMetrics` (WALT and 12-mo roll, rent- and SF-weighted) on deal and portfolio outputs; REDI Operations alignment |
 | **G12** | Add `life_science` subtype; write the ORE→REDI field crosswalk | REDI-surfaced; small, additive |
 
 ## Deliberately out of scope (v0.1 charter)
