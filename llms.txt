@@ -100,6 +100,9 @@ document, never separate files.
 ## Documents
 
 - [`data-dictionary.md`](data-dictionary.md) — every field defined, typed, and documented
+- [`coverage.md`](coverage.md) — scope & coverage matrix: what the format represents
+  and what the engine computes, by data domain, with the v0.2 gap backlog. The single
+  source of truth for "is *X* supported?"
 - `schema/` — the normative JSON Schema files
 - [`../llms.txt`](../llms.txt) — the entire format (this spec + data dictionary +
   schemas + an annotated example) assembled as one LLM-ingestible document.
