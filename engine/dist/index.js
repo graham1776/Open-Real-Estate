@@ -175,6 +175,86 @@ function rolloverStreams(t, sf, profile, ctx, memo) {
     }
     return out;
 }
+function resolveRenewalOption(lease, profile, expiry, ctx) {
+    const opt = (lease.options ?? []).find((o) => o.type === "renewal");
+    if (!opt)
+        return null;
+    const basis = opt.rentBasis ?? "market";
+    if (basis === "market")
+        return null;
+    const market = marketRate(profile, lease.leasedSF, expiry, ctx);
+    let optRent;
+    if (basis === "fixed") {
+        if (opt.fixedRent == null)
+            return null;
+        optRent = monthlyTotal(opt.fixedRent, lease.baseRent.unit, lease.leasedSF);
+    }
+    else if (basis === "percent_of_market") {
+        if (opt.percentOfMarket == null)
+            return null;
+        optRent = (opt.percentOfMarket / 100) * market;
+    }
+    else {
+        return null;
+    }
+    if ((opt.renewalCount ?? 1) > 1) {
+        ctx.warnings.add("renewal_option_multiple", `Lease ${lease.leaseId}: renewal option has renewalCount > 1; the engine applies the option terms to the first renewal only, then reverts to market.`, "ropt-mult:" + lease.leaseId);
+    }
+    return {
+        leaseId: lease.leaseId,
+        rate0: Math.min(optRent, market),
+        termMonths: opt.renewalTermMonths ?? profile.termMonths,
+        isFixed: basis === "fixed",
+        belowMarket: optRent < market - 1e-6,
+    };
+}
+/**
+ * Rollover at a lease's own expiry when it holds a stated-rent renewal option.
+ * Same two-branch blend as rolloverStreams, but the renewal branch uses the
+ * contractual option rent and term. Not memoized — the option is one-shot at this
+ * expiry; subsequent rollovers recurse into the generic (memoized) market path.
+ */
+function rolloverWithRenewalOption(t, sf, profile, ctx, memo, ov) {
+    const h = ctx.horizon;
+    const out = emptyStreams(h);
+    if (t >= h)
+        return out;
+    const p = (profile.renewalProbabilityPercent ?? 0) / 100;
+    const T = profile.termMonths;
+    const D = profile.downtimeMonths ?? 0;
+    const nnn = (profile.reimbursementStructure ?? "NNN") === "NNN" || (profile.reimbursementStructure ?? "NNN") === "NN";
+    // renewal branch (weight p): tenant exercises the option — its rent and term
+    if (p > 0) {
+        const br = emptyStreams(h);
+        const esc = ov.isFixed ? undefined : profile.escalation; // a fixed option holds flat over its term
+        const Fr = profile.renewal?.freeRentMonths ?? 0;
+        leaseSegment(br, t, ov.termMonths, ov.rate0, Fr, nnn, sf, esc, ctx);
+        br.ti[t] += (profile.renewal?.tiPerSF ?? 0) * sf;
+        br.lc[t] += ((profile.renewal?.lcPercentOfRent ?? 0) / 100) * termRentTotal(ov.rate0, esc, ov.termMonths, ctx);
+        addInto(br, rolloverStreams(t + ov.termMonths, sf, profile, ctx, memo), 1, h);
+        addInto(out, br, p, h);
+    }
+    // new-tenant branch (weight 1-p): tenant declines — market re-let (unchanged)
+    if (p < 1) {
+        const bn = emptyStreams(h);
+        for (let m = t; m < Math.min(t + D, h); m++)
+            bn.pot[m] += marketRate(profile, sf, m, ctx);
+        const s = t + D;
+        const rate0 = marketRate(profile, sf, Math.min(s, h - 1), ctx);
+        const Fn = profile.newTenant?.freeRentMonths ?? 0;
+        leaseSegment(bn, s, T, rate0, Fn, nnn, sf, profile.escalation, ctx);
+        if (s < h) {
+            bn.ti[s] += (profile.newTenant?.tiPerSF ?? 0) * sf;
+            bn.lc[s] += ((profile.newTenant?.lcPercentOfRent ?? 0) / 100) * termRentTotal(rate0, profile.escalation, T, ctx);
+        }
+        addInto(bn, rolloverStreams(s + T, sf, profile, ctx, memo), 1, h);
+        addInto(out, bn, 1 - p, h);
+    }
+    if (ov.belowMarket && p < 1) {
+        ctx.warnings.add("renewal_option_below_market", `Lease ${ov.leaseId}: renewal option is below projected market at expiry; the renewal branch is modeled at the option rent, but renewal probability is the market profile's ${Math.round(p * 100)}% — a rational tenant is likelier to exercise an in-the-money option, so raise renewalProbabilityPercent to reflect it.`, "ropt-bm:" + ov.leaseId);
+    }
+    return out;
+}
 /** One occupied lease segment: rent with escalations, free rent at start, occupancy, NNN recovery share. */
 function leaseSegment(dst, start, term, rate0, freeMonths, nnn, sf, esc, ctx) {
     for (let m = Math.max(0, start); m < Math.min(start + term, ctx.horizon); m++) {
@@ -374,10 +454,15 @@ export function buildModel(deal, horizon, warnings) {
             if (lcAmt > 0 && fm < horizon)
                 total.lc[fm] += lcAmt;
         }
-        // rollover after expiry
+        // rollover after expiry — honor a stated-rent renewal option at this lease's expiry
         if (!feeSimple && expiry < horizon) {
-            if (profile)
-                addInto(total, rolloverStreams(expiry, lease.leasedSF, profile, ctx, memo), 1, horizon);
+            if (profile) {
+                const ov = resolveRenewalOption(lease, profile, expiry, ctx);
+                const streams = ov
+                    ? rolloverWithRenewalOption(expiry, lease.leasedSF, profile, ctx, memo, ov)
+                    : rolloverStreams(expiry, lease.leasedSF, profile, ctx, memo);
+                addInto(total, streams, 1, horizon);
+            }
             else
                 warnings.add("no_market_profile", "No marketAssumptions.marketLeasing profile: expired space produces no rent after expiry.");
         }

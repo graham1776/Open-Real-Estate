@@ -89,7 +89,7 @@ thoroughly and **recovery income** and **lease optionality** crudely.
 | Pro-rata share — building vs occupied-share basis | ◐ | ⚠️ | v0.2 | `proRataSharePercent` honored; no occupied-share / gross-up toggle |
 | Excluded expenses (per lease) | ✅ | ✅ | | |
 | In-place unfunded TI / unpaid LC | ✅ | ✅ | | |
-| **Tenant options — renewal / termination / expansion / ROFR / ROFO / purchase** | ✅ | ⚠️ | **v0.2** | **fully in spec, engine ignores ALL** — incl. a below-market fixed renewal; rollover is always generic market |
+| **Tenant renewal options (fixed / %-of-market rent)** | ✅ | ✅ | done (G1) | engine honors a stated-rent renewal on the renewal branch at min(option, market); below-market options drag value and warn. termination/expansion/ROFR/ROFO/purchase remain disclosure-only |
 | Contraction / give-back option | ✗ | — | v0.2 | not in the option enum |
 | Holdover rent provision | ✗ | — | v0.x | expired lease rolls straight to market |
 | **One lease across multiple suites / blended premises** | ✗ | — | v0.2 | see [§10](#10-structural-open-decisions) |
@@ -225,7 +225,7 @@ one PR.
 
 | ID | Item | Why |
 |---|---|---|
-| **G1** | Honor tenant options in the engine | a below-market fixed renewal overvalues silently — a correctness bug, not a missing feature |
+| ~~**G1**~~ | ~~Honor tenant options in the engine~~ | **done** — renewal options (fixed / %-of-market) honored on the renewal branch, capped at market, with a below-market warning; termination/expansion still disclosure-only |
 | **G2** | Controllable-expense caps + controllable/non-controllable classification | biggest recovery-income gap for industrial NNN |
 | **G3** | Expense gross-up to occupancy | under-collects on partially-occupied multi-tenant |
 | **G4** | Property-tax reassessment on sale (going-in & reversion) | often the largest expense swing in a CA hold |
