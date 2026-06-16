@@ -170,8 +170,8 @@ populated REDI asset record, no re-keying.
 | Percent Leased | ✅ `occupancy.occupancyPercent` | |
 | Contract Rent / Market Rent (Next 12 Months) | ✅ in-place vs market rent | |
 | Going-in / Terminal / Stabilized Cap Rate, Discount Rate | ✅ valuation inputs & direct-cap/DCF outputs | |
-| Lease Roll (Next 12 Months), % by rent | ◐ portfolio expiration schedule by year; not a single 12-mo % per asset | v0.2 |
-| **Weighted Average Lease Term (WALT)** | ✗ not emitted | **v0.2** |
+| Lease Roll (Next 12 Months), % by rent | ✅ `leaseMetrics.rollNext12ByRentPercent` (and BySF) — done (G11) | |
+| **Weighted Average Lease Term (WALT)** | ✅ `leaseMetrics.waltYearsByRent` (and BySF) — done (G11) | |
 | Weighted Average Lease to Break | ✗ (needs break-option dates) | v0.x |
 | Net Initial Yield, Reversionary Potential | ✗ (INREV metrics; derivable) | v0.x |
 
@@ -235,7 +235,7 @@ one PR.
 | **G8** | Reserve the hierarchy field names (§10) | the one item with a clock |
 | **G9** | Ground-lease payment stream; parking / IOS other-income line | missing income & outflow streams |
 | **G10** | Gross area vs net rentable area + load factor (REDI naming) | pro-rata share & $/SF depend on it |
-| **G11** | Emit WALT + 12-month lease-roll % (engine output) | REDI asset-reporting alignment (§9a) |
+| ~~**G11**~~ | ~~Emit WALT + 12-month lease-roll % (engine output)~~ | **done** — `leaseMetrics` (WALT and 12-mo roll, rent- and SF-weighted) on deal and portfolio outputs; REDI Operations alignment |
 | **G12** | Add `life_science` subtype; write the ORE→REDI field crosswalk | REDI-surfaced; small, additive |
 
 ## Deliberately out of scope (v0.1 charter)

@@ -303,6 +303,7 @@ function renderSummary(deal, out) {
       ${card("Occupancy", o ? pct(o.occupancyPercent) : "—", o ? `${num(o.vacantSF)} SF vacant` : "")}
       ${card("In-place rent", r ? usd(r.inPlaceAnnualBaseRent) : "—", r?.inPlaceWARentPerSFPerMonth != null ? `$${num(r.inPlaceWARentPerSFPerMonth, 2)}/SF/mo` : "")}
       ${card("Vs market", r ? gapSpan(r.inPlaceVsMarketPercent) : "—", r?.marketRentPerSFPerMonth != null ? `market $${num(r.marketRentPerSFPerMonth, 2)}/SF/mo` : "")}
+      ${out?.leaseMetrics ? card("WALT", out.leaseMetrics.waltYearsByRent != null ? `${num(out.leaseMetrics.waltYearsByRent, 1)} yrs` : "—", `${num(out.leaseMetrics.rollNext12ByRentPercent, 1)}% rolls &lt;12 mo`) : ""}
       ${card("Year built", num(ph.yearBuilt), ph.yearRenovated ? `renovated ${ph.yearRenovated}` : "")}
       ${card("Clear height", ph.clearHeightFt ? `${ph.clearHeightFt} ft` : "—")}
       ${card("Loading", `${num(ph.dockHighDoors)} DH / ${num(ph.gradeLevelDoors)} GL`)}
@@ -509,6 +510,7 @@ function renderPortfolio() {
       ${card("Occupancy", pct(t.occupancyPercent))}
       ${card("In-place rent", usd(t.inPlaceAnnualBaseRent), t.inPlaceWARentPerSFPerMonth != null ? `$${num(t.inPlaceWARentPerSFPerMonth, 2)}/SF/mo` : "")}
       ${card("Vs market", gapSpan(t.inPlaceVsMarketPercent), t.marketWARentPerSFPerMonth != null ? `market $${num(t.marketWARentPerSFPerMonth, 2)}/SF/mo (wtd)` : "")}
+      ${card("WALT", p.leaseMetrics.waltYearsByRent != null ? `${num(p.leaseMetrics.waltYearsByRent, 1)} yrs` : "—", `${num(p.leaseMetrics.rollNext12ByRentPercent, 1)}% rolls &lt;12 mo`)}
       ${card("Year-1 NOI", usd(t.year1NOI))}
       ${card("Stabilized NOI", usd(t.stabilizedAtMarketNOI))}
       ${card("Total value", usd(t.concludedValue), t.concludedValuePerSF != null ? `$${num(t.concludedValuePerSF, 0)}/SF` : "")}

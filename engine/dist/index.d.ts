@@ -100,6 +100,12 @@ export interface AnnualRow {
     cashFlow: number;
 }
 export declare function annualTable(model: MonthlyModel, H: number): AnnualRow[];
+export interface LeaseMetrics {
+    waltYearsByRent: number | null;
+    waltYearsBySF: number | null;
+    rollNext12ByRentPercent: number;
+    rollNext12BySFPercent: number;
+}
 export declare function computeAll(deal: OreFile): {
     engineVersion: string;
     property: {
@@ -117,6 +123,7 @@ export declare function computeAll(deal: OreFile): {
         vacantSF: number;
         occupancyPercent: number;
     };
+    leaseMetrics: LeaseMetrics;
     rent: {
         inPlaceAnnualBaseRent: number;
         inPlaceWARentPerSFPerMonth: number | null;
@@ -188,6 +195,7 @@ export declare function computePortfolio(entries: PortfolioEntry[]): {
         concludedValue: number | null;
         concludedValuePerSF: number | null;
     };
+    leaseMetrics: LeaseMetrics;
     cashFlows: {
         annual: AnnualRow[];
     };

@@ -57,6 +57,12 @@
     "concludedValue": 52371489,
     "concludedValuePerSF": 282.3
   },
+  "leaseMetrics": {
+    "waltYearsByRent": 2.06,
+    "waltYearsBySF": 1.91,
+    "rollNext12ByRentPercent": 11.08,
+    "rollNext12BySFPercent": 11.03
+  },
   "cashFlows": {
     "annual": [
       {

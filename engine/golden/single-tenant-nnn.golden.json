@@ -15,6 +15,12 @@
     "vacantSF": 0,
     "occupancyPercent": 100
   },
+  "leaseMetrics": {
+    "waltYearsByRent": 2.25,
+    "waltYearsBySF": 2.25,
+    "rollNext12ByRentPercent": 0,
+    "rollNext12BySFPercent": 0
+  },
   "rent": {
     "inPlaceAnnualBaseRent": 768845,
     "inPlaceWARentPerSFPerMonth": 1.42,

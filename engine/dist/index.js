@@ -896,6 +896,29 @@ export function annualTable(model, H) {
     }
     return rows;
 }
+function computeLeaseMetrics(deal, start, ctx0) {
+    let remRent = 0, totRent = 0, remSF = 0, totSF = 0, rollRent = 0, rollSF = 0;
+    for (const lease of deal.rentRoll.leases) {
+        const remMonths = Math.max(0, monthIndex(lease.expirationDate, start) + 1);
+        const remYears = remMonths / 12;
+        const rentAnnual = contractRate(lease, 0, ctx0) * 12;
+        const sf = lease.leasedSF;
+        remRent += remYears * rentAnnual;
+        totRent += rentAnnual;
+        remSF += remYears * sf;
+        totSF += sf;
+        if (monthIndex(lease.expirationDate, start) < 12) {
+            rollRent += rentAnnual;
+            rollSF += sf;
+        }
+    }
+    return {
+        waltYearsByRent: totRent > 0 ? round2(remRent / totRent) : null,
+        waltYearsBySF: totSF > 0 ? round2(remSF / totSF) : null,
+        rollNext12ByRentPercent: totRent > 0 ? round2((rollRent / totRent) * 100) : 0,
+        rollNext12BySFPercent: totSF > 0 ? round2((rollSF / totSF) * 100) : 0,
+    };
+}
 // ------------------------------------------------------------- computeAll
 export function computeAll(deal) {
     const warnings = new Warnings();
@@ -960,6 +983,7 @@ export function computeAll(deal) {
             buildingSF: sf, occupiedSF, vacantSF,
             occupancyPercent: round2((occupiedSF / sf) * 100),
         },
+        leaseMetrics: computeLeaseMetrics(deal, start, ctx0),
         rent: {
             inPlaceAnnualBaseRent: round0(inPlaceMonthly * 12),
             inPlaceWARentPerSFPerMonth: waInPlace != null ? round2(waInPlace) : null,
@@ -1002,12 +1026,24 @@ export function computePortfolio(entries) {
     let buildingSF = 0, occupiedSF = 0, vacantSF = 0, inPlaceAnnual = 0, y1NOI = 0;
     let stabSum = 0, stabCount = 0, priceSum = 0, priceCount = 0, concludedSum = 0, concludedCount = 0;
     let mktWeighted = 0, mktSF = 0;
+    let waltRentNum = 0, waltRentDen = 0, waltSFNum = 0, waltSFDen = 0, rollRentNum = 0, rollSFNum = 0;
     for (const p of per) {
         buildingSF += p.out.occupancy.buildingSF;
         occupiedSF += p.out.occupancy.occupiedSF;
         vacantSF += p.out.occupancy.vacantSF;
         inPlaceAnnual += p.out.rent.inPlaceAnnualBaseRent;
         y1NOI += p.out.noi.year1NOI;
+        const lm = p.out.leaseMetrics, rentI = p.out.rent.inPlaceAnnualBaseRent, sfI = p.out.occupancy.occupiedSF;
+        if (lm.waltYearsByRent != null) {
+            waltRentNum += lm.waltYearsByRent * rentI;
+            waltRentDen += rentI;
+        }
+        if (lm.waltYearsBySF != null) {
+            waltSFNum += lm.waltYearsBySF * sfI;
+            waltSFDen += sfI;
+        }
+        rollRentNum += (lm.rollNext12ByRentPercent / 100) * rentI;
+        rollSFNum += (lm.rollNext12BySFPercent / 100) * sfI;
         if (p.out.noi.stabilizedAtMarketNOI != null) {
             stabSum += p.out.noi.stabilizedAtMarketNOI;
             stabCount++;
@@ -1027,6 +1063,12 @@ export function computePortfolio(entries) {
     }
     const waInPlace = occupiedSF > 0 ? inPlaceAnnual / 12 / occupiedSF : null;
     const waMarket = mktSF > 0 ? mktWeighted / mktSF : null;
+    const portfolioLeaseMetrics = {
+        waltYearsByRent: waltRentDen > 0 ? round2(waltRentNum / waltRentDen) : null,
+        waltYearsBySF: waltSFDen > 0 ? round2(waltSFNum / waltSFDen) : null,
+        rollNext12ByRentPercent: inPlaceAnnual > 0 ? round2((rollRentNum / inPlaceAnnual) * 100) : 0,
+        rollNext12BySFPercent: occupiedSF > 0 ? round2((rollSFNum / occupiedSF) * 100) : 0,
+    };
     // ---- combined monthly model (each deal contributes through its own hold)
     const dealHs = per.map((p) => p.deal.valuation?.dcf ? (p.deal.valuation.dcf.holdPeriodMonths ?? p.deal.valuation.dcf.holdPeriodYears * 12) : 12);
     const maxH = Math.max(...dealHs);
@@ -1166,6 +1208,7 @@ export function computePortfolio(entries) {
             concludedValue: concludedCount === per.length ? round0(concludedSum) : null,
             concludedValuePerSF: concludedCount === per.length && buildingSF > 0 ? round2(concludedSum / buildingSF) : null,
         },
+        leaseMetrics: portfolioLeaseMetrics,
         cashFlows: { annual: annualTable(combined, maxH) },
         returns,
         leaseExpirations,
