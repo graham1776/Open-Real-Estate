@@ -151,6 +151,7 @@ authoritative over generated ones.
 | `structure` **(R)** | enum | `NNN` — tenant reimburses pro-rata share of all recoverable expenses. `NN` — as NNN, except landlord retains roof/structure. `MG` — tenant reimburses increases over a base year or expense stop. `Gross` — no reimbursement. |
 | `proRataSharePercent` | number | Tenant's share, percent. Defaults to `leasedSF / property.physical.buildingSF × 100`. |
 | `baseYear` | integer | MG base year (provide this **or** `expenseStopPerSF`, not both). |
+| `baseYearExpenseAmount` | number | Actual building-level annual recoverable expenses in the base year. Optional companion to `baseYear`; when present the engine uses it as the MG base instead of deflating current expenses (removes the estimate warning). |
 | `expenseStopPerSF` | number | MG expense stop, USD/SF/yr. |
 | `adminFeePercent` | number | Admin/management markup on recoverable expenses, percent. The engine adds it as additional recovery income on top of the tenant's recoverable-expense share (e.g. `15` = the tenant reimburses 115% of its share). |
 | `excludedExpenses[]` | string[] | `expenseId`s this lease excludes from recovery, overriding expense-level flags. |

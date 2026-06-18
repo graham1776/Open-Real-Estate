@@ -33,7 +33,7 @@
     "managementFeePercentOfEGR": 3
   },
   "noi": {
-    "year1NOI": 1016371,
+    "year1NOI": 1017853,
     "stabilizedAtMarketNOI": 1349770
   },
   "noiBridgeYear1": {
@@ -42,17 +42,17 @@
     "scheduledBaseRent": 1095402,
     "freeRent": -52065,
     "absorptionVacancy": -156112,
-    "expenseRecoveries": 267684,
-    "generalVacancy": -7750,
-    "creditLoss": -6777,
-    "effectiveGrossRevenue": 1348559,
+    "expenseRecoveries": 269233,
+    "generalVacancy": -7763,
+    "creditLoss": -6784,
+    "effectiveGrossRevenue": 1350088,
     "operatingExpenses": -291296,
-    "managementFee": -40893,
-    "noi": 1016371,
+    "managementFee": -40939,
+    "noi": 1017853,
     "belowTheLine": -11760,
     "tiCosts": -69085,
     "lcCosts": -91886,
-    "cashFlow": 843640
+    "cashFlow": 845122
   },
   "cashFlows": {
     "annual": [
@@ -62,17 +62,17 @@
         "scheduledBaseRent": 1095402,
         "freeRent": -52065,
         "absorptionVacancy": -156112,
-        "expenseRecoveries": 267684,
-        "generalVacancy": -7750,
-        "creditLoss": -6777,
-        "effectiveGrossRevenue": 1348559,
+        "expenseRecoveries": 269233,
+        "generalVacancy": -7763,
+        "creditLoss": -6784,
+        "effectiveGrossRevenue": 1350088,
         "operatingExpenses": -291296,
-        "managementFee": -40893,
-        "noi": 1016371,
+        "managementFee": -40939,
+        "noi": 1017853,
         "belowTheLine": -11760,
         "tiCosts": -69085,
         "lcCosts": -91886,
-        "cashFlow": 843640
+        "cashFlow": 845122
       },
       {
         "year": 2,
@@ -218,21 +218,21 @@
     "holdMonths": 84,
     "discountRatePercent": 7.25,
     "reversionDiscountRatePercent": 7.25,
-    "pvOperating": 6662576,
+    "pvOperating": 6664025,
     "terminalGross": 27450771,
     "terminalNet": 27039009,
     "pvTerminal": 16565695,
-    "indicatedValue": 23228272,
-    "perSF": 296.28,
+    "indicatedValue": 23229720,
+    "perSF": 296.3,
     "unfundedObligationsDeducted": 37946
   },
   "debt": null,
   "returns": {
     "unlevered": {
       "irrPercent": 8.81,
-      "npvAtDiscountRate": 1922272,
+      "npvAtDiscountRate": 1923720,
       "equityMultiple": 1.67,
-      "totalProfit": 14332042
+      "totalProfit": 14333524
     },
     "levered": null
   },
@@ -253,39 +253,39 @@
     ],
     "values": [
       [
-        26185166,
-        25345032,
-        24574909,
-        23866395,
-        23212383
+        26186619,
+        25346485,
+        24576361,
+        23867848,
+        23213835
       ],
       [
-        25447801,
-        24634828,
-        23889602,
-        23203995,
-        22571127
+        25449252,
+        24636278,
+        23891053,
+        23205446,
+        22572577
       ],
       [
-        24736326,
-        23949515,
-        23228272,
-        22564728,
-        21952226
+        24737774,
+        23950963,
+        23229720,
+        22566176,
+        21953674
       ],
       [
-        24049700,
-        23288093,
-        22589954,
-        21947666,
-        21354785
+        24051146,
+        23289540,
+        22591401,
+        21949113,
+        21356232
       ],
       [
-        23386928,
-        22649608,
-        21973731,
-        21351924,
-        20777949
+        23388372,
+        22651052,
+        21975175,
+        21353368,
+        20779393
       ]
     ]
   },
@@ -293,10 +293,5 @@
     "value": 21200000,
     "source": "reconciliation (producer-stated)"
   },
-  "warnings": [
-    {
-      "code": "mg_base_year_estimated",
-      "message": "Lease L-200: 2022 base-year expenses estimated by deflating current recoverable expenses at 3%/yr; provide actuals via expenseStopPerSF for precision."
-    }
-  ]
+  "warnings": []
 }

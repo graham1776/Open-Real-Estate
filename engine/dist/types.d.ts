@@ -122,6 +122,7 @@ export interface Reimbursement {
     structure: ReimbursementStructure;
     proRataSharePercent?: number;
     baseYear?: number;
+    baseYearExpenseAmount?: number;
     expenseStopPerSF?: number;
     adminFeePercent?: number;
     excludedExpenses?: string[];

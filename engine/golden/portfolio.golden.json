@@ -10,7 +10,7 @@
       "occupancyPercent": 81.89,
       "inPlaceWARentPerSFPerMonth": 1.32,
       "inPlaceVsMarketPercent": -12.21,
-      "year1NOI": 1016371,
+      "year1NOI": 1017853,
       "concludedValue": 21200000,
       "valuePerSF": 270.41,
       "unleveredIRRPercent": 8.81
@@ -51,7 +51,7 @@
     "inPlaceWARentPerSFPerMonth": 1.18,
     "marketWARentPerSFPerMonth": 1.55,
     "inPlaceVsMarketPercent": -23.97,
-    "year1NOI": 2411703,
+    "year1NOI": 2413185,
     "stabilizedAtMarketNOI": 3347326,
     "purchasePrice": 50800000,
     "concludedValue": 52371489,
@@ -71,17 +71,17 @@
         "scheduledBaseRent": 2516829,
         "freeRent": -52065,
         "absorptionVacancy": -156112,
-        "expenseRecoveries": 725706,
-        "generalVacancy": -7750,
-        "creditLoss": -20472,
-        "effectiveGrossRevenue": 3214313,
+        "expenseRecoveries": 727256,
+        "generalVacancy": -7763,
+        "creditLoss": -20480,
+        "effectiveGrossRevenue": 3215842,
         "operatingExpenses": -714732,
-        "managementFee": -87879,
-        "noi": 2411702,
+        "managementFee": -87925,
+        "noi": 2413185,
         "belowTheLine": -28672,
         "tiCosts": -69085,
         "lcCosts": -91886,
-        "cashFlow": 2222059
+        "cashFlow": 2223542
       },
       {
         "year": 2,
@@ -251,13 +251,13 @@
     "unlevered": {
       "irrPercent": 9.71,
       "equityMultiple": 1.79,
-      "totalProfit": 40219296,
+      "totalProfit": 40220779,
       "initialInvestment": 51092750
     },
     "levered": {
       "irrPercent": 11.03,
       "equityMultiple": 1.94,
-      "totalProfit": 33004877,
+      "totalProfit": 33006360,
       "initialEquity": 35000300
     },
     "includedDeals": [
@@ -346,10 +346,6 @@
     }
   ],
   "warnings": [
-    {
-      "code": "mg_base_year_estimated",
-      "message": "[multi-tenant-infill] Lease L-200: 2022 base-year expenses estimated by deflating current recoverable expenses at 3%/yr; provide actuals via expenseStopPerSF for precision."
-    },
     {
       "code": "renewal_option_below_market",
       "message": "[single-tenant-nnn] Lease L-001: renewal option is below projected market at expiry; the renewal branch is modeled at the option rent, but renewal probability is the market profile's 70% — a rational tenant is likelier to exercise an in-the-money option, so raise renewalProbabilityPercent to reflect it."

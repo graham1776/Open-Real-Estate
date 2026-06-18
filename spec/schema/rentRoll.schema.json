@@ -239,6 +239,11 @@
           "maximum": 2200,
           "description": "Base year for MG leases: tenant pays its share of expense increases over this calendar year's expenses. Provide baseYear or expenseStopPerSF for MG, not both."
         },
+        "baseYearExpenseAmount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Actual building-level annual recoverable operating expenses in the base year (USD). Optional companion to baseYear: when present the engine uses it as the MG base instead of estimating by deflating current expenses. Should reflect the same recoverable expense set in force now (i.e. net of this lease's excludedExpenses)."
+        },
         "expenseStopPerSF": {
           "type": "number",
           "minimum": 0,

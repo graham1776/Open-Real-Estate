@@ -104,7 +104,8 @@
         "reimbursement": {
           "structure": "MG",
           "baseYear": 2022,
-          "notes": "Tenant pays pro-rata share of operating expense increases over the 2022 base year."
+          "baseYearExpenseAmount": 248000,
+          "notes": "Tenant pays pro-rata share of operating expense increases over the 2022 base year. Actual 2022 recoverable expenses ($248k) provided, so the engine uses them directly rather than estimating by deflation."
         },
         "securityDeposit": {
           "amount": 22302,

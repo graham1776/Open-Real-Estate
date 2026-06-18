@@ -395,12 +395,16 @@ export function buildModel(deal, horizon, warnings) {
                 mgBaseMonthly = (r.expenseStopPerSF * lease.leasedSF) / 12 / share; // stop stated per tenant SF; convert to building-level base
                 warnings.add("mg_stop_applied", `Lease ${lease.leaseId}: expense-stop recovery computed (share of recoverable expenses above $${r.expenseStopPerSF}/SF/yr).`, "stop:" + lease.leaseId);
             }
+            else if (r.baseYearExpenseAmount != null) {
+                // exact base-year expenses provided — no deflation estimate, no warning
+                mgBaseMonthly = r.baseYearExpenseAmount / 12;
+            }
             else if (r.baseYear != null) {
                 const yearsBack = yearOf(ctx.start) - r.baseYear;
                 const g = rateForYear(deal.marketAssumptions?.growth.expenses ?? 0, 1);
                 const recovNow = expensesAt(ctx, 0, r.excludedExpenses).recoverableFixed;
                 mgBaseMonthly = recovNow / Math.pow(1 + g / 100, Math.max(0, yearsBack));
-                warnings.add("mg_base_year_estimated", `Lease ${lease.leaseId}: ${r.baseYear} base-year expenses estimated by deflating current recoverable expenses at ${g}%/yr; provide actuals via expenseStopPerSF for precision.`, "mgest:" + lease.leaseId);
+                warnings.add("mg_base_year_estimated", `Lease ${lease.leaseId}: ${r.baseYear} base-year expenses estimated by deflating current recoverable expenses at ${g}%/yr; provide the actual base-year amount via reimbursement.baseYearExpenseAmount for precision.`, "mgest:" + lease.leaseId);
             }
             else {
                 warnings.add("mg_no_base", `Lease ${lease.leaseId}: MG lease has neither baseYear nor expenseStopPerSF; zero recoveries modeled.`, "mgnb:" + lease.leaseId);
