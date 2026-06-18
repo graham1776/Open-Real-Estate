@@ -151,8 +151,10 @@ authoritative over generated ones.
 | `structure` **(R)** | enum | `NNN` — tenant reimburses pro-rata share of all recoverable expenses. `NN` — as NNN, except landlord retains roof/structure. `MG` — tenant reimburses increases over a base year or expense stop. `Gross` — no reimbursement. |
 | `proRataSharePercent` | number | Tenant's share, percent. Defaults to `leasedSF / property.physical.buildingSF × 100`. |
 | `baseYear` | integer | MG base year (provide this **or** `expenseStopPerSF`, not both). |
+| `baseYearExpenseAmount` | number | Actual building-level annual recoverable expenses in the base year. Optional companion to `baseYear`; when present the engine uses it as the MG base instead of deflating current expenses (removes the estimate warning). |
 | `expenseStopPerSF` | number | MG expense stop, USD/SF/yr. |
 | `adminFeePercent` | number | Admin/management markup on recoverable expenses, percent. The engine adds it as additional recovery income on top of the tenant's recoverable-expense share (e.g. `15` = the tenant reimburses 115% of its share). |
+| `expenseCap` | object | Annual cap on growth of the tenant’s recoverable **controllable** expenses (NNN/NN): `capPercent` **(R)**, `basis` (`cumulative_compounded` default / `cumulative` / `non_cumulative`), optional `baseYearControllableAmount` (else the controllable level at analysis start is the base). Non-controllable expenses are uncapped. |
 | `excludedExpenses[]` | string[] | `expenseId`s this lease excludes from recovery, overriding expense-level flags. |
 
 ### `lease.options[]`
@@ -199,6 +201,7 @@ per `marketAssumptions.growth.expenses` unless an item carries its own override.
 | `amount` **(R)** | number | Annual amount in `amountUnit`, as of `rentRoll.asOfDate`. |
 | `amountUnit` **(R)** | enum | `totalPerYear` (USD/yr), `perSFPerYear` (USD per `buildingSF` per yr), `percentOfEGR` (percent of effective gross revenue — the conventional management fee basis; `amount` is the percent value, e.g. `2.5`). |
 | `recoverable` **(R)** | boolean | Recoverable from tenants, subject to each lease's reimbursement structure and exclusions. |
+| `controllable` | boolean | Whether the item is a controllable expense (cap-eligible). Default by category when omitted: taxes/insurance/utilities non-controllable, all else controllable. Only matters with a lease `expenseCap`. |
 | `belowTheLine` | boolean | Excluded from NOI but included in cash flow (conventionally capital reserves). Default false. |
 | `growthOverridePercent` | number | Item-specific annual growth, percent. No effect on `percentOfEGR` items, which float with revenue. |
 

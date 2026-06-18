@@ -79,11 +79,11 @@ thoroughly and **recovery income** and **lease optionality** crudely.
 | Free rent (incl. % abated, reimbursement-abating) | ✅ | ✅ | | |
 | Reimbursement — NNN | ✅ | ✅ | | |
 | Reimbursement — NN (landlord roof/structure) | ✅ | ◐ | v0.2 | modeled as NNN; carve-out only via per-expense `recoverable:false` — not enforced by structure |
-| Reimbursement — MG base year | ✅ | ◐ | v0.2 | **base-year $ estimated by deflation; no field for the actual base-year amount** |
+| Reimbursement — MG base year | ✅ | ✅ | done (G5) | `baseYearExpenseAmount` carries the actual base; engine deflation-estimates (warned) only when it is absent |
 | Reimbursement — MG expense stop | ✅ | ✅ | | |
 | Reimbursement — Gross | ✅ | ✅ | done (G7) | recovers $0 (correct for Gross) — now handled explicitly, not by fall-through |
-| **Controllable-expense cap (cap % + basis: non-cumulative / cumulative / cumulative-compounded)** | ✗ | — | **v0.2** | the single biggest recovery-income gap for industrial NNN |
-| **Controllable vs non-controllable classification** | ✗ | — | **v0.2** | taxes & insurance normally uncapped; pairs with the cap |
+| Controllable-expense cap (cap % + basis: non-cumulative / cumulative / cumulative-compounded) | ✅ | ✅ | done (G2) | `reimbursement.expenseCap`; caps recoverable controllable-expense growth off a base year, all three bases |
+| Controllable vs non-controllable classification | ✅ | ✅ | done (G2) | `expenses.items[].controllable`; category default (taxes/insurance/utilities non-controllable) |
 | **Gross-up of variable expenses to occupancy (~95%)** | ✗ | — | **v0.2** | under-collects on partially-occupied multi-tenant |
 | Admin / management fee load on CAM (`adminFeePercent`) | ✅ | ✅ | done (G7) | markup applied to recoverable expenses as additional recovery income |
 | Pro-rata share — building vs occupied-share basis | ◐ | ⚠️ | v0.2 | `proRataSharePercent` honored; no occupied-share / gross-up toggle |
@@ -226,10 +226,10 @@ one PR.
 | ID | Item | Why |
 |---|---|---|
 | ~~**G1**~~ | ~~Honor tenant options in the engine~~ | **done** — renewal options (fixed / %-of-market) honored on the renewal branch, capped at market, with a below-market warning; termination/expansion still disclosure-only |
-| **G2** | Controllable-expense caps + controllable/non-controllable classification | biggest recovery-income gap for industrial NNN |
+| ~~**G2**~~ | ~~Controllable-expense caps + classification~~ | **done** — `reimbursement.expenseCap` (3 bases) + `expenses.items[].controllable` with category defaults |
 | **G3** | Expense gross-up to occupancy | under-collects on partially-occupied multi-tenant |
 | **G4** | Property-tax reassessment on sale (going-in & reversion) | often the largest expense swing in a CA hold |
-| **G5** | Actual MG base-year amount (stop estimating by deflation) | correctness of MG recoveries |
+| ~~**G5**~~ | ~~Actual MG base-year amount (stop estimating by deflation)~~ | **done** — `reimbursement.baseYearExpenseAmount`; engine uses it exactly, deflation estimate only as fallback |
 | **G6** | One-time / dated capital expenditures in the DCF | only a recurring reserve today |
 | ~~**G7**~~ | ~~Fix silent `Gross` recoveries + apply `adminFeePercent`~~ | **done** — `adminFeePercent` now adds a markup on recoverable expenses (kept on the aggregate path so the lease still recovers its management fee); `Gross` handled explicitly as $0 |
 | **G8** | Reserve the hierarchy field names (§10) | the one item with a clock |
