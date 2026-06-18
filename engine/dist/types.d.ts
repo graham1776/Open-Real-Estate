@@ -126,7 +126,13 @@ export interface Reimbursement {
     expenseStopPerSF?: number;
     adminFeePercent?: number;
     excludedExpenses?: string[];
+    expenseCap?: ExpenseCap;
     notes?: string;
+}
+export interface ExpenseCap {
+    capPercent: number;
+    basis?: "non_cumulative" | "cumulative" | "cumulative_compounded";
+    baseYearControllableAmount?: number;
 }
 export interface VacantSuite {
     suite?: string;
@@ -145,6 +151,7 @@ export interface ExpenseItem {
     amount: number;
     amountUnit: "totalPerYear" | "perSFPerYear" | "percentOfEGR";
     recoverable: boolean;
+    controllable?: boolean;
     belowTheLine?: boolean;
     growthOverridePercent?: number;
     notes?: string;

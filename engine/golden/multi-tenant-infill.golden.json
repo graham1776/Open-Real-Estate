@@ -80,17 +80,17 @@
         "scheduledBaseRent": 1344992,
         "freeRent": -10270,
         "absorptionVacancy": -26734,
-        "expenseRecoveries": 354406,
-        "generalVacancy": -43408,
-        "creditLoss": -8280,
-        "effectiveGrossRevenue": 1647710,
+        "expenseRecoveries": 354252,
+        "generalVacancy": -43404,
+        "creditLoss": -8279,
+        "effectiveGrossRevenue": 1647561,
         "operatingExpenses": -298055,
-        "managementFee": -50982,
-        "noi": 1298673,
+        "managementFee": -50977,
+        "noi": 1298528,
         "belowTheLine": -12113,
         "tiCosts": -42450,
         "lcCosts": -67452,
-        "cashFlow": 1176658
+        "cashFlow": 1176514
       },
       {
         "year": 3,
@@ -98,17 +98,17 @@
         "scheduledBaseRent": 1401809,
         "freeRent": -13835,
         "absorptionVacancy": -41505,
-        "expenseRecoveries": 347784,
-        "generalVacancy": -40995,
-        "creditLoss": -8543,
-        "effectiveGrossRevenue": 1700055,
+        "expenseRecoveries": 347469,
+        "generalVacancy": -40987,
+        "creditLoss": -8541,
+        "effectiveGrossRevenue": 1699749,
         "operatingExpenses": -304977,
-        "managementFee": -52488,
-        "noi": 1342590,
+        "managementFee": -52478,
+        "noi": 1342293,
         "belowTheLine": -12476,
         "tiCosts": -34440,
         "lcCosts": -42299,
-        "cashFlow": 1253374
+        "cashFlow": 1253078
       },
       {
         "year": 4,
@@ -116,17 +116,17 @@
         "scheduledBaseRent": 1508015,
         "freeRent": 0,
         "absorptionVacancy": 0,
-        "expenseRecoveries": 368357,
-        "generalVacancy": -56291,
-        "creditLoss": -9100,
-        "effectiveGrossRevenue": 1810981,
+        "expenseRecoveries": 367873,
+        "generalVacancy": -56277,
+        "creditLoss": -9098,
+        "effectiveGrossRevenue": 1810513,
         "operatingExpenses": -312066,
-        "managementFee": -56291,
-        "noi": 1442623,
+        "managementFee": -56277,
+        "noi": 1442170,
         "belowTheLine": -12850,
         "tiCosts": 0,
         "lcCosts": 0,
-        "cashFlow": 1429773
+        "cashFlow": 1429320
       },
       {
         "year": 5,
@@ -134,17 +134,17 @@
         "scheduledBaseRent": 1393872,
         "freeRent": -21025,
         "absorptionVacancy": -142133,
-        "expenseRecoveries": 339170,
-        "generalVacancy": -23980,
-        "creditLoss": -8545,
-        "effectiveGrossRevenue": 1700516,
+        "expenseRecoveries": 338894,
+        "generalVacancy": -23972,
+        "creditLoss": -8544,
+        "effectiveGrossRevenue": 1700250,
         "operatingExpenses": -319327,
-        "managementFee": -51991,
-        "noi": 1329198,
+        "managementFee": -51983,
+        "noi": 1328940,
         "belowTheLine": -13236,
         "tiCosts": -79530,
         "lcCosts": -140954,
-        "cashFlow": 1095478
+        "cashFlow": 1095220
       },
       {
         "year": 6,
@@ -218,21 +218,21 @@
     "holdMonths": 84,
     "discountRatePercent": 7.25,
     "reversionDiscountRatePercent": 7.25,
-    "pvOperating": 6664025,
+    "pvOperating": 6663102,
     "terminalGross": 27450771,
     "terminalNet": 27039009,
     "pvTerminal": 16565695,
-    "indicatedValue": 23229720,
-    "perSF": 296.3,
+    "indicatedValue": 23228797,
+    "perSF": 296.29,
     "unfundedObligationsDeducted": 37946
   },
   "debt": null,
   "returns": {
     "unlevered": {
       "irrPercent": 8.81,
-      "npvAtDiscountRate": 1923720,
+      "npvAtDiscountRate": 1922797,
       "equityMultiple": 1.67,
-      "totalProfit": 14333524
+      "totalProfit": 14332372
     },
     "levered": null
   },
@@ -253,39 +253,39 @@
     ],
     "values": [
       [
-        26186619,
-        25346485,
-        24576361,
-        23867848,
-        23213835
+        26185669,
+        25345534,
+        24575411,
+        23866897,
+        23212885
       ],
       [
-        25449252,
-        24636278,
-        23891053,
-        23205446,
-        22572577
+        25448315,
+        24635342,
+        23890116,
+        23204509,
+        22571640
       ],
       [
-        24737774,
-        23950963,
-        23229720,
-        22566176,
-        21953674
+        24736851,
+        23950040,
+        23228797,
+        22565253,
+        21952751
       ],
       [
-        24051146,
-        23289540,
-        22591401,
-        21949113,
-        21356232
+        24050236,
+        23288630,
+        22590491,
+        21948203,
+        21355322
       ],
       [
-        23388372,
-        22651052,
-        21975175,
-        21353368,
-        20779393
+        23387475,
+        22650155,
+        21974278,
+        21352472,
+        20778496
       ]
     ]
   },
@@ -293,5 +293,10 @@
     "value": 21200000,
     "source": "reconciliation (producer-stated)"
   },
-  "warnings": []
+  "warnings": [
+    {
+      "code": "expense_cap_applied",
+      "message": "Lease L-300: 2% cumulative_compounded cap applied to recoverable controllable expenses (taxes/insurance/utilities uncapped)."
+    }
+  ]
 }

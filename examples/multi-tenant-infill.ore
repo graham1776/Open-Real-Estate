@@ -140,7 +140,11 @@
           "cpiCapPercent": 5.0
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "NNN",
+          "expenseCap": {
+            "capPercent": 2,
+            "basis": "cumulative_compounded"
+          }
         },
         "freeRent": [
           {

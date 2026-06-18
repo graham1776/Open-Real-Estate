@@ -62,6 +62,10 @@
           "type": "boolean",
           "description": "Whether the expense is recoverable from tenants, subject to each lease's reimbursement structure and exclusions."
         },
+        "controllable": {
+          "type": "boolean",
+          "description": "Whether the expense is a controllable expense, subject to a lease's controllable-expense cap (reimbursement.expenseCap). When omitted, the engine defaults by category: real_estate_taxes, insurance, and utilities are non-controllable; all others are controllable. Only matters when a recovering lease carries an expenseCap."
+        },
         "belowTheLine": {
           "type": "boolean",
           "default": false,

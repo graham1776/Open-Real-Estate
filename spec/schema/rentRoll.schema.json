@@ -259,6 +259,30 @@
           "items": { "type": "string" },
           "description": "expenseIds from the expenses module that this lease excludes from recovery, overriding the expense-level recoverable flag."
         },
+        "expenseCap": {
+          "type": "object",
+          "required": ["capPercent"],
+          "additionalProperties": false,
+          "description": "Annual cap on the growth of the controllable recoverable expenses billed to the tenant (NNN/NN leases). Non-controllable expenses (taxes, insurance, …) are uncapped. The cap is measured off a base-year controllable level.",
+          "properties": {
+            "capPercent": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Annual cap on controllable-expense growth, in percent (e.g. 5 = 5% per year)."
+            },
+            "basis": {
+              "type": "string",
+              "enum": ["non_cumulative", "cumulative", "cumulative_compounded"],
+              "default": "cumulative_compounded",
+              "description": "cumulative_compounded: ceiling = base × (1+cap)^(year−1) (unused room carries forward and compounds). cumulative: ceiling = base × (1 + cap×(year−1)) (linear, unused room carries forward). non_cumulative: ceiling = prior year's billed controllable × (1+cap) (no carry-forward — a low year lowers the future ceiling)."
+            },
+            "baseYearControllableAmount": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Actual building-level annual controllable recoverable expenses in the base year. When omitted, the engine uses the controllable recoverable level at the analysis start as the base (year 1)."
+            }
+          }
+        },
         "notes": { "type": "string" }
       }
     },

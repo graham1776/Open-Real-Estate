@@ -18,7 +18,7 @@
 
 import type {
   OreFile, Lease, LeasingProfile, Escalation, GrowthCurve, Warning,
-  DirectCap, Dcf, Debt, RentUnit,
+  DirectCap, Dcf, Debt, RentUnit, ExpenseItem,
 } from "./types.js";
 
 export const ENGINE_VERSION = "0.1.0";
@@ -365,13 +365,20 @@ function abatement(lease: Lease, m: number, ctx: EngineCtx): { rentFactor: numbe
 interface ExpenseMonth {
   aboveFixed: number;          // above-the-line non-mgmt expenses (all)
   recoverableFixed: number;    // recoverable subset (non-mgmt)
+  recoverableControllable: number; // recoverable subset that is controllable (cap-eligible)
   belowLine: number;
   mgmtPct: number;             // percentOfEGR, as fraction
   mgmtRecoverable: boolean;
 }
 
+/** Controllable classification: explicit flag, else category default (taxes/insurance/utilities are not controllable). */
+function isControllable(item: ExpenseItem): boolean {
+  if (item.controllable != null) return item.controllable;
+  return !(item.category === "real_estate_taxes" || item.category === "insurance" || item.category === "utilities");
+}
+
 function expensesAt(ctx: EngineCtx, m: number, excludeIds?: string[]): ExpenseMonth {
-  const out: ExpenseMonth = { aboveFixed: 0, recoverableFixed: 0, belowLine: 0, mgmtPct: 0, mgmtRecoverable: false };
+  const out: ExpenseMonth = { aboveFixed: 0, recoverableFixed: 0, recoverableControllable: 0, belowLine: 0, mgmtPct: 0, mgmtRecoverable: false };
   const growth = ctx.deal.marketAssumptions?.growth.expenses;
   for (const item of ctx.deal.expenses?.items ?? []) {
     if (excludeIds?.includes(item.expenseId)) continue;
@@ -386,7 +393,10 @@ function expensesAt(ctx: EngineCtx, m: number, excludeIds?: string[]): ExpenseMo
     if (item.belowTheLine) out.belowLine += monthly;
     else {
       out.aboveFixed += monthly;
-      if (item.recoverable) out.recoverableFixed += monthly;
+      if (item.recoverable) {
+        out.recoverableFixed += monthly;
+        if (isControllable(item)) out.recoverableControllable += monthly;
+      }
     }
   }
   return out;
@@ -395,6 +405,35 @@ function expensesAt(ctx: EngineCtx, m: number, excludeIds?: string[]): ExpenseMo
 /** Recoverable fixed expenses for a single lease's recovery base (handles per-lease exclusions). */
 function leaseRecovBase(ctx: EngineCtx, m: number, lease: Lease): number {
   return expensesAt(ctx, m, lease.reimbursement.excludedExpenses).recoverableFixed;
+}
+
+/**
+ * Annual ceiling on a capped lease's recoverable controllable expenses, per analysis
+ * year (1-based, returned 0-indexed). Year 1 equals the base in every basis, so a cap
+ * never bites in the base year. Non-cumulative requires the prior year's billed amount,
+ * hence the iterative pass.
+ */
+function capCeilingsAnnual(ctx: EngineCtx, lease: Lease, years: number): number[] {
+  const cap = lease.reimbursement.expenseCap!;
+  const excl = lease.reimbursement.excludedExpenses;
+  const c = cap.capPercent / 100;
+  const basis = cap.basis ?? "cumulative_compounded";
+  const base = cap.baseYearControllableAmount ?? expensesAt(ctx, 0, excl).recoverableControllable * 12;
+  const actual = (y: number) => expensesAt(ctx, (y - 1) * 12, excl).recoverableControllable * 12;
+  const out: number[] = [];
+  if (basis === "non_cumulative") {
+    let prevPaid = base;
+    for (let y = 1; y <= years; y++) {
+      const ceiling = y === 1 ? base : prevPaid * (1 + c);
+      out.push(ceiling);
+      prevPaid = Math.min(actual(y), ceiling);
+    }
+  } else {
+    for (let y = 1; y <= years; y++) {
+      out.push(basis === "cumulative" ? base * (1 + c * (y - 1)) : base * Math.pow(1 + c, y - 1));
+    }
+  }
+  return out;
 }
 
 // ------------------------------------------------------------ the model
@@ -464,6 +503,14 @@ export function buildModel(deal: OreFile, horizon: number, warnings: Warnings): 
     // admin/management fee markup the lease lets the landlord add to recoveries
     const adminMarkup = 1 + (lease.reimbursement.adminFeePercent ?? 0) / 100;
 
+    // controllable-expense cap: ceilings on the recoverable controllable expenses (NNN/NN)
+    const cap = lease.reimbursement.expenseCap;
+    const capCeil = cap && (structure === "NNN" || structure === "NN")
+      ? capCeilingsAnnual(ctx, lease, Math.ceil(horizon / 12)) : null;
+    if (cap && capCeil) {
+      ctx.warnings.add("expense_cap_applied", `Lease ${lease.leaseId}: ${cap.capPercent}% ${cap.basis ?? "cumulative_compounded"} cap applied to recoverable controllable expenses (taxes/insurance/utilities uncapped).`, "cap:" + lease.leaseId);
+    }
+
     for (let m = 0; m < Math.min(expiry, horizon); m++) {
       const rate = contractRate(lease, m, ctx);
       const ab = abatement(lease, m, ctx);
@@ -484,6 +531,14 @@ export function buildModel(deal: OreFile, horizon: number, warnings: Warnings): 
         // Admin/management-fee markup on recoverable expenses — additional income
         // the landlord adds on top, taken as direct dollars over the base.
         if (adminMarkup !== 1) mgRecov[m]! += share * leaseRecovBase(ctx, m, lease) * (adminMarkup - 1);
+        // Controllable-expense cap: subtract the capped-out controllable excess
+        // (kept on the aggregate path above so the lease still recovers its mgmt fee).
+        if (capCeil) {
+          const ceilingMonthly = capCeil[Math.min(Math.floor(m / 12), capCeil.length - 1)]! / 12;
+          const controllableMonthly = expensesAt(ctx, m, lease.reimbursement.excludedExpenses).recoverableControllable;
+          const excess = Math.max(0, controllableMonthly - ceilingMonthly);
+          if (excess > 0) mgRecov[m]! -= share * excess * adminMarkup;
+        }
       }
       if (structure === "MG" && mgBaseMonthly != null && reimbursing) {
         const recovNow = leaseRecovBase(ctx, m, lease);
