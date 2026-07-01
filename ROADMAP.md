@@ -32,8 +32,9 @@ perfect institutional DCF.
 - [x] Thin calc kernel — shipped, then retired by the reference engine (which
       kept its interface and its warnings-first design)
 - [x] Golden output files locked for all examples (`npm run golden`)
-- [ ] Validator CLI works (`npx @ore-format/cli validate deal.ore`) — packages the
-      demo loader's checks as `validate` / `summarize` / `compute`
+- [x] Validator CLI works (`validator/cli.mjs`, package `@ore-format/cli`) —
+      packages the demo loader's checks as `validate` / `summarize` / `compute`;
+      npm publish (for `npx @ore-format/cli ...`) deferred until first release
 - [ ] One real (anonymized) deal run end-to-end as the case study: source summary,
       anonymized `.ore`, computed outputs, memo (what mapped cleanly, what was
       ambiguous, what required human review)

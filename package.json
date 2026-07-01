@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p engine",
-    "validate": "node validator/validate-examples.mjs",
+    "validate": "node validator/cli.mjs validate examples",
+    "cli": "node validator/cli.mjs",
     "golden": "node engine/golden/run-golden.mjs",
     "golden:update": "node engine/golden/run-golden.mjs --update",
     "llms": "node spec/build-llms-txt.mjs",
