@@ -49,6 +49,11 @@
   .okbox { border-left: 3px solid var(--good); background: #effaf2; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; }
   .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
   pre { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px; overflow: auto; font-size: 12px; }
+  .btn { font: inherit; font-size: 13px; padding: 5px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--ink); cursor: pointer; }
+  .btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .btn:disabled { opacity: .45; cursor: default; }
+  #ed-text { width: 100%; min-height: 480px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 1.5; border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: var(--card); color: var(--ink); resize: vertical; }
+  .dirtydot { color: var(--warn); font-weight: 700; }
   h2 { font-size: 14px; margin: 22px 0 6px; }
   .muted { color: var(--muted); }
   .gap-neg { color: var(--bad); } .gap-pos { color: var(--good); }
@@ -59,7 +64,7 @@
 <body>
 <header>
   <h1>ORE Viewer</h1>
-  <span class="tag">Open Real Estate format — see the deal in 30 seconds. Runs entirely in your browser; nothing is uploaded.</span>
+  <span class="tag">Open Real Estate format — see the deal in 30 seconds, edit it, save it. Runs entirely in your browser; nothing is uploaded.</span>
 </header>
 
 <div id="filebar"></div>
@@ -106,13 +111,18 @@ const state = { files: [], active: null, tab: "summary", watch: true };
 let nextId = 1;
 
 function makeEntry(name, text, source) {
-  const entry = { id: nextId++, name, source, text: null, deal: null, out: null, problems: [], error: null };
+  const entry = { id: nextId++, name, source, text: null, draft: null, deal: null, out: null, problems: [], error: null };
   applyText(entry, text);
   return entry;
 }
 
+// draft = text in the editor not yet applied; applied text is the state everything
+// else (chips, tabs, portfolio, save) reads.
+const isDirty = (entry) => entry.draft != null && entry.draft !== entry.text;
+
 function applyText(entry, text) {
   entry.text = text;
+  entry.draft = null;
   entry.deal = null; entry.out = null; entry.error = null; entry.problems = [];
   try {
     entry.deal = JSON.parse(text);
@@ -178,6 +188,7 @@ async function refreshAll(manual = false) {
   refreshing = true;
   let changed = 0;
   for (const entry of state.files) {
+    if (isDirty(entry)) continue; // unsaved in-app edits win over the disk copy
     if (!manual && entry.source.kind === "static") continue; // not watchable
     try {
       const text = await reread(entry);
@@ -232,7 +243,7 @@ function renderChips() {
   }
   for (const f of state.files) {
     const bad = f.error || f.problems.some((p) => p.code !== "advice");
-    bits.push(`<span class="chip ${state.active === f.id ? "on" : ""}" data-act="file" data-id="${f.id}">${bad ? "⚠ " : ""}${esc(f.name)}<span class="x" data-act="remove" data-id="${f.id}" title="Remove">×</span></span>`);
+    bits.push(`<span class="chip ${state.active === f.id ? "on" : ""}" data-act="file" data-id="${f.id}">${bad ? "⚠ " : ""}${isDirty(f) ? `<span class="dirtydot" title="Unsaved edits">●</span> ` : ""}${esc(f.name)}<span class="x" data-act="remove" data-id="${f.id}" title="Remove">×</span></span>`);
   }
   bits.push(`<span class="chip action" data-act="add">+ Add files</span>`);
   bits.push(`<span class="chip action" data-act="refresh" title="Re-read all files from source">↻ Refresh</span>`);
@@ -243,7 +254,12 @@ function renderChips() {
       const act = el.dataset.act;
       if (act === "portfolio") { state.active = "portfolio"; render(); }
       else if (act === "file") { state.active = Number(el.dataset.id); render(); }
-      else if (act === "remove") { e.stopPropagation(); removeEntry(Number(el.dataset.id)); }
+      else if (act === "remove") {
+        e.stopPropagation();
+        const f = state.files.find((x) => x.id === Number(el.dataset.id));
+        if (f && isDirty(f) && !confirm(`${f.name} has unsaved edits — remove it anyway?`)) return;
+        removeEntry(Number(el.dataset.id));
+      }
       else if (act === "add") pickFiles();
       else if (act === "refresh") refreshAll(true);
     };
@@ -257,15 +273,19 @@ function renderChips() {
 const TABS = [
   ["summary", "Summary"], ["rentroll", "Rent Roll"], ["expenses", "Expenses"],
   ["market", "Assumptions"], ["valuation", "Valuation"], ["outputs", "Outputs"],
-  ["warnings", "Warnings"], ["json", "Raw JSON"],
+  ["warnings", "Warnings"], ["json", "Edit JSON"],
 ];
 
 function renderSingle(entry) {
   if (entry.error && !entry.deal) {
-    $("tabs").innerHTML = "";
+    // Not parseable as JSON: offer the editor so the file can be repaired in place.
+    $("tabs").innerHTML = `<button data-t="summary">Summary</button><button data-t="json">Edit JSON</button>`;
     TABS.forEach(([id]) => $("tab-" + id).innerHTML = "");
-    $("tab-summary").innerHTML = `<div class="errbox">${esc(entry.error)}</div>`;
-    $("tab-summary").classList.add("on");
+    $("tab-summary").innerHTML = `<div class="errbox">${esc(entry.error)}</div>
+      <p class="muted">Fix the file in the Edit JSON tab, then Apply.</p>`;
+    renderEditor(entry);
+    $("tabs").querySelectorAll("button").forEach((b) => b.onclick = () => { state.tab = b.dataset.t; activate(state.tab); });
+    activate(state.tab === "json" ? "json" : "summary");
     return;
   }
   const { deal, out, problems, error } = entry;
@@ -274,14 +294,21 @@ function renderSingle(entry) {
     `<button data-t="${id}">${label}${id === "warnings" && warnCount ? `<span class="pill">${warnCount}</span>` : ""}</button>`).join("");
   $("tabs").querySelectorAll("button").forEach((b) => b.onclick = () => { state.tab = b.dataset.t; activate(state.tab); });
 
-  renderSummary(deal, out);
-  renderRentRoll(deal);
-  renderExpenses(deal);
-  renderMarket(deal);
-  renderValuation(deal);
-  renderOutputs(deal, out, error);
+  // A tab that can't render (file missing fields mid-edit) shows an error box
+  // instead of taking down the whole page — the editor must stay reachable.
+  const safe = (id, fn) => {
+    try { fn(); } catch (e) {
+      $("tab-" + id).innerHTML = `<div class="errbox">Could not render this tab — the file is missing fields (<span class="code">${esc(e.message)}</span>). See Warnings; fix in Edit JSON.</div>`;
+    }
+  };
+  safe("summary", () => renderSummary(deal, out));
+  safe("rentroll", () => renderRentRoll(deal));
+  safe("expenses", () => renderExpenses(deal));
+  safe("market", () => renderMarket(deal));
+  safe("valuation", () => renderValuation(deal));
+  safe("outputs", () => renderOutputs(deal, out, error));
   renderWarnings(problems, out, error);
-  $("tab-json").innerHTML = `<pre>${esc(JSON.stringify(deal, null, 2))}</pre>`;
+  renderEditor(entry);
   activate(state.tab);
 }
 
@@ -484,6 +511,117 @@ function renderWarnings(problems, out, err) {
     ? `<p class="muted">ORE treats disclosed uncertainty as a feature: every simplification or estimate the engine applied to <em>this file</em> is named here.</p>` + blocks.join("")
     : `<div class="okbox">No warnings — file is structurally complete and all requested outputs were computable.</div>`;
 }
+
+// ----------------------------------------------------------------- editor
+// The Edit JSON tab is the writer: edit the file text (the original text, not a
+// re-serialization — a producer's formatting survives an untouched round trip),
+// Apply re-validates and recomputes, Save writes back through the file handle
+// when the browser granted one (Chromium picker/drag); otherwise Save As or a
+// plain download.
+
+const canWriteInPlace = (entry) =>
+  entry.source.kind === "handle" && typeof entry.source.handle.createWritable === "function";
+
+function renderEditor(entry) {
+  const dirty = isDirty(entry);
+  $("tab-json").innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center;margin:14px 0 10px;flex-wrap:wrap">
+      <button class="btn" id="ed-apply" ${dirty ? "" : "disabled"}>Apply — validate &amp; recompute</button>
+      <button class="btn" id="ed-save">${canWriteInPlace(entry) ? "Save to disk" : "Save As…"}</button>
+      <button class="btn" id="ed-download">Download copy</button>
+      <button class="btn" id="ed-revert" ${dirty ? "" : "disabled"}>Revert</button>
+      <span class="muted" style="font-size:12px" id="ed-hint">${dirty ? "Unsaved edits" : "Edit below; Ctrl/⌘-S saves"}</span>
+    </div>
+    <div id="ed-msg"></div>
+    <textarea id="ed-text" spellcheck="false"></textarea>`;
+  const ta = $("ed-text");
+  ta.value = entry.draft ?? entry.text;
+  ta.oninput = () => {
+    const was = isDirty(entry);
+    entry.draft = ta.value;
+    const now = isDirty(entry);
+    if (now !== was) { renderChips(); $("ed-hint").textContent = now ? "Unsaved edits" : "Edit below; Ctrl/⌘-S saves"; }
+    $("ed-apply").disabled = !now;
+    $("ed-revert").disabled = !now;
+  };
+  $("ed-apply").onclick = () => { if (applyDraft(entry)) flash("Recomputed"); };
+  $("ed-save").onclick = () => saveEntry(entry);
+  $("ed-download").onclick = () => downloadEntry(entry);
+  $("ed-revert").onclick = () => { entry.draft = null; render(); flash("Reverted to last applied text"); };
+}
+
+// Returns true if the draft is valid JSON and is now the applied state.
+function applyDraft(entry) {
+  const text = entry.draft ?? entry.text;
+  try {
+    JSON.parse(text);
+  } catch (e) {
+    $("ed-msg").innerHTML = `<div class="errbox">Not valid JSON: ${esc(e.message)} — fix and Apply again.</div>`;
+    return false;
+  }
+  applyText(entry, text); // schema/structural issues land in the Warnings tab, not here
+  render();
+  return true;
+}
+
+async function saveEntry(entry) {
+  if (isDirty(entry) && !applyDraft(entry)) return; // what saves is exactly what was applied
+  if (canWriteInPlace(entry)) {
+    try {
+      const w = await entry.source.handle.createWritable();
+      await w.write(entry.text);
+      await w.close();
+      const f = await entry.source.handle.getFile();
+      entry.source.lastModified = f.lastModified; // don't re-import our own save via the watcher
+      flash(`Saved ${entry.name}`);
+      return;
+    } catch (e) {
+      if (e.name === "AbortError") return; // user declined the write-permission prompt
+      // read-only handle or permission revoked: fall through to Save As
+    }
+  }
+  await saveAsEntry(entry);
+}
+
+async function saveAsEntry(entry) {
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: entry.name,
+        types: [{ description: "ORE deal files", accept: { "application/json": [".ore", ".json"] } }],
+      });
+      const w = await handle.createWritable();
+      await w.write(entry.text);
+      await w.close();
+      const f = await handle.getFile();
+      entry.name = f.name;
+      entry.source = { kind: "handle", handle, lastModified: f.lastModified }; // now watchable and savable in place
+      render();
+      flash(`Saved ${entry.name}`);
+      return;
+    } catch (e) {
+      if (e.name === "AbortError") return;
+    }
+  }
+  downloadEntry(entry);
+}
+
+function downloadEntry(entry) {
+  const blob = new Blob([entry.draft ?? entry.text], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = entry.name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  flash(`Downloaded ${entry.name}`);
+}
+
+document.addEventListener("keydown", (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === "s" && state.active && state.active !== "portfolio") {
+    const entry = state.files.find((f) => f.id === state.active);
+    if (entry) { e.preventDefault(); saveEntry(entry); }
+  }
+});
 
 // -------------------------------------------------------------- portfolio
 

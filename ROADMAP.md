@@ -22,7 +22,12 @@ perfect institutional DCF.
   - [x] Value-add with rollover (below-market single tenant, DCF-only, IO bridge debt)
 - [x] Browser demo shell: drag a `.ore` file → tabs for summary, rent roll,
       expenses, assumptions, valuation, computed outputs, and warnings
-      (`/demo/index.html`, static, no backend; light editing follows post-v0.1)
+      (`/demo/index.html`, static, no backend)
+- [x] Viewer editing (reader → writer, first cut): Edit JSON tab — edit the
+      file's original text, Apply re-validates and recomputes, Save writes back
+      in place through the file handle (Chrome/Edge) with Save As… / download
+      everywhere else; unsaved edits pause the watcher; malformed files open
+      straight into the editor for repair
 - [x] Multi-file portfolio roll-up: drop several `.ore` files → totals, per-deal
       comparison, blended returns, lease expiration schedule, top tenants,
       combined cash flows (`computePortfolio` in the engine, locked by a
@@ -87,9 +92,33 @@ Strategy for the AI and Excel tracks: `docs/design/llm-and-excel.md`.
   open/validate/edit/save `.ore` in place, engine outputs as custom functions
 - Non-goal: a formula-based reference workbook (a second engine breaks conformance)
 
+**Writer track** (reader → writer; raw-JSON editing shipped in the viewer — the
+items below are the rest of what "ORE files get *authored*, not just exchanged"
+implies, roughly in build order)
+- Structured quick-edit: form controls for the high-leverage assumptions
+  (discount rate, exit cap, market rent, growth, renewal probability, purchase
+  price) with instant recompute — the what-if loop analysts actually run; raw
+  JSON stays the escape hatch for everything else
+- What-if delta view: after an edit, show outputs against the pre-edit baseline
+  (value / IRR / Year-1 NOI, side by side) so the price of an assumption is
+  visible the moment it changes
+- New deal in the browser: a "New deal" button that scaffolds a minimal valid
+  file from a template (single-tenant NNN first) — ORE as authoring tool, not
+  just interchange; pairs with `ore init` below
+- Provenance on save: how does an edited file disclose who changed it? Candidate:
+  the editor appends an entry (producer, date, tool) to a provenance history on
+  save — needs a small schema decision, since v0.1 provenance describes a single
+  producer (v0.2 candidate, alongside the coverage-doc backlog)
+- CLI writer verbs in `@ore-format/cli`: `ore init` (scaffold from template),
+  `ore set <path>=<value> deal.ore` (scripted single-field edits, validated
+  before write), `ore fmt` (canonical formatting for clean git diffs) — the same
+  writer story for scripts, CI, and agents
+- Schema-aware forms (the endgame): generate the full editor UI from the JSON
+  Schema itself, so every field is editable with types, enums, and units
+  enforced — and third-party tools can do the same trick
+
 **Format & ecosystem**
 - Python port of the reference engine
-- Viewer light editing (assumption tweaks, re-run, download)
 - Engine support for sales comparison and cost approach outputs
 - Additional asset classes, starting with the simplest lease structures first
 - Formal governance (technical steering committee), then consortium/foundation home
