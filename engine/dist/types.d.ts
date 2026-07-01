@@ -207,7 +207,14 @@ export interface Valuation {
         primaryMethod?: string;
         notes?: string;
     };
+    taxReassessment?: TaxReassessment;
     notes?: string;
+}
+export interface TaxReassessment {
+    effectiveTaxRatePercent?: number;
+    reassessOnAcquisition?: boolean;
+    reassessAtReversion?: boolean;
+    expenseId?: string;
 }
 export interface Dcf {
     holdPeriodYears?: number;

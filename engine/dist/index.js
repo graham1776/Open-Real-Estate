@@ -80,6 +80,37 @@ function addInto(dst, src, weight, h) {
             dst[k][m] += weight * src[k][m];
     }
 }
+/** Resolve property-tax reassessment config, or null if disabled/inapplicable. */
+function resolveTaxReassessment(deal) {
+    const tr = deal.valuation?.taxReassessment;
+    if (!tr)
+        return null;
+    const price = deal.valuation?.purchasePrice;
+    const items = deal.expenses?.items ?? [];
+    const taxItem = tr.expenseId
+        ? items.find((i) => i.expenseId === tr.expenseId)
+        : items.find((i) => i.category === "real_estate_taxes");
+    if (!taxItem || price == null)
+        return null;
+    const sf = deal.property.physical.buildingSF;
+    const currentTaxAnnual = taxItem.amountUnit === "perSFPerYear" ? taxItem.amount * sf : taxItem.amount;
+    const rateDerived = tr.effectiveTaxRatePercent == null;
+    const ratePct = tr.effectiveTaxRatePercent ?? (currentTaxAnnual / price) * 100;
+    return {
+        expenseId: taxItem.expenseId,
+        ratePct,
+        baseAnnual: price * (ratePct / 100),
+        currentAnnual: currentTaxAnnual,
+        reassessAcq: tr.reassessOnAcquisition !== false,
+        reassessRev: tr.reassessAtReversion !== false,
+        rateDerived,
+    };
+}
+/** Growth curve for a specific expense item (its override, else the global expense curve). */
+function itemGrowthCurve(deal, expenseId) {
+    const item = (deal.expenses?.items ?? []).find((i) => i.expenseId === expenseId);
+    return item?.growthOverridePercent != null ? item.growthOverridePercent : deal.marketAssumptions?.growth.expenses;
+}
 function escalationFactor(esc, monthsIntoLease, ctx) {
     if (!esc || esc.type === "none")
         return 1;
@@ -344,7 +375,9 @@ function expensesAt(ctx, m, excludeIds) {
                 out.mgmtRecoverable = true;
             continue;
         }
-        const annual = item.amountUnit === "perSFPerYear" ? item.amount * ctx.buildingSF : item.amount;
+        let annual = item.amountUnit === "perSFPerYear" ? item.amount * ctx.buildingSF : item.amount;
+        if (ctx.taxOverride && item.expenseId === ctx.taxOverride.expenseId)
+            annual = ctx.taxOverride.baseAnnual; // property tax reassessed to purchase price
         const curve = item.growthOverridePercent != null ? item.growthOverridePercent : growth;
         const monthly = (annual / 12) * growthFactor(curve, m);
         if (item.belowTheLine)
@@ -395,6 +428,7 @@ function capCeilingsAnnual(ctx, lease, years) {
 }
 export function buildModel(deal, horizon, warnings) {
     const start = deal.valuation?.analysisStartDate ?? deal.rentRoll.asOfDate;
+    const reassess = resolveTaxReassessment(deal);
     const ctx = {
         deal, start,
         buildingSF: deal.property.physical.buildingSF,
@@ -402,7 +436,14 @@ export function buildModel(deal, horizon, warnings) {
         warnings,
         cpiAnnualPercent: deal.marketAssumptions?.growth.cpi != null
             ? rateForYear(deal.marketAssumptions.growth.cpi, 1) : null,
+        taxOverride: reassess?.reassessAcq ? { expenseId: reassess.expenseId, baseAnnual: reassess.baseAnnual } : undefined,
     };
+    if (deal.valuation?.taxReassessment && !reassess) {
+        warnings.add("tax_reassessment_skipped", "valuation.taxReassessment is set but could not be applied (needs valuation.purchasePrice and a real_estate_taxes expense or a matching expenseId).");
+    }
+    else if (reassess?.rateDerived) {
+        warnings.add("tax_rate_derived", `Property-tax reassessment: effective rate derived from current taxes ÷ purchase price (${round2(reassess.ratePct)}%); this assumes current taxes already reflect the price. State valuation.taxReassessment.effectiveTaxRatePercent for a long-held asset.`);
+    }
     if (deal.marketAssumptions?.growth.cpi != null && typeof deal.marketAssumptions.growth.cpi !== "number") {
         warnings.add("cpi_curve_flattened", "CPI growth curve provided; engine v0.1 applies the year-1 CPI rate to CPI lease escalations across all years.");
     }
@@ -602,10 +643,12 @@ function stabilizedAnnualNOI(deal, atMonth, warnings) {
     const key = Object.keys(profiles)[0];
     if (!key)
         return null;
+    const reassess = resolveTaxReassessment(deal);
     const ctx = {
         deal, start: deal.valuation?.analysisStartDate ?? deal.rentRoll.asOfDate,
         buildingSF: deal.property.physical.buildingSF, horizon: atMonth + 1, warnings,
         cpiAnnualPercent: null,
+        taxOverride: reassess?.reassessAcq ? { expenseId: reassess.expenseId, baseAnnual: reassess.baseAnnual } : undefined,
     };
     const profile = profiles[key];
     const rentM = marketRate(profile, ctx.buildingSF, atMonth, ctx);
@@ -643,7 +686,8 @@ export function computeDirectCap(deal, model, warnings) {
     let basisNOI = null;
     if (dc.excludeExpenseIds?.length) {
         // rebuild a small context to price the excluded items in year 1
-        const ctx = { deal, start: deal.valuation.analysisStartDate, buildingSF: sf, horizon: 12, warnings, cpiAnnualPercent: null };
+        const rx = resolveTaxReassessment(deal);
+        const ctx = { deal, start: deal.valuation.analysisStartDate, buildingSF: sf, horizon: 12, warnings, cpiAnnualPercent: null, taxOverride: rx?.reassessAcq ? { expenseId: rx.expenseId, baseAnnual: rx.baseAnnual } : undefined };
         let excluded = 0;
         for (let m = 0; m < 12; m++) {
             excluded += expensesAt(ctx, m).aboveFixed - expensesAt(ctx, m, dc.excludeExpenseIds).aboveFixed;
@@ -745,7 +789,22 @@ export function computeDCF(deal, model, warnings) {
         }
         if (tv.deductBelowTheLineItems)
             tNOI -= sum(model.belowLine, H, H + 12);
-        terminalGross = tNOI / (tv.capRatePercent / 100);
+        const rx = resolveTaxReassessment(deal);
+        if (rx?.reassessRev) {
+            // Load the exit cap by the tax rate so the buyer's taxes reset to the sale
+            // price: V = (terminal NOI + seller's terminal property tax) / (cap + rate).
+            const from = basis === "trailingYear" ? H - 12 : H;
+            const effBase = rx.reassessAcq ? rx.baseAnnual : rx.currentAnnual;
+            const curve = itemGrowthCurve(deal, rx.expenseId);
+            let sellerTax = 0;
+            for (let m = from; m < from + 12; m++)
+                sellerTax += (effBase / 12) * growthFactor(curve, m);
+            terminalGross = (tNOI + sellerTax) / (tv.capRatePercent / 100 + rx.ratePct / 100);
+            warnings.add("tax_reassessment_reversion", `Terminal cap loaded by the ${round2(rx.ratePct)}% effective tax rate so the exit value reflects reassessment to the sale price (Prop 13-style).`);
+        }
+        else {
+            terminalGross = tNOI / (tv.capRatePercent / 100);
+        }
     }
     else if (tv.method === "exit_price_psf")
         terminalGross = tv.exitPricePerSF * sf;

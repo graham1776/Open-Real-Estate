@@ -57,6 +57,7 @@
     "salesComparison": { "$ref": "#/$defs/salesComparison" },
     "costApproach": { "$ref": "#/$defs/costApproach" },
     "reconciliation": { "$ref": "#/$defs/reconciliation" },
+    "taxReassessment": { "$ref": "#/$defs/taxReassessment" },
     "notes": { "type": "string" }
   },
   "allOf": [
@@ -499,6 +500,32 @@
         "exposureTimeMonths": { "type": "number", "minimum": 0, "description": "Estimated exposure time supporting the conclusion (appraisal context)." },
         "marketingTimeMonths": { "type": "number", "minimum": 0 },
         "notes": { "type": "string", "description": "Reconciliation narrative: weighting rationale across approaches." }
+      }
+    },
+    "taxReassessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Opt-in property-tax reassessment on transfer (e.g. California Proposition 13). Presence of this object enables it. Requires valuation.purchasePrice. Going-in: the reassessed property tax is set to the purchase price times the effective rate, in force from the analysis start. Reversion: the terminal cap is loaded by the tax rate so the hypothetical buyer's taxes reset to the sale price.",
+      "properties": {
+        "effectiveTaxRatePercent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Effective property-tax rate as a percent of assessed value per year (base rate plus direct assessments). If omitted, derived from the current property-tax expense divided by purchasePrice — which assumes the current taxes already reflect the purchase price (a weak default for a long-held asset)."
+        },
+        "reassessOnAcquisition": {
+          "type": "boolean",
+          "default": true,
+          "description": "Reset the property tax to purchasePrice x effective rate from the analysis start (affects operating NOI in every year)."
+        },
+        "reassessAtReversion": {
+          "type": "boolean",
+          "default": true,
+          "description": "Load the terminal cap rate by the effective tax rate so the exit value reflects the buyer's reassessment to the sale price (direct_cap terminal method only)."
+        },
+        "expenseId": {
+          "type": "string",
+          "description": "expenseId of the reassessable property-tax line. Defaults to the single expenses item with category real_estate_taxes."
+        }
       }
     }
   }

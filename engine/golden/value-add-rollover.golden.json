@@ -33,8 +33,8 @@
     "managementFeePercentOfEGR": 2.5
   },
   "noi": {
-    "year1NOI": 611404,
-    "stabilizedAtMarketNOI": 1163681
+    "year1NOI": 611117,
+    "stabilizedAtMarketNOI": 1163393
   },
   "noiBridgeYear1": {
     "year": 1,
@@ -42,17 +42,17 @@
     "scheduledBaseRent": 632400,
     "freeRent": 0,
     "absorptionVacancy": 0,
-    "expenseRecoveries": 227231,
+    "expenseRecoveries": 255949,
     "generalVacancy": 0,
-    "creditLoss": -8596,
-    "effectiveGrossRevenue": 851034,
-    "operatingExpenses": -218140,
-    "managementFee": -21491,
-    "noi": 611404,
+    "creditLoss": -8883,
+    "effectiveGrossRevenue": 879465,
+    "operatingExpenses": -246140,
+    "managementFee": -22209,
+    "noi": 611117,
     "belowTheLine": -12400,
     "tiCosts": 0,
     "lcCosts": 0,
-    "cashFlow": 599004
+    "cashFlow": 598717
   },
   "cashFlows": {
     "annual": [
@@ -62,17 +62,17 @@
         "scheduledBaseRent": 632400,
         "freeRent": 0,
         "absorptionVacancy": 0,
-        "expenseRecoveries": 227231,
+        "expenseRecoveries": 255949,
         "generalVacancy": 0,
-        "creditLoss": -8596,
-        "effectiveGrossRevenue": 851034,
-        "operatingExpenses": -218140,
-        "managementFee": -21491,
-        "noi": 611404,
+        "creditLoss": -8883,
+        "effectiveGrossRevenue": 879465,
+        "operatingExpenses": -246140,
+        "managementFee": -22209,
+        "noi": 611117,
         "belowTheLine": -12400,
         "tiCosts": 0,
         "lcCosts": 0,
-        "cashFlow": 599004
+        "cashFlow": 598717
       },
       {
         "year": 2,
@@ -80,17 +80,17 @@
         "scheduledBaseRent": 593489,
         "freeRent": -124397,
         "absorptionVacancy": -373190,
-        "expenseRecoveries": 161705,
+        "expenseRecoveries": 182121,
         "generalVacancy": 0,
-        "creditLoss": -7552,
-        "effectiveGrossRevenue": 747642,
-        "operatingExpenses": -223104,
-        "managementFee": -18880,
-        "noi": 505658,
+        "creditLoss": -7756,
+        "effectiveGrossRevenue": 767854,
+        "operatingExpenses": -251664,
+        "managementFee": -19390,
+        "noi": 496800,
         "belowTheLine": -12772,
         "tiCosts": -235600,
         "lcCosts": -464512,
-        "cashFlow": -207226
+        "cashFlow": -216085
       },
       {
         "year": 3,
@@ -98,17 +98,17 @@
         "scheduledBaseRent": 1263560,
         "freeRent": 0,
         "absorptionVacancy": 0,
-        "expenseRecoveries": 252943,
+        "expenseRecoveries": 282821,
         "generalVacancy": 0,
-        "creditLoss": -15165,
-        "effectiveGrossRevenue": 1501339,
-        "operatingExpenses": -228186,
-        "managementFee": -37913,
-        "noi": 1235240,
+        "creditLoss": -15464,
+        "effectiveGrossRevenue": 1530918,
+        "operatingExpenses": -257317,
+        "managementFee": -38660,
+        "noi": 1234942,
         "belowTheLine": -13155,
         "tiCosts": 0,
         "lcCosts": 0,
-        "cashFlow": 1222085
+        "cashFlow": 1221786
       },
       {
         "year": 4,
@@ -116,17 +116,17 @@
         "scheduledBaseRent": 1307785,
         "freeRent": 0,
         "absorptionVacancy": 0,
-        "expenseRecoveries": 259007,
+        "expenseRecoveries": 289483,
         "generalVacancy": 0,
-        "creditLoss": -15668,
-        "effectiveGrossRevenue": 1551125,
-        "operatingExpenses": -233387,
-        "managementFee": -39170,
-        "noi": 1278567,
+        "creditLoss": -15973,
+        "effectiveGrossRevenue": 1581296,
+        "operatingExpenses": -263101,
+        "managementFee": -39932,
+        "noi": 1278263,
         "belowTheLine": -13550,
         "tiCosts": 0,
         "lcCosts": 0,
-        "cashFlow": 1265018
+        "cashFlow": 1264713
       },
       {
         "year": 5,
@@ -134,17 +134,17 @@
         "scheduledBaseRent": 1353558,
         "freeRent": 0,
         "absorptionVacancy": 0,
-        "expenseRecoveries": 265226,
+        "expenseRecoveries": 296311,
         "generalVacancy": 0,
-        "creditLoss": -16188,
-        "effectiveGrossRevenue": 1602595,
-        "operatingExpenses": -238712,
-        "managementFee": -40470,
-        "noi": 1323413,
+        "creditLoss": -16499,
+        "effectiveGrossRevenue": 1633370,
+        "operatingExpenses": -269020,
+        "managementFee": -41247,
+        "noi": 1323103,
         "belowTheLine": -13956,
         "tiCosts": 0,
         "lcCosts": 0,
-        "cashFlow": 1309457
+        "cashFlow": 1309146
       },
       {
         "year": 6,
@@ -152,25 +152,25 @@
         "scheduledBaseRent": 344802,
         "freeRent": 0,
         "absorptionVacancy": 0,
-        "expenseRecoveries": 67761,
+        "expenseRecoveries": 75688,
         "generalVacancy": 0,
-        "creditLoss": -4126,
-        "effectiveGrossRevenue": 408438,
-        "operatingExpenses": -61041,
-        "managementFee": -10314,
-        "noi": 337083,
+        "creditLoss": -4205,
+        "effectiveGrossRevenue": 416285,
+        "operatingExpenses": -68769,
+        "managementFee": -10512,
+        "noi": 337004,
         "belowTheLine": -3594,
         "tiCosts": 0,
         "lcCosts": 0,
-        "cashFlow": 333489
+        "cashFlow": 333410
       }
     ]
   },
   "directCap": {
     "basis": "stabilizedAtMarket",
-    "basisNOI": 1163681,
+    "basisNOI": 1163393,
     "capRatePercent": 5.75,
-    "grossValue": 20237924,
+    "grossValue": 20232929,
     "adjustmentsApplied": [
       {
         "name": "Mark-to-market (PV of contract vs market)",
@@ -197,19 +197,19 @@
         "amount": -350000
       }
     ],
-    "indicatedValue": 18160044,
-    "perSF": 292.9
+    "indicatedValue": 18155050,
+    "perSF": 292.82
   },
   "dcf": {
     "holdMonths": 63,
     "discountRatePercent": 8,
     "reversionDiscountRatePercent": 8.5,
-    "pvOperating": 3513286,
-    "terminalGross": 24515832,
-    "terminalNet": 24148094,
-    "pvTerminal": 15735362,
-    "indicatedValue": 19248648,
-    "perSF": 310.46,
+    "pvOperating": 3504392,
+    "terminalGross": 23247901,
+    "terminalNet": 22899182,
+    "pvTerminal": 14921547,
+    "indicatedValue": 18425939,
+    "perSF": 297.19,
     "unfundedObligationsDeducted": 0
   },
   "debt": {
@@ -220,16 +220,16 @@
   },
   "returns": {
     "unlevered": {
-      "irrPercent": 13.21,
-      "npvAtDiscountRate": 3632398,
-      "equityMultiple": 1.84,
-      "totalProfit": 13053671
+      "irrPercent": 12.2,
+      "npvAtDiscountRate": 2809689,
+      "equityMultiple": 1.76,
+      "totalProfit": 11794619
     },
     "levered": {
-      "irrPercent": 18.7,
-      "equityMultiple": 2.42,
+      "irrPercent": 17,
+      "equityMultiple": 2.25,
       "initialEquity": 7201250,
-      "totalProfit": 10246546
+      "totalProfit": 8987494
     }
   },
   "sensitivity": {
@@ -249,39 +249,39 @@
     ],
     "values": [
       [
-        21712251,
-        20889867,
-        20138995,
-        19450696,
-        18817461
+        21699146,
+        20876948,
+        20126245,
+        19438101,
+        18805008
       ],
       [
-        21222941,
-        20420351,
-        19687551,
-        19015818,
-        18397823
+        21210006,
+        20407596,
+        19674961,
+        19003379,
+        18385523
       ],
       [
-        20747254,
-        19963892,
-        19248648,
-        18593008,
-        17989819
+        20734483,
+        19951297,
+        19236215,
+        18580722,
+        17977669
       ],
       [
-        20284745,
-        19520065,
-        18821879,
-        18181876,
-        17593072
+        20272136,
+        19507628,
+        18809599,
+        18169740,
+        17581069
       ],
       [
-        19834989,
-        19088464,
-        18406854,
-        17782044,
-        17207220
+        19822538,
+        19076181,
+        18394724,
+        17770055,
+        17195360
       ]
     ]
   },
@@ -290,6 +290,10 @@
     "source": "reconciliation (producer-stated)"
   },
   "warnings": [
+    {
+      "code": "tax_reassessment_reversion",
+      "message": "Terminal cap loaded by the 1.2% effective tax rate so the exit value reflects reassessment to the sale price (Prop 13-style)."
+    },
     {
       "code": "loan_term_lt_hold",
       "message": "Loan term (60 mo) ends before the hold (63 mo); per spec, payoff is assumed refinanced on identical terms (schedule continues)."

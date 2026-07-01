@@ -36,10 +36,10 @@
       "occupancyPercent": 100,
       "inPlaceWARentPerSFPerMonth": 0.85,
       "inPlaceVsMarketPercent": -46.88,
-      "year1NOI": 611404,
+      "year1NOI": 611117,
       "concludedValue": 15500000,
       "valuePerSF": 250,
-      "unleveredIRRPercent": 13.21
+      "unleveredIRRPercent": 12.2
     }
   ],
   "totals": {
@@ -51,8 +51,8 @@
     "inPlaceWARentPerSFPerMonth": 1.18,
     "marketWARentPerSFPerMonth": 1.55,
     "inPlaceVsMarketPercent": -23.97,
-    "year1NOI": 2413185,
-    "stabilizedAtMarketNOI": 3347326,
+    "year1NOI": 2412898,
+    "stabilizedAtMarketNOI": 3347038,
     "purchasePrice": 50800000,
     "concludedValue": 52371489,
     "concludedValuePerSF": 282.3
@@ -71,17 +71,17 @@
         "scheduledBaseRent": 2516829,
         "freeRent": -52065,
         "absorptionVacancy": -156112,
-        "expenseRecoveries": 727256,
+        "expenseRecoveries": 755974,
         "generalVacancy": -7763,
-        "creditLoss": -20480,
-        "effectiveGrossRevenue": 3215842,
-        "operatingExpenses": -714732,
-        "managementFee": -87925,
-        "noi": 2413185,
+        "creditLoss": -20767,
+        "effectiveGrossRevenue": 3244273,
+        "operatingExpenses": -742732,
+        "managementFee": -88643,
+        "noi": 2412897,
         "belowTheLine": -28672,
         "tiCosts": -69085,
         "lcCosts": -91886,
-        "cashFlow": 2223542
+        "cashFlow": 2223255
       },
       {
         "year": 2,
@@ -89,17 +89,17 @@
         "scheduledBaseRent": 2755123,
         "freeRent": -134667,
         "absorptionVacancy": -399924,
-        "expenseRecoveries": 752039,
+        "expenseRecoveries": 772455,
         "generalVacancy": -43404,
-        "creditLoss": -21095,
-        "effectiveGrossRevenue": 3442663,
-        "operatingExpenses": -730922,
-        "managementFee": -96175,
-        "noi": 2615566,
+        "creditLoss": -21299,
+        "effectiveGrossRevenue": 3462875,
+        "operatingExpenses": -759482,
+        "managementFee": -96686,
+        "noi": 2606707,
         "belowTheLine": -29532,
         "tiCosts": -278050,
         "lcCosts": -531964,
-        "cashFlow": 1776020
+        "cashFlow": 1767161
       },
       {
         "year": 3,
@@ -107,17 +107,17 @@
         "scheduledBaseRent": 3388426,
         "freeRent": -36528,
         "absorptionVacancy": -132276,
-        "expenseRecoveries": 814920,
+        "expenseRecoveries": 844798,
         "generalVacancy": -40987,
-        "creditLoss": -28394,
-        "effectiveGrossRevenue": 4133964,
-        "operatingExpenses": -747493,
-        "managementFee": -113830,
-        "noi": 3272641,
+        "creditLoss": -28693,
+        "effectiveGrossRevenue": 4163543,
+        "operatingExpenses": -776624,
+        "managementFee": -114577,
+        "noi": 3272342,
         "belowTheLine": -30418,
         "tiCosts": -90840,
         "lcCosts": -186377,
-        "cashFlow": 2965006
+        "cashFlow": 2964707
       },
       {
         "year": 4,
@@ -125,17 +125,17 @@
         "scheduledBaseRent": 3660597,
         "freeRent": 0,
         "absorptionVacancy": 0,
-        "expenseRecoveries": 873157,
+        "expenseRecoveries": 903633,
         "generalVacancy": -56277,
-        "creditLoss": -30221,
-        "effectiveGrossRevenue": 4447256,
-        "operatingExpenses": -764453,
-        "managementFee": -122723,
-        "noi": 3560080,
+        "creditLoss": -30526,
+        "effectiveGrossRevenue": 4477427,
+        "operatingExpenses": -794167,
+        "managementFee": -123485,
+        "noi": 3559775,
         "belowTheLine": -31331,
         "tiCosts": 0,
         "lcCosts": 0,
-        "cashFlow": 3528749
+        "cashFlow": 3528444
       },
       {
         "year": 5,
@@ -143,17 +143,17 @@
         "scheduledBaseRent": 3601897,
         "freeRent": -21025,
         "absorptionVacancy": -142133,
-        "expenseRecoveries": 855541,
+        "expenseRecoveries": 886626,
         "generalVacancy": -23972,
-        "creditLoss": -30261,
-        "effectiveGrossRevenue": 4403204,
-        "operatingExpenses": -781813,
-        "managementFee": -120100,
-        "noi": 3501291,
+        "creditLoss": -30572,
+        "effectiveGrossRevenue": 4433979,
+        "operatingExpenses": -812121,
+        "managementFee": -120877,
+        "noi": 3500981,
         "belowTheLine": -32271,
         "tiCosts": -79530,
         "lcCosts": -140954,
-        "cashFlow": 3248536
+        "cashFlow": 3248226
       },
       {
         "year": 6,
@@ -161,17 +161,17 @@
         "scheduledBaseRent": 2759844,
         "freeRent": -11785,
         "absorptionVacancy": -40564,
-        "expenseRecoveries": 699712,
+        "expenseRecoveries": 707638,
         "generalVacancy": -28772,
-        "creditLoss": -19217,
-        "effectiveGrossRevenue": 3411567,
-        "operatingExpenses": -616460,
-        "managementFee": -96118,
-        "noi": 2698989,
+        "creditLoss": -19296,
+        "effectiveGrossRevenue": 3419414,
+        "operatingExpenses": -624189,
+        "managementFee": -96316,
+        "noi": 2698909,
         "belowTheLine": -22457,
         "tiCosts": -41153,
         "lcCosts": -74047,
-        "cashFlow": 2561331
+        "cashFlow": 2561251
       },
       {
         "year": 7,
@@ -249,15 +249,15 @@
   },
   "returns": {
     "unlevered": {
-      "irrPercent": 9.71,
-      "equityMultiple": 1.79,
-      "totalProfit": 40219627,
+      "irrPercent": 9.44,
+      "equityMultiple": 1.76,
+      "totalProfit": 38960575,
       "initialInvestment": 51092750
     },
     "levered": {
-      "irrPercent": 11.03,
-      "equityMultiple": 1.94,
-      "totalProfit": 33005208,
+      "irrPercent": 10.64,
+      "equityMultiple": 1.91,
+      "totalProfit": 31746156,
       "initialEquity": 35000300
     },
     "includedDeals": [
@@ -353,6 +353,10 @@
     {
       "code": "renewal_option_below_market",
       "message": "[single-tenant-nnn] Lease L-001: renewal option is below projected market at expiry; the renewal branch is modeled at the option rent, but renewal probability is the market profile's 70% — a rational tenant is likelier to exercise an in-the-money option, so raise renewalProbabilityPercent to reflect it."
+    },
+    {
+      "code": "tax_reassessment_reversion",
+      "message": "[value-add-rollover] Terminal cap loaded by the 1.2% effective tax rate so the exit value reflects reassessment to the sale price (Prop 13-style)."
     },
     {
       "code": "loan_term_lt_hold",
