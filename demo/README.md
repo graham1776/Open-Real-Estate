@@ -17,6 +17,14 @@ and see the portfolio.
   the file bar. (Watching files picked via the file dialog/drag uses the File
   System Access API — Chrome/Edge; the bundled examples re-fetch everywhere.
   In other browsers, re-drop a changed file or use ↻ Refresh.)
+- **Editing (the reader is a writer):** the Edit JSON tab edits the file's
+  original text — change anything, **Apply** re-validates and recomputes every
+  tab, **Save** writes back to disk through the file's handle (Chrome/Edge
+  picker/drag; Ctrl/⌘-S works too), with Save As… / Download as the fallback
+  everywhere else. Unsaved edits pause the watcher for that file and mark its
+  chip with ●; Revert returns to the last applied text. A file that isn't valid
+  JSON opens straight into the editor for repair. Structured field-level
+  editing (forms, not raw JSON) is next on the roadmap.
 - Static page, no backend, no build step: nothing is uploaded anywhere.
 - Imports the reference engine (`../engine/dist/`) directly, so display and math
   share one implementation.
@@ -32,7 +40,3 @@ npm run demo          # serves the repo and opens /demo/
 
 When served from the repo, the page offers the three bundled examples — including
 a one-click "all three (portfolio)" load.
-
-Light editing in the viewer itself (change an assumption → outputs update →
-download the edited file) remains on the roadmap; with file watching, the current
-workflow is: edit the `.ore` anywhere, save, watch the viewer update.

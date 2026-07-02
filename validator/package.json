@@ -1,0 +1,16 @@
+{
+  "name": "@ore-format/cli",
+  "version": "0.1.0",
+  "description": "Validator CLI for ORE (.ore) files: validate against the published JSON Schema, summarize key deal metrics, compute full reference-engine outputs.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "ore": "./cli.mjs"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  },
+  "private": true,
+  "//": "private until first npm publish; publishing will bundle /spec/schema and the engine rather than reaching into sibling directories."
+}
