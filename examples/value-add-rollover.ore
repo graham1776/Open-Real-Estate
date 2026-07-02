@@ -200,6 +200,9 @@
     "purpose": "acquisition",
     "purchasePrice": 15500000,
     "acquisitionCostsPercent": 0.75,
+    "taxReassessment": {
+      "effectiveTaxRatePercent": 1.2
+    },
     "dcf": {
       "holdPeriodMonths": 63,
       "discountRatePercent": 8.0,

@@ -253,6 +253,7 @@ inputs travel as structured, auditable disclosure until engine support lands.
 | `methods` **(R)** | array | Any of `dcf`, `direct_cap`, `sales_comparison`, `cost` (min 1, unique). |
 | `purchasePrice` | number | USD. When present, engines report IRR/NPV against it; when absent, concluded value only. |
 | `acquisitionCostsPercent` | number | Closing costs, percent of price, added to initial outflow. Default 0. |
+| `taxReassessment` | object | Opt-in property-tax reassessment on transfer (Prop 13). `effectiveTaxRatePercent` (else derived from current tax ÷ price), `reassessOnAcquisition` (default true — tax resets to price × rate from analysis start), `reassessAtReversion` (default true — terminal cap loaded by the tax rate so the exit reflects the buyer’s reassessment to sale price), `expenseId` (default: the real_estate_taxes item). Needs `purchasePrice`. |
 | `reconciliation` | object | Final conclusion across approaches — see below. |
 
 ### `valuation.dcf`

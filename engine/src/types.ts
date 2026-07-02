@@ -161,7 +161,15 @@ export interface Valuation {
   salesComparison?: unknown;
   costApproach?: unknown;
   reconciliation?: { concludedValue: number; concludedValuePerSF?: number; primaryMethod?: string; notes?: string };
+  taxReassessment?: TaxReassessment;
   notes?: string;
+}
+
+export interface TaxReassessment {
+  effectiveTaxRatePercent?: number;
+  reassessOnAcquisition?: boolean;
+  reassessAtReversion?: boolean;
+  expenseId?: string;
 }
 
 export interface Dcf {

@@ -113,7 +113,7 @@ thoroughly and **recovery income** and **lease optionality** crudely.
 |---|---|---|---|---|
 | Taxes, insurance, CAM, R&M, utilities, mgmt fee (%EGR), admin, reserves | ✅ | ✅ | | category enum maps toward NCREIF expense taxonomy |
 | Recoverable flag, per-item growth override, below-the-line | ✅ | ✅ | | |
-| **Property-tax reassessment on sale (e.g. CA Prop 13)** | ✗ | — | **v0.2** | flat growth only; often the largest expense swing in a CA hold |
+| Property-tax reassessment on sale (CA Prop 13) | ✅ | ✅ | done (G4) | `valuation.taxReassessment`; going-in resets tax to price × rate, reversion loads the exit cap by the rate |
 | **One-time / dated capital expenditures (roof in yr 2)** | ✗ | — | **v0.2** | only a recurring `reserves` line today |
 | Tax appeal / PILOT / abatement / special assessment | ✗ | — | v0.x | |
 | Ground rent (as an expense) | ✗ | — | v0.2 | pairs with the ground-lease row in §1 |
@@ -135,7 +135,7 @@ thoroughly and **recovery income** and **lease optionality** crudely.
 | Direct cap (5 NOI bases, near-term deductions, mark-to-market, adjustments) | ✅ | ✅ | | |
 | Sales comparison; cost approach | ✅ | — | v0.x | carried as structured disclosure; engine output later |
 | Hold, discount rate, terminal, selling costs | ✅ | ✅ | | |
-| Tax reassessment at reversion | ✗ | — | v0.2 | pairs with §5 reassessment |
+| Tax reassessment at reversion | ✅ | ✅ | done (G4) | loaded exit cap = cap + effective tax rate |
 | Partial interest / JV promote / waterfall | ✗ | — | scope | |
 | Multiple named scenarios in one file | ✗ | — | v0.x | |
 
@@ -228,7 +228,7 @@ one PR.
 | ~~**G1**~~ | ~~Honor tenant options in the engine~~ | **done** — renewal options (fixed / %-of-market) honored on the renewal branch, capped at market, with a below-market warning; termination/expansion still disclosure-only |
 | ~~**G2**~~ | ~~Controllable-expense caps + classification~~ | **done** — `reimbursement.expenseCap` (3 bases) + `expenses.items[].controllable` with category defaults |
 | **G3** | Expense gross-up to occupancy | under-collects on partially-occupied multi-tenant |
-| **G4** | Property-tax reassessment on sale (going-in & reversion) | often the largest expense swing in a CA hold |
+| ~~**G4**~~ | ~~Property-tax reassessment on sale (going-in & reversion)~~ | **done** — `valuation.taxReassessment`; going-in tax = price × rate, reversion loads the exit cap. Mostly a reversion effect for NNN/NN (in-place tenant reimburses) |
 | ~~**G5**~~ | ~~Actual MG base-year amount (stop estimating by deflation)~~ | **done** — `reimbursement.baseYearExpenseAmount`; engine uses it exactly, deflation estimate only as fallback |
 | **G6** | One-time / dated capital expenditures in the DCF | only a recurring reserve today |
 | ~~**G7**~~ | ~~Fix silent `Gross` recoveries + apply `adminFeePercent`~~ | **done** — `adminFeePercent` now adds a markup on recoverable expenses (kept on the aggregate path so the lease still recovers its management fee); `Gross` handled explicitly as $0 |
