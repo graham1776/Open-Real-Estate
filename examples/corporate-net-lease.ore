@@ -1,0 +1,246 @@
+{
+  "$schema": "https://oreformat.org/schema/0.1.0/ore.schema.json",
+  "formatVersion": "0.1.0",
+  "property": {
+    "name": "2200 Foster Court",
+    "propertyType": "industrial",
+    "propertySubtype": "warehouse_distribution",
+    "tenancy": "single",
+    "description": "Synthetic example: single-tenant corporate net-lease warehouse on a 17.25-acre infill site, fully leased long-term to a server and data-center hardware manufacturer. Deal profile modeled on an institutional core-plus acquisition underwriting; all names, locations, dates, and figures are fictional.",
+    "address": {
+      "street1": "2200 Foster Ct",
+      "city": "Bensenville",
+      "state": "IL",
+      "postalCode": "60106",
+      "county": "DuPage",
+      "country": "US"
+    },
+    "location": {
+      "market": "Chicago",
+      "submarket": "O'Hare"
+    },
+    "parcels": [
+      {
+        "apn": "03-11-400-019",
+        "landAcres": 17.25,
+        "zoning": "I-2"
+      }
+    ],
+    "siteAreaAcres": 17.25,
+    "physical": {
+      "buildingSF": 298400,
+      "officeSF": 22000,
+      "clearHeightFt": 26,
+      "dockHighDoors": 19,
+      "gradeLevelDoors": 1,
+      "railServed": false,
+      "yearBuilt": 1979,
+      "stories": 1,
+      "construction": "masonry",
+      "sprinkler": "wet",
+      "powerAmps": 2400,
+      "powerVolts": "277/480V 3-phase",
+      "autoParkingStalls": 340,
+      "coverageRatio": 0.4,
+      "fencedYard": false
+    },
+    "notes": "Heavy power (2,400A) and above-market office build-out reflect the tenant's electronics manufacturing and integration use."
+  },
+  "rentRoll": {
+    "asOfDate": "2026-07-01",
+    "leases": [
+      {
+        "leaseId": "L-001",
+        "tenant": {
+          "name": "Meridian Compute Systems, Inc.",
+          "industry": "server and data-center hardware manufacturing",
+          "parentCompany": "Meridian Electronics Holdings (NASDAQ-listed)",
+          "creditNotes": "Wholly owned subsidiary of a NASDAQ-listed contract electronics manufacturer; this facility is the tenant's primary US integration hub."
+        },
+        "leasedSF": 298400,
+        "commencementDate": "2022-03-01",
+        "expirationDate": "2032-02-29",
+        "baseRent": {
+          "unit": "totalPerYear",
+          "schedule": [
+            { "startDate": "2026-03-01", "amount": 4567585 },
+            { "startDate": "2027-03-01", "amount": 4704613 },
+            { "startDate": "2028-03-01", "amount": 4845751 },
+            { "startDate": "2029-03-01", "amount": 4991124 },
+            { "startDate": "2030-03-01", "amount": 4616790 },
+            { "startDate": "2031-03-01", "amount": 4755294 }
+          ]
+        },
+        "escalation": {
+          "type": "none"
+        },
+        "reimbursement": {
+          "structure": "NNN",
+          "proRataSharePercent": 100,
+          "notes": "Effectively absolute net: tenant performs and pays for all maintenance including capital repairs; landlord's scheduled expenses are fully recovered."
+        },
+        "options": [
+          {
+            "type": "renewal",
+            "noticeMonths": 12,
+            "renewalTermMonths": 60,
+            "renewalCount": 1,
+            "rentBasis": "market",
+            "notes": "One 5-year extension at 100% of fair market value."
+          }
+        ],
+        "securityDeposit": {
+          "amount": 338187,
+          "form": "letter_of_credit"
+        },
+        "notes": "Contract steps are fully enumerated through expiration (escalation.type none): 3% annual increases each March 1, except the 2030 step, which resets rent down approximately 7.5% under the Second Amendment — negotiated in exchange for the tenant surrendering its early-termination right. Enumerated steps are authoritative; an engine must reproduce the step-down rather than apply a uniform escalation rule. Steps before the as-of date are omitted per spec convention. Letter of credit equals one month of initial base rent."
+      }
+    ],
+    "vacantSuites": [],
+    "notes": "Synthetic single-tenant corporate net-lease example. Structure mirrors buyer-side acquisition underwriting: contract rent to expiry, then rollover to market with explicit downtime and leasing costs."
+  },
+  "expenses": {
+    "items": [
+      {
+        "expenseId": "E-TAX",
+        "name": "Real Estate Taxes",
+        "category": "real_estate_taxes",
+        "amount": 1.85,
+        "amountUnit": "perSFPerYear",
+        "recoverable": true,
+        "growthOverridePercent": 3.0
+      },
+      {
+        "expenseId": "E-INS",
+        "name": "Insurance",
+        "category": "insurance",
+        "amount": 0.28,
+        "amountUnit": "perSFPerYear",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-CAM",
+        "name": "CAM / Site Maintenance",
+        "category": "cam",
+        "amount": 0.45,
+        "amountUnit": "perSFPerYear",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-MGMT",
+        "name": "Management Fee",
+        "category": "management_fee",
+        "amount": 1.5,
+        "amountUnit": "percentOfEGR",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-RES",
+        "name": "Capital Reserves",
+        "category": "reserves",
+        "amount": 0.1,
+        "amountUnit": "perSFPerYear",
+        "recoverable": false,
+        "belowTheLine": true
+      }
+    ],
+    "notes": "All operating expenses are recoverable under the net lease, so NOI tracks base rent while the recovery machinery is still exercised in full."
+  },
+  "marketAssumptions": {
+    "asOfDate": "2026-07-01",
+    "growth": {
+      "marketRent": 3.25,
+      "expenses": 3.0
+    },
+    "generalVacancyPercent": 0,
+    "creditLossPercent": 0,
+    "marketLeasing": {
+      "warehouse": {
+        "marketRent": {
+          "amount": 15.0,
+          "unit": "perSFPerYear"
+        },
+        "termMonths": 60,
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 3.0,
+          "frequencyMonths": 12
+        },
+        "reimbursementStructure": "NNN",
+        "downtimeMonths": 12,
+        "renewalProbabilityPercent": 60,
+        "newTenant": {
+          "tiPerSF": 7.5,
+          "lcPercentOfRent": 6,
+          "freeRentMonths": 4
+        },
+        "renewal": {
+          "tiPerSF": 1.5,
+          "lcPercentOfRent": 3
+        },
+        "renewalRentPercentOfMarket": 100,
+        "notes": "In-place rent runs slightly above market on a per-SF basis; the 2032 rollover marks the space to market. Twelve months of downtime reflects the big-box re-leasing risk a buyer would underwrite for a specialized single-tenant building."
+      }
+    }
+  },
+  "valuation": {
+    "analysisStartDate": "2026-07-01",
+    "methods": [
+      "dcf",
+      "direct_cap"
+    ],
+    "interestAppraised": "leased_fee",
+    "valuePremise": "as_is",
+    "purpose": "acquisition",
+    "purchasePrice": 87000000,
+    "acquisitionCostsPercent": 0.25,
+    "dcf": {
+      "holdPeriodYears": 10,
+      "discountRatePercent": 7.25,
+      "discountTiming": "monthly",
+      "periodConvention": "end",
+      "terminalValue": {
+        "method": "direct_cap",
+        "capRatePercent": 5.5,
+        "noiBasis": "stabilizedAtMarket",
+        "sellingCostsPercent": 0.75,
+        "notes": "Exit capitalizes fully-marked-to-market NOI (all space at grown market rent) — the seller's residual below/above-market lease position is stripped from the terminal value, matching the buyer model this example is patterned on."
+      },
+      "notes": "Going-in yield of ~5.3% on year-1 NOI. IRR convention note: this file's underwriting source computed IRR on annual end-of-year cash flows; the ORE reference engine computes a monthly-compounded IRR, which reads roughly 20-30 bps higher on identical cash flows."
+    },
+    "directCap": {
+      "capRatePercent": 5.4,
+      "noiBasis": "year1",
+      "applyGeneralVacancy": true
+    }
+  },
+  "provenance": {
+    "generatedAt": "2026-07-02T18:00:00Z",
+    "generatedBy": {
+      "name": "ORE Project Examples",
+      "organization": "ORE (Open Real Estate)",
+      "role": "other",
+      "email": "examples@oreformat.org"
+    },
+    "sourceDocuments": [
+      {
+        "name": "Synthetic Lease Abstract",
+        "type": "lease",
+        "date": "2022-02-15"
+      },
+      {
+        "name": "Synthetic Second Amendment (rent reset)",
+        "type": "lease_amendment",
+        "date": "2024-11-01"
+      },
+      {
+        "name": "Synthetic Buyer Underwriting Model",
+        "type": "other",
+        "date": "2026-06-15",
+        "description": "Buyer-side acquisition model whose assumption structure (contract rent to expiry, mark-to-market rollover, stabilized exit cap) this file reproduces."
+      }
+    ],
+    "confidentiality": "None — fully synthetic example data published with the ORE specification.",
+    "notes": "Deal structure inspired by a real institutional single-tenant net-lease acquisition; every name, address, date, and figure has been fictionalized or perturbed. No confidential information is contained in this file."
+  }
+}

@@ -1,0 +1,263 @@
+{
+  "$schema": "https://oreformat.org/schema/0.1.0/ore.schema.json",
+  "formatVersion": "0.1.0",
+  "property": {
+    "name": "4400 Landmeier Road",
+    "propertyType": "industrial",
+    "propertySubtype": "warehouse_distribution",
+    "tenancy": "single",
+    "description": "Synthetic example: 1968-vintage big-box warehouse on an oversized 27.4-acre infill site — a covered-land play. Value is driven by the land under the income stream: in-place rent is well above market, the exit is underwritten to residual land value rather than capitalized income, and the site carries roughly 9 acres of excess trailer parking. All names, locations, dates, and figures are fictional.",
+    "address": {
+      "street1": "4400 Landmeier Rd",
+      "city": "Elk Grove Village",
+      "state": "IL",
+      "postalCode": "60007",
+      "county": "Cook",
+      "country": "US"
+    },
+    "location": {
+      "market": "Chicago",
+      "submarket": "O'Hare"
+    },
+    "parcels": [
+      {
+        "apn": "08-27-300-041",
+        "landAcres": 27.4,
+        "zoning": "I-1"
+      }
+    ],
+    "siteAreaAcres": 27.4,
+    "physical": {
+      "buildingSF": 396500,
+      "officeSF": 18000,
+      "clearHeightFt": 18,
+      "dockHighDoors": 45,
+      "gradeLevelDoors": 5,
+      "railServed": false,
+      "yearBuilt": 1968,
+      "stories": 1,
+      "construction": "masonry",
+      "sprinkler": "wet",
+      "powerAmps": 3000,
+      "powerVolts": "277/480V 3-phase",
+      "trailerParkingStalls": 180,
+      "coverageRatio": 0.33,
+      "fencedYard": true,
+      "yardAcres": 9.0
+    },
+    "notes": "Functionally dated improvements (18-foot clear, 1968 construction) on scarce infill land at a 33% coverage ratio. The site supports roughly 537,000 buildable SF at a 45% FAR under current zoning — the basis for the residual land-value exit in the valuation module."
+  },
+  "rentRoll": {
+    "asOfDate": "2026-07-01",
+    "leases": [
+      {
+        "leaseId": "L-001",
+        "tenant": {
+          "name": "Lakeshore Parcel Express, Inc.",
+          "industry": "parcel logistics and package delivery",
+          "creditNotes": "National parcel carrier; investment-grade, NYSE-listed. Tenant has fully subleased the premises to a home-furnishings importer but remains directly and fully obligated on the lease."
+        },
+        "leasedSF": 396500,
+        "commencementDate": "2021-05-01",
+        "expirationDate": "2036-04-30",
+        "baseRent": {
+          "unit": "totalPerYear",
+          "schedule": [
+            { "startDate": "2026-05-01", "amount": 7814087 },
+            { "startDate": "2027-05-01", "amount": 8048510 },
+            { "startDate": "2028-05-01", "amount": 8289965 },
+            { "startDate": "2029-05-01", "amount": 8538664 },
+            { "startDate": "2030-05-01", "amount": 8794824 },
+            { "startDate": "2031-05-01", "amount": 9058669 },
+            { "startDate": "2032-05-01", "amount": 9330429 },
+            { "startDate": "2033-05-01", "amount": 9610342 },
+            { "startDate": "2034-05-01", "amount": 9898652 },
+            { "startDate": "2035-05-01", "amount": 10195612 }
+          ]
+        },
+        "escalation": {
+          "type": "none"
+        },
+        "reimbursement": {
+          "structure": "NNN",
+          "proRataSharePercent": 100,
+          "notes": "Absolute net: tenant pays every expense of the property directly, including capital repairs, taxes, and insurance. No landlord expense schedule exists, so this file intentionally omits the expenses module."
+        },
+        "options": [
+          {
+            "type": "renewal",
+            "noticeMonths": 18,
+            "renewalTermMonths": 120,
+            "renewalCount": 1,
+            "rentBasis": "percent_of_market",
+            "percentOfMarket": 95,
+            "notes": "One 10-year extension at 95% of fair market value. Lease quirk carried for diligence: the tenant holds a right to demolish some or all of the improvements, and electing demolition automatically deems the extension exercised — a covered-land-friendly clause a re-underwriter must read."
+          }
+        ],
+        "notes": "Contract steps fully enumerated through expiration (3% annual increases each May 1); steps before the as-of date omitted per spec convention. In-place rent (~$19.71/SF/yr in 2026) sits roughly 35% ABOVE market for functionally comparable space — the income stream amortizes the land basis while the lease runs. On the 2036 expiry the underwriting does not re-lease: the hold ends at lease expiry and the exit is a land-value reversion."
+      }
+    ],
+    "vacantSuites": [],
+    "notes": "Synthetic covered-land example. The economic story is above-market contract rent on credit, then land value at exit — the opposite mark-to-market direction from the format's value-add examples."
+  },
+  "marketAssumptions": {
+    "asOfDate": "2026-07-01",
+    "growth": {
+      "marketRent": 3.25,
+      "expenses": 3.0
+    },
+    "generalVacancyPercent": 0,
+    "creditLossPercent": 0,
+    "marketLeasing": {
+      "warehouse": {
+        "marketRent": {
+          "amount": 14.5,
+          "unit": "perSFPerYear"
+        },
+        "termMonths": 60,
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 3.0,
+          "frequencyMonths": 12
+        },
+        "reimbursementStructure": "NNN",
+        "downtimeMonths": 9,
+        "renewalProbabilityPercent": 50,
+        "newTenant": {
+          "tiPerSF": 5,
+          "lcPercentOfRent": 5,
+          "freeRentMonths": 3
+        },
+        "renewal": {
+          "tiPerSF": 1,
+          "lcPercentOfRent": 2.5
+        },
+        "renewalRentPercentOfMarket": 100,
+        "notes": "Market rent reflects functionally comparable 1960s-70s vintage low-clear product, not modern Class A. No rollover occurs inside the hold period (the hold ends at lease expiry); the profile is carried so any engine extending the analysis, or valuing the renewal option, prices from the same assumptions."
+      }
+    }
+  },
+  "valuation": {
+    "analysisStartDate": "2026-07-01",
+    "methods": [
+      "dcf",
+      "sales_comparison"
+    ],
+    "interestAppraised": "leased_fee",
+    "valuePremise": "as_is",
+    "purpose": "acquisition",
+    "purchasePrice": 126500000,
+    "acquisitionCostsPercent": 0.25,
+    "dcf": {
+      "holdPeriodMonths": 118,
+      "discountRatePercent": 7.75,
+      "discountTiming": "monthly",
+      "periodConvention": "end",
+      "terminalValue": {
+        "method": "fixed_value",
+        "fixedValue": 147081000,
+        "sellingCostsPercent": 0.75,
+        "notes": "Residual land-value exit, not capitalized income. Derivation: 27.4 acres = 1,193,544 land SF; 45% FAR = 537,095 buildable SF; land value of $185 per buildable SF today, grown at 4%/yr over the hold = $273.85 per buildable SF at exit; 537,095 x $273.85 = ~$147.08M. The land basis exceeds the capitalized-income alternative (~$138M at a 5.75% cap on marked-to-market NOI), so the land approach is adopted. ORE v0.1 has no structured land-residual terminal method; fixed_value carries the conclusion and this note carries the math so any reader can reproduce it."
+      },
+      "notes": "Hold period is 118 months so the exit lands exactly at the 2036-04-30 lease expiration — contract rent for the full hold, land value at the end, no rollover modeled. Going-in yield ~6.2% on year-1 NOI. IRR convention note: the underwriting source computed IRR on annual end-of-year cash flows; the ORE engine's monthly-compounded IRR reads roughly 25-30 bps higher on identical cash flows."
+    },
+    "salesComparison": {
+      "unitBasis": "land_sf",
+      "comparables": [
+        {
+          "name": "Airport-adjacent covered land sale",
+          "address": { "city": "Des Plaines", "state": "IL" },
+          "salePrice": 38500000,
+          "saleDate": "2025-03-15",
+          "landAcres": 6.9,
+          "pricePerUnit": 128.09,
+          "propertyRights": "leased_fee",
+          "adjustments": [
+            {
+              "factor": "location",
+              "percentAdjustment": -10,
+              "rationale": "Superior arterial frontage and airport proximity versus subject."
+            }
+          ],
+          "adjustedPricePerUnit": 115.28,
+          "source": "public record"
+        },
+        {
+          "name": "Infill redevelopment land sale",
+          "address": { "city": "Franklin Park", "state": "IL" },
+          "salePrice": 38000000,
+          "saleDate": "2025-01-20",
+          "landAcres": 7.1,
+          "pricePerUnit": 122.87,
+          "propertyRights": "fee_simple",
+          "adjustments": [
+            {
+              "factor": "size",
+              "percentAdjustment": -5,
+              "rationale": "Smaller parcel commands a per-SF premium versus the subject's 27 acres."
+            }
+          ],
+          "adjustedPricePerUnit": 116.73,
+          "source": "buyer's broker (confirmed)"
+        },
+        {
+          "name": "Large-site industrial land sale",
+          "address": { "city": "Melrose Park", "state": "IL" },
+          "salePrice": 89500000,
+          "saleDate": "2024-06-10",
+          "landAcres": 21.7,
+          "pricePerUnit": 94.68,
+          "propertyRights": "fee_simple",
+          "adjustments": [
+            {
+              "factor": "market_conditions",
+              "percentAdjustment": 8,
+              "rationale": "Time adjustment from mid-2024 to the as-of date."
+            },
+            {
+              "factor": "location",
+              "percentAdjustment": 5,
+              "rationale": "Subject's submarket carries stronger land pricing."
+            }
+          ],
+          "adjustedPricePerUnit": 107.3,
+          "source": "public record"
+        }
+      ],
+      "concludedValuePerUnit": 106.0,
+      "indicatedValue": 126515664,
+      "notes": "Land-basis comparison for a covered-land acquisition: the subject trades on dollars per land SF, with the improvements treated as an income bridge. Adjusted range $107-$117/land SF; concluded at $106 given the subject's size."
+    },
+    "reconciliation": {
+      "concludedValue": 126500000,
+      "concludedValuePerSF": 319.04,
+      "primaryMethod": "dcf",
+      "notes": "DCF (contract rent plus land-value reversion) given primary weight; the land-SF sales comparison brackets the conclusion within 0.1%."
+    },
+    "notes": "No expenses module: the lease is absolute net and the underwriting carries zero landlord expenses, so NOI equals contract base rent. This also exercises engine handling of a file without an expenses module."
+  },
+  "provenance": {
+    "generatedAt": "2026-07-02T18:00:00Z",
+    "generatedBy": {
+      "name": "ORE Project Examples",
+      "organization": "ORE (Open Real Estate)",
+      "role": "other",
+      "email": "examples@oreformat.org"
+    },
+    "sourceDocuments": [
+      {
+        "name": "Synthetic Lease Abstract",
+        "type": "lease",
+        "date": "2021-04-20"
+      },
+      {
+        "name": "Synthetic Buyer Underwriting Model",
+        "type": "other",
+        "date": "2026-06-15",
+        "description": "Buyer-side covered-land acquisition model whose structure (contract rent to expiry, residual land-value exit, land-SF sale comps) this file reproduces."
+      }
+    ],
+    "confidentiality": "None — fully synthetic example data published with the ORE specification.",
+    "notes": "Deal structure inspired by a real institutional covered-land acquisition; every name, address, date, and figure has been fictionalized or perturbed. No confidential information is contained in this file."
+  }
+}
