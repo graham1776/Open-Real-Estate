@@ -1,0 +1,301 @@
+{
+  "engineVersion": "0.1.0",
+  "property": {
+    "name": "4400 Landmeier Road",
+    "cityState": "Elk Grove Village, IL",
+    "market": "Chicago",
+    "submarket": "O'Hare",
+    "buildingSF": 396500,
+    "yearBuilt": 1968,
+    "clearHeightFt": 18
+  },
+  "occupancy": {
+    "buildingSF": 396500,
+    "occupiedSF": 396500,
+    "vacantSF": 0,
+    "occupancyPercent": 100
+  },
+  "leaseMetrics": {
+    "waltYearsByRent": 9.83,
+    "waltYearsBySF": 9.83,
+    "rollNext12ByRentPercent": 0,
+    "rollNext12BySFPercent": 0
+  },
+  "rent": {
+    "inPlaceAnnualBaseRent": 7814087,
+    "inPlaceWARentPerSFPerMonth": 1.64,
+    "marketRentPerSFPerMonth": 1.21,
+    "inPlaceVsMarketPercent": 35.91
+  },
+  "expenses": {
+    "aboveLineAnnualExclMgmt": 0,
+    "belowTheLineAnnual": 0,
+    "managementFeePercentOfEGR": null
+  },
+  "noi": {
+    "year1NOI": 7853158,
+    "stabilizedAtMarketNOI": 5749250
+  },
+  "noiBridgeYear1": {
+    "year": 1,
+    "months": 12,
+    "scheduledBaseRent": 7853158,
+    "freeRent": 0,
+    "absorptionVacancy": 0,
+    "expenseRecoveries": 0,
+    "generalVacancy": 0,
+    "creditLoss": 0,
+    "effectiveGrossRevenue": 7853158,
+    "operatingExpenses": 0,
+    "managementFee": 0,
+    "noi": 7853158,
+    "belowTheLine": 0,
+    "tiCosts": 0,
+    "lcCosts": 0,
+    "cashFlow": 7853158
+  },
+  "cashFlows": {
+    "annual": [
+      {
+        "year": 1,
+        "months": 12,
+        "scheduledBaseRent": 7853158,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 0,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 7853158,
+        "operatingExpenses": 0,
+        "managementFee": 0,
+        "noi": 7853158,
+        "belowTheLine": 0,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 7853158
+      },
+      {
+        "year": 2,
+        "months": 12,
+        "scheduledBaseRent": 8088753,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 0,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 8088753,
+        "operatingExpenses": 0,
+        "managementFee": 0,
+        "noi": 8088753,
+        "belowTheLine": 0,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 8088753
+      },
+      {
+        "year": 3,
+        "months": 12,
+        "scheduledBaseRent": 8331415,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 0,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 8331415,
+        "operatingExpenses": 0,
+        "managementFee": 0,
+        "noi": 8331415,
+        "belowTheLine": 0,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 8331415
+      },
+      {
+        "year": 4,
+        "months": 12,
+        "scheduledBaseRent": 8581357,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 0,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 8581357,
+        "operatingExpenses": 0,
+        "managementFee": 0,
+        "noi": 8581357,
+        "belowTheLine": 0,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 8581357
+      },
+      {
+        "year": 5,
+        "months": 12,
+        "scheduledBaseRent": 8838798,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 0,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 8838798,
+        "operatingExpenses": 0,
+        "managementFee": 0,
+        "noi": 8838798,
+        "belowTheLine": 0,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 8838798
+      },
+      {
+        "year": 6,
+        "months": 12,
+        "scheduledBaseRent": 9103962,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 0,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 9103962,
+        "operatingExpenses": 0,
+        "managementFee": 0,
+        "noi": 9103962,
+        "belowTheLine": 0,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 9103962
+      },
+      {
+        "year": 7,
+        "months": 12,
+        "scheduledBaseRent": 9377081,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 0,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 9377081,
+        "operatingExpenses": 0,
+        "managementFee": 0,
+        "noi": 9377081,
+        "belowTheLine": 0,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 9377081
+      },
+      {
+        "year": 8,
+        "months": 12,
+        "scheduledBaseRent": 9658394,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 0,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 9658394,
+        "operatingExpenses": 0,
+        "managementFee": 0,
+        "noi": 9658394,
+        "belowTheLine": 0,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 9658394
+      },
+      {
+        "year": 9,
+        "months": 12,
+        "scheduledBaseRent": 9948145,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 0,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 9948145,
+        "operatingExpenses": 0,
+        "managementFee": 0,
+        "noi": 9948145,
+        "belowTheLine": 0,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 9948145
+      },
+      {
+        "year": 10,
+        "months": 10,
+        "scheduledBaseRent": 8496343,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 0,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 8496343,
+        "operatingExpenses": 0,
+        "managementFee": 0,
+        "noi": 8496343,
+        "belowTheLine": 0,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 8496343
+      }
+    ]
+  },
+  "directCap": null,
+  "dcf": {
+    "holdMonths": 118,
+    "discountRatePercent": 7.75,
+    "reversionDiscountRatePercent": 7.75,
+    "pvOperating": 61260806,
+    "terminalGross": 147081000,
+    "terminalNet": 145977893,
+    "pvTerminal": 70067590,
+    "indicatedValue": 131328396,
+    "perSF": 331.22,
+    "unfundedObligationsDeducted": null
+  },
+  "debt": null,
+  "returns": {
+    "unlevered": {
+      "irrPercent": 8.26,
+      "npvAtDiscountRate": 4512146,
+      "equityMultiple": 1.85,
+      "totalProfit": 107439049
+    },
+    "levered": null
+  },
+  "sensitivity": {
+    "discountRatesPercent": [
+      6.75,
+      7.25,
+      7.75,
+      8.25,
+      8.75
+    ],
+    "exitCapRatesPercent": null,
+    "values": [
+      [
+        140760266
+      ],
+      [
+        135936214
+      ],
+      [
+        131328396
+      ],
+      [
+        126925789
+      ],
+      [
+        122717989
+      ]
+    ]
+  },
+  "concluded": {
+    "value": 126500000,
+    "source": "reconciliation (producer-stated)"
+  },
+  "warnings": [
+    {
+      "code": "renewal_option_below_market",
+      "message": "Lease L-001: renewal option is below projected market at expiry; the renewal branch is modeled at the option rent, but renewal probability is the market profile's 50% — a rational tenant is likelier to exercise an in-the-money option, so raise renewalProbabilityPercent to reflect it."
+    }
+  ]
+}

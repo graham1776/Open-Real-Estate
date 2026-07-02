@@ -1,0 +1,330 @@
+{
+  "engineVersion": "0.1.0",
+  "property": {
+    "name": "2200 Foster Court",
+    "cityState": "Bensenville, IL",
+    "market": "Chicago",
+    "submarket": "O'Hare",
+    "buildingSF": 298400,
+    "yearBuilt": 1979,
+    "clearHeightFt": 26
+  },
+  "occupancy": {
+    "buildingSF": 298400,
+    "occupiedSF": 298400,
+    "vacantSF": 0,
+    "occupancyPercent": 100
+  },
+  "leaseMetrics": {
+    "waltYearsByRent": 5.67,
+    "waltYearsBySF": 5.67,
+    "rollNext12ByRentPercent": 0,
+    "rollNext12BySFPercent": 0
+  },
+  "rent": {
+    "inPlaceAnnualBaseRent": 4567585,
+    "inPlaceWARentPerSFPerMonth": 1.28,
+    "marketRentPerSFPerMonth": 1.25,
+    "inPlaceVsMarketPercent": 2.05
+  },
+  "expenses": {
+    "aboveLineAnnualExclMgmt": 769872,
+    "belowTheLineAnnual": 29840,
+    "managementFeePercentOfEGR": 1.5
+  },
+  "noi": {
+    "year1NOI": 4613261,
+    "stabilizedAtMarketNOI": 4476000
+  },
+  "noiBridgeYear1": {
+    "year": 1,
+    "months": 12,
+    "scheduledBaseRent": 4613261,
+    "freeRent": 0,
+    "absorptionVacancy": 0,
+    "expenseRecoveries": 851849,
+    "generalVacancy": 0,
+    "creditLoss": 0,
+    "effectiveGrossRevenue": 5465110,
+    "operatingExpenses": -769872,
+    "managementFee": -81977,
+    "noi": 4613261,
+    "belowTheLine": -29840,
+    "tiCosts": 0,
+    "lcCosts": 0,
+    "cashFlow": 4583421
+  },
+  "cashFlows": {
+    "annual": [
+      {
+        "year": 1,
+        "months": 12,
+        "scheduledBaseRent": 4613261,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 851849,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 5465110,
+        "operatingExpenses": -769872,
+        "managementFee": -81977,
+        "noi": 4613261,
+        "belowTheLine": -29840,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 4583421
+      },
+      {
+        "year": 2,
+        "months": 12,
+        "scheduledBaseRent": 4751659,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 877404,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 5629063,
+        "operatingExpenses": -792968,
+        "managementFee": -84436,
+        "noi": 4751659,
+        "belowTheLine": -30735,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 4720924
+      },
+      {
+        "year": 3,
+        "months": 12,
+        "scheduledBaseRent": 4894209,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 903726,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 5797935,
+        "operatingExpenses": -816757,
+        "managementFee": -86969,
+        "noi": 4894209,
+        "belowTheLine": -31657,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 4862551
+      },
+      {
+        "year": 4,
+        "months": 12,
+        "scheduledBaseRent": 4866346,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 928178,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 5794524,
+        "operatingExpenses": -841260,
+        "managementFee": -86918,
+        "noi": 4866346,
+        "belowTheLine": -32607,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 4833739
+      },
+      {
+        "year": 5,
+        "months": 12,
+        "scheduledBaseRent": 4662958,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 950703,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 5613661,
+        "operatingExpenses": -866498,
+        "managementFee": -84205,
+        "noi": 4662958,
+        "belowTheLine": -33585,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 4629373
+      },
+      {
+        "year": 6,
+        "months": 12,
+        "scheduledBaseRent": 4220634,
+        "freeRent": 0,
+        "absorptionVacancy": -700292,
+        "expenseRecoveries": 841992,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 5062626,
+        "operatingExpenses": -892493,
+        "managementFee": -75939,
+        "noi": 4094194,
+        "belowTheLine": -34593,
+        "tiCosts": -268560,
+        "lcCosts": -501923,
+        "cashFlow": 3289119
+      },
+      {
+        "year": 7,
+        "months": 12,
+        "scheduledBaseRent": 3182827,
+        "freeRent": -723051,
+        "absorptionVacancy": -1446103,
+        "expenseRecoveries": 717691,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 3900518,
+        "operatingExpenses": -919267,
+        "managementFee": -58508,
+        "noi": 2922743,
+        "belowTheLine": -35631,
+        "tiCosts": -895200,
+        "lcCosts": -690980,
+        "cashFlow": 1300932
+      },
+      {
+        "year": 8,
+        "months": 12,
+        "scheduledBaseRent": 5469157,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 1044551,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 6513708,
+        "operatingExpenses": -946845,
+        "managementFee": -97706,
+        "noi": 5469157,
+        "belowTheLine": -36699,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 5432458
+      },
+      {
+        "year": 9,
+        "months": 12,
+        "scheduledBaseRent": 5633232,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 1075888,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 6709120,
+        "operatingExpenses": -975251,
+        "managementFee": -100637,
+        "noi": 5633232,
+        "belowTheLine": -37800,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 5595432
+      },
+      {
+        "year": 10,
+        "months": 12,
+        "scheduledBaseRent": 5802229,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 1108164,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 6910393,
+        "operatingExpenses": -1004508,
+        "managementFee": -103656,
+        "noi": 5802229,
+        "belowTheLine": -38934,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 5763295
+      }
+    ]
+  },
+  "directCap": {
+    "basis": "year1",
+    "basisNOI": 4613261,
+    "capRatePercent": 5.4,
+    "grossValue": 85430759,
+    "adjustmentsApplied": [],
+    "indicatedValue": 85430759,
+    "perSF": 286.3
+  },
+  "dcf": {
+    "holdMonths": 120,
+    "discountRatePercent": 7.25,
+    "reversionDiscountRatePercent": 7.25,
+    "pvOperating": 32187645,
+    "terminalGross": 112054162,
+    "terminalNet": 111213756,
+    "pvTerminal": 55231330,
+    "indicatedValue": 87418975,
+    "perSF": 292.96,
+    "unfundedObligationsDeducted": null
+  },
+  "debt": null,
+  "returns": {
+    "unlevered": {
+      "irrPercent": 7.28,
+      "npvAtDiscountRate": 201475,
+      "equityMultiple": 1.79,
+      "totalProfit": 69007499
+    },
+    "levered": null
+  },
+  "sensitivity": {
+    "discountRatesPercent": [
+      6.25,
+      6.75,
+      7.25,
+      7.75,
+      8.25
+    ],
+    "exitCapRatesPercent": [
+      5,
+      5.25,
+      5.5,
+      5.75,
+      6
+    ],
+    "values": [
+      [
+        100298914,
+        97121729,
+        94233379,
+        91596190,
+        89178767
+      ],
+      [
+        96531460,
+        93499991,
+        90744111,
+        88227872,
+        85921320
+      ],
+      [
+        92942108,
+        90049038,
+        87418975,
+        85017613,
+        82816364
+      ],
+      [
+        89521427,
+        86759838,
+        84249302,
+        81957073,
+        79855864
+      ],
+      [
+        86260531,
+        83623879,
+        81226923,
+        79038397,
+        77032249
+      ]
+    ]
+  },
+  "concluded": {
+    "value": 87418975,
+    "source": "computed (dcf, engine)"
+  },
+  "warnings": []
+}
