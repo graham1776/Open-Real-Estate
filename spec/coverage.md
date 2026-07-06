@@ -2,9 +2,11 @@
 
 Single source of truth for **what an ORE file can represent** and **what the
 reference engine actually computes** — by data domain, derived from a
-first-principles decomposition of a US industrial deal. This document is both the
-scope statement (design rationale) and the status checklist; the v0.2 backlog lives
-here too, so there is one place to look, not three.
+first-principles decomposition of a US industrial deal. This document is the
+scope statement (design rationale) and the status checklist. **Actionable work is
+tracked in [GitHub issues](https://github.com/graham1776/Open-Real-Estate/issues)**
+— every prioritized gap below links to its issue, new backlog items get an issue
+(not a new G-ID), and [`ROADMAP.md`](../ROADMAP.md) holds the milestone view.
 
 It complements, and does not duplicate, the field-level definitions in
 [`data-dictionary.md`](data-dictionary.md) and the normative
@@ -211,6 +213,12 @@ shape is kept as the default. Options:
 canonical way to express a multi-suite lease before real files proliferate),
 **implement the engine semantics in v0.2.** This defuses the only "clock" in the
 backlog — every other gap below is purely additive and can land any time.
+Tracked as [#22](https://github.com/graham1776/Open-Real-Estate/issues/22)
+(multi-building / multi-suite within one property); the related but distinct
+multi-*property* transaction container is
+[#16](https://github.com/graham1776/Open-Real-Estate/issues/16). The pressure is
+no longer hypothetical: `examples/estate-mark-to-market.ore` flattens a real
+seven-building estate into the flat shape today.
 
 ---
 
@@ -221,22 +229,35 @@ disagree with a real underwrite on the first industrial deal, which is what woul
 undercut the "same inputs → same NOI" thesis. All are **additive** to the schema
 unless noted. **IDs are stable** — reference them when scoping work ("do G2"); each
 is one chunk = schema change + engine change + example coverage + golden re-lock +
-one PR.
+one PR. **Every open item is tracked as a GitHub issue** (linked below); items
+surfaced after this audit get an issue directly rather than a new G-ID.
 
-| ID | Item | Why |
-|---|---|---|
-| ~~**G1**~~ | ~~Honor tenant options in the engine~~ | **done** — renewal options (fixed / %-of-market) honored on the renewal branch, capped at market, with a below-market warning; termination/expansion still disclosure-only |
-| ~~**G2**~~ | ~~Controllable-expense caps + classification~~ | **done** — `reimbursement.expenseCap` (3 bases) + `expenses.items[].controllable` with category defaults |
-| **G3** | Expense gross-up to occupancy | under-collects on partially-occupied multi-tenant |
-| ~~**G4**~~ | ~~Property-tax reassessment on sale (going-in & reversion)~~ | **done** — `valuation.taxReassessment`; going-in tax = price × rate, reversion loads the exit cap. Mostly a reversion effect for NNN/NN (in-place tenant reimburses) |
-| ~~**G5**~~ | ~~Actual MG base-year amount (stop estimating by deflation)~~ | **done** — `reimbursement.baseYearExpenseAmount`; engine uses it exactly, deflation estimate only as fallback |
-| **G6** | One-time / dated capital expenditures in the DCF | only a recurring reserve today |
-| ~~**G7**~~ | ~~Fix silent `Gross` recoveries + apply `adminFeePercent`~~ | **done** — `adminFeePercent` now adds a markup on recoverable expenses (kept on the aggregate path so the lease still recovers its management fee); `Gross` handled explicitly as $0 |
-| **G8** | Reserve the hierarchy field names (§10) | the one item with a clock |
-| **G9** | Ground-lease payment stream; parking / IOS other-income line | missing income & outflow streams |
-| **G10** | Gross area vs net rentable area + load factor (REDI naming) | pro-rata share & $/SF depend on it |
-| ~~**G11**~~ | ~~Emit WALT + 12-month lease-roll % (engine output)~~ | **done** — `leaseMetrics` (WALT and 12-mo roll, rent- and SF-weighted) on deal and portfolio outputs; REDI Operations alignment |
-| **G12** | Add `life_science` subtype; write the ORE→REDI field crosswalk | REDI-surfaced; small, additive |
+| ID | Issue | Item | Why |
+|---|---|---|---|
+| ~~**G1**~~ | | ~~Honor tenant options in the engine~~ | **done** — renewal options (fixed / %-of-market) honored on the renewal branch, capped at market, with a below-market warning; termination/expansion still disclosure-only |
+| ~~**G2**~~ | | ~~Controllable-expense caps + classification~~ | **done** — `reimbursement.expenseCap` (3 bases) + `expenses.items[].controllable` with category defaults |
+| **G3** | [#20](https://github.com/graham1776/Open-Real-Estate/issues/20) | Expense gross-up to occupancy | under-collects on partially-occupied multi-tenant |
+| ~~**G4**~~ | | ~~Property-tax reassessment on sale (going-in & reversion)~~ | **done** — `valuation.taxReassessment`; going-in tax = price × rate, reversion loads the exit cap. Mostly a reversion effect for NNN/NN (in-place tenant reimburses) |
+| ~~**G5**~~ | | ~~Actual MG base-year amount (stop estimating by deflation)~~ | **done** — `reimbursement.baseYearExpenseAmount`; engine uses it exactly, deflation estimate only as fallback |
+| **G6** | [#21](https://github.com/graham1776/Open-Real-Estate/issues/21) | One-time / dated capital expenditures in the DCF | only a recurring reserve today |
+| ~~**G7**~~ | | ~~Fix silent `Gross` recoveries + apply `adminFeePercent`~~ | **done** — `adminFeePercent` now adds a markup on recoverable expenses (kept on the aggregate path so the lease still recovers its management fee); `Gross` handled explicitly as $0 |
+| **G8** | [#22](https://github.com/graham1776/Open-Real-Estate/issues/22) | Reserve the hierarchy field names (§10) | the one item with a clock |
+| **G9** | [#23](https://github.com/graham1776/Open-Real-Estate/issues/23) | Ground-lease payment stream; parking / IOS other-income line | missing income & outflow streams |
+| **G10** | [#24](https://github.com/graham1776/Open-Real-Estate/issues/24) | Gross area vs net rentable area + load factor (REDI naming) | pro-rata share & $/SF depend on it |
+| ~~**G11**~~ | | ~~Emit WALT + 12-month lease-roll % (engine output)~~ | **done** — `leaseMetrics` (WALT and 12-mo roll, rent- and SF-weighted) on deal and portfolio outputs; REDI Operations alignment |
+| **G12** | [#25](https://github.com/graham1776/Open-Real-Estate/issues/25) | Add `life_science` subtype; write the ORE→REDI field crosswalk | REDI-surfaced; small, additive |
+
+Backlog items tracked by issue only (post-audit): IRR compounding convention
+[#13](https://github.com/graham1776/Open-Real-Estate/issues/13) · land-residual
+terminal [#14](https://github.com/graham1776/Open-Real-Estate/issues/14) · dual SF
+basis (contract RBA vs lettable) [#15](https://github.com/graham1776/Open-Real-Estate/issues/15)
+· portfolio/transaction container [#16](https://github.com/graham1776/Open-Real-Estate/issues/16)
+· structured subleases [#17](https://github.com/graham1776/Open-Real-Estate/issues/17)
+· per-lease rollover overrides [#26](https://github.com/graham1776/Open-Real-Estate/issues/26)
+· yield-on-cost outputs [#27](https://github.com/graham1776/Open-Real-Estate/issues/27)
+· growth compounding convention [#28](https://github.com/graham1776/Open-Real-Estate/issues/28)
+· producer-stated summary block [#29](https://github.com/graham1776/Open-Real-Estate/issues/29)
+· provenance history on save [#30](https://github.com/graham1776/Open-Real-Estate/issues/30).
 
 ## Deliberately out of scope (v0.1 charter)
 

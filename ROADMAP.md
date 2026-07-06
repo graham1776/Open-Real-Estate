@@ -1,10 +1,17 @@
 # ORE Roadmap
 
+**Where next steps live (decided 2026-07-06):** actionable work is tracked in
+**[GitHub issues](https://github.com/graham1776/Open-Real-Estate/issues)** — one
+issue per chunk (schema change + engine change + example + golden re-lock + PR).
+This file is the milestone view: what shipped, what the current milestone is, and
+which issues belong to which track. [`spec/coverage.md`](spec/coverage.md) is the
+**scope matrix** — what the format can represent and what the engine computes,
+element by element, each open gap linking to its issue. Neither document carries
+its own private backlog anymore; if it's worth doing, it has an issue number.
+
 **Sequencing (decided 2026-06-10, see `docs/decisions/2026-06-10-demo-first-sequencing.md`):**
 schema → demo shell + golden outputs → thin calc kernel → validator CLI → real case
-study → hardened reference engine. The demo is the first customer of the engine;
-the goal of the next milestone is the 30-second "I can see the deal" moment, not a
-perfect institutional DCF.
+study → hardened reference engine. The demo is the first customer of the engine.
 
 ## v0.1 — definition of done
 
@@ -17,9 +24,8 @@ perfect institutional DCF.
   - [x] `debt` module (draft; optional, simple loan terms)
   - [x] `provenance` module (draft)
 - [x] Three example deal files validate against the schema (`npm run validate`)
-  - [x] Single-tenant NNN (all modules populated)
-  - [x] Multi-tenant infill (NNN / MG base-year / CPI mix, one vacant suite)
-  - [x] Value-add with rollover (below-market single tenant, DCF-only, IO bridge debt)
+      — grown to six, including two patterned on real buyer underwriting and one
+      extracted from a live institutional model
 - [x] Browser demo shell: drag a `.ore` file → tabs for summary, rent roll,
       expenses, assumptions, valuation, computed outputs, and warnings
       (`/demo/index.html`, static, no backend)
@@ -39,10 +45,13 @@ perfect institutional DCF.
 - [x] Golden output files locked for all examples (`npm run golden`)
 - [x] Validator CLI works (`validator/cli.mjs`, package `@ore-format/cli`) —
       packages the demo loader's checks as `validate` / `summarize` / `compute`;
-      npm publish (for `npx @ore-format/cli ...`) deferred until first release
-- [ ] One real (anonymized) deal run end-to-end as the case study: source summary,
-      anonymized `.ore`, computed outputs, memo (what mapped cleanly, what was
-      ambiguous, what required human review)
+      npm publish tracked in [#39](https://github.com/graham1776/Open-Real-Estate/issues/39)
+- [x] One real (anonymized) deal run end-to-end as the case study: a live
+      institutional buyer's Excel model (seven-building industrial estate)
+      extracted to [`examples/estate-mark-to-market.ore`](examples/estate-mark-to-market.ore)
+      and benchmarked line-by-line against the source model's own outputs —
+      what mapped cleanly, what the format gained, where conventions diverge:
+      [`docs/design/institutional-model-benchmark.md`](docs/design/institutional-model-benchmark.md)
 - [x] Hardened reference engine (TypeScript, `engine/src/`) replaces the kernel:
       MG base-year/stop recoveries, true two-branch rollover, TI/LC split,
       general-vacancy de-dup, debt schedule, levered/unlevered IRR, NOI bridge,
@@ -52,73 +61,50 @@ perfect institutional DCF.
 - [x] README leads with a viewer screenshot/GIF
 - [x] README, CONTRIBUTING, GOVERNANCE, ROADMAP, LICENSE in place
 
-## v0.1 scope (deliberate constraints)
+**v0.1 scope (deliberate constraints):** US industrial only; NNN/NN/modified gross
+leases; simple debt sizing only. The valuation schema carries inputs for all four
+approaches while the engine computes DCF and direct cap ([#38](https://github.com/graham1776/Open-Real-Estate/issues/38)
+adds the other two). Out of scope for v0.1: retail percentage rent, office complex
+reimbursement pools, hotel, multifamily unit-level, international conventions,
+debt waterfalls.
 
-US industrial only; NNN/NN/modified gross leases; simple debt sizing only. The
-valuation schema carries inputs for all four approaches — DCF (with terminal value
-method options), direct capitalization (with stabilized/mark-to-market bases and
-near-term cost deductions), sales comparison, and cost — while the v0.1 reference
-engine computes DCF and direct cap; sales comparison and cost travel as structured
-disclosure until engine support lands. Out of scope for v0.1: retail percentage
-rent, office complex reimbursement pools, hotel, multifamily unit-level,
-international conventions, debt waterfalls.
+## v0.2 — make ORE's NOI agree with a real underwrite
 
-**Field-level coverage and the v0.2 gap backlog** — what the format represents and
-what the engine actually computes, element by element — live in
-[`spec/coverage.md`](spec/coverage.md), the single source of truth for "is *X*
-supported?". The headline v0.2 priorities from that audit: honor tenant options in
-the engine (a silent overvaluation bug today), controllable-expense caps, expense
-gross-up, property-tax reassessment on sale, actual MG base-year, dated capital
-expenditures, and reserving the property→building→suite→lease hierarchy field names
-(the one change with a clock on it — see the coverage doc's open-decisions section).
+The theme, derived from the coverage audit and the institutional-model benchmark:
+close every gap likely to make ORE visibly disagree with a buyer's model on an
+ordinary industrial deal. Ordered by credibility risk:
 
-## After v0.1
+| Issue | Item |
+|---|---|
+| [#22](https://github.com/graham1776/Open-Real-Estate/issues/22) | **G8 — reserve the property→building→suite→lease hierarchy field names** (the one item with a clock) |
+| [#13](https://github.com/graham1776/Open-Real-Estate/issues/13) | IRR compounding convention governed by the spec |
+| [#28](https://github.com/graham1776/Open-Real-Estate/issues/28) | Growth compounding convention (monthly vs annual) declarable |
+| [#20](https://github.com/graham1776/Open-Real-Estate/issues/20) | G3 — expense gross-up to occupancy |
+| [#21](https://github.com/graham1776/Open-Real-Estate/issues/21) | G6 — one-time / dated capital expenditures |
+| [#26](https://github.com/graham1776/Open-Real-Estate/issues/26) | Per-lease rollover overrides (renewal prob / downtime / vacate per tenant) |
+| [#15](https://github.com/graham1776/Open-Real-Estate/issues/15) | Dual SF basis: contract RBA vs market-lettable SF |
+| [#23](https://github.com/graham1776/Open-Real-Estate/issues/23) | G9 — ground-lease payment stream; parking / IOS other income |
+| [#24](https://github.com/graham1776/Open-Real-Estate/issues/24) | G10 — gross vs net rentable area + measurement standard |
+| [#27](https://github.com/graham1776/Open-Real-Estate/issues/27) | Yield-on-cost engine outputs (trended / untrended) |
+| [#14](https://github.com/graham1776/Open-Real-Estate/issues/14) | Land-residual terminal value method |
+| [#25](https://github.com/graham1776/Open-Real-Estate/issues/25) | G12 — `life_science` subtype; ORE→REDI crosswalk |
+| [#29](https://github.com/graham1776/Open-Real-Estate/issues/29) | Producer-stated summary block, engine-verifiable |
+| [#30](https://github.com/graham1776/Open-Real-Estate/issues/30) | Provenance history on save |
+| [#16](https://github.com/graham1776/Open-Real-Estate/issues/16) / [#17](https://github.com/graham1776/Open-Real-Estate/issues/17) | Portfolio/transaction container · structured subleases (spec discussions) |
+
+## Tracks beyond the format (post-v0.1, any order)
 
 Strategy for the AI and Excel tracks: `docs/design/llm-and-excel.md`.
 
-**AI / agents**
-- MCP server (`@ore-format/mcp`) wrapping the reference engine: `validate`,
-  `run_valuation`, `cash_flows`, `compare` — LLMs do judgment, the engine does
-  arithmetic
-- Optional producer-stated summary block (claimed NOI / value), explicitly
-  non-authoritative and engine-verifiable, so validators flag files whose claims
-  don't reproduce
+| Track | Issues |
+|---|---|
+| **Release / packaging** | [#39](https://github.com/graham1776/Open-Real-Estate/issues/39) npm publish (`@ore-format/cli`, `@ore-format/engine`) — gates the MCP server and Excel add-in |
+| **AI / agents** | [#31](https://github.com/graham1776/Open-Real-Estate/issues/31) MCP server (`@ore-format/mcp`) |
+| **Excel** ("your model, ORE's data") | [#32](https://github.com/graham1776/Open-Real-Estate/issues/32) `ore export-xlsx` + ORE Excel Layout + Power Query · [#33](https://github.com/graham1776/Open-Real-Estate/issues/33) Excel add-in with embedded engine. Non-goal, permanent: a formula-based reference workbook (a second engine breaks conformance) |
+| **Writer** (reader → author) | [#34](https://github.com/graham1776/Open-Real-Estate/issues/34) viewer quick-edit + what-if delta · [#35](https://github.com/graham1776/Open-Real-Estate/issues/35) new-deal scaffolding + `ore init/set/fmt` · [#36](https://github.com/graham1776/Open-Real-Estate/issues/36) schema-aware forms (endgame) |
+| **Ecosystem** | [#37](https://github.com/graham1776/Open-Real-Estate/issues/37) Python port (goldens as the conformance test) · [#38](https://github.com/graham1776/Open-Real-Estate/issues/38) sales-comparison + cost-approach engine outputs · [#40](https://github.com/graham1776/Open-Real-Estate/issues/40) documentation site + schema `$id` hosting |
 
-**Excel** ("your model, ORE's data")
-- `ore export-xlsx`: typed, named tables under a documented ORE Excel Layout
-  convention (retrofit the house model once, every deal file plugs in); published
-  Power Query snippet for zero-install ingestion
-- Excel add-in (`@ore-format/excel`) embedding the TypeScript engine via Office.js:
-  open/validate/edit/save `.ore` in place, engine outputs as custom functions
-- Non-goal: a formula-based reference workbook (a second engine breaks conformance)
-
-**Writer track** (reader → writer; raw-JSON editing shipped in the viewer — the
-items below are the rest of what "ORE files get *authored*, not just exchanged"
-implies, roughly in build order)
-- Structured quick-edit: form controls for the high-leverage assumptions
-  (discount rate, exit cap, market rent, growth, renewal probability, purchase
-  price) with instant recompute — the what-if loop analysts actually run; raw
-  JSON stays the escape hatch for everything else
-- What-if delta view: after an edit, show outputs against the pre-edit baseline
-  (value / IRR / Year-1 NOI, side by side) so the price of an assumption is
-  visible the moment it changes
-- New deal in the browser: a "New deal" button that scaffolds a minimal valid
-  file from a template (single-tenant NNN first) — ORE as authoring tool, not
-  just interchange; pairs with `ore init` below
-- Provenance on save: how does an edited file disclose who changed it? Candidate:
-  the editor appends an entry (producer, date, tool) to a provenance history on
-  save — needs a small schema decision, since v0.1 provenance describes a single
-  producer (v0.2 candidate, alongside the coverage-doc backlog)
-- CLI writer verbs in `@ore-format/cli`: `ore init` (scaffold from template),
-  `ore set <path>=<value> deal.ore` (scripted single-field edits, validated
-  before write), `ore fmt` (canonical formatting for clean git diffs) — the same
-  writer story for scripts, CI, and agents
-- Schema-aware forms (the endgame): generate the full editor UI from the JSON
-  Schema itself, so every field is editable with types, enums, and units
-  enforced — and third-party tools can do the same trick
-
-**Format & ecosystem**
-- Python port of the reference engine
-- Engine support for sales comparison and cost approach outputs
-- Additional asset classes, starting with the simplest lease structures first
-- Formal governance (technical steering committee), then consortium/foundation home
+**Not tracked as issues** (strategy, not build work — see `CLAUDE.md` §7):
+additional asset classes after industrial, design partners, conference circuit,
+REDI outreach, advisory board, governance formalization (technical steering
+committee, then consortium/foundation home).

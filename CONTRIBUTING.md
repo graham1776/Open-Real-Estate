@@ -8,12 +8,17 @@ arrangements, and underwriting conventions the schema cannot yet express cleanly
 
 - **File an issue** describing a lease or deal structure the format can't represent.
   Anonymize everything; never include identifiable tenant or deal data.
+- **Pick up planned work:** the [issue tracker](https://github.com/graham1776/Open-Real-Estate/issues)
+  is the single backlog — one issue per format/engine gap, each scoped as
+  schema change + engine change + example coverage + golden re-lock in one PR.
+  [`ROADMAP.md`](ROADMAP.md) shows how issues group into milestones;
+  [`spec/coverage.md`](spec/coverage.md) shows what's supported today.
 - **Schema PRs:** changes to `spec/schema/` must update the data dictionary
   (`spec/data-dictionary.md`) in the same PR, and must keep every file in
   `examples/` validating.
-- **Engine PRs** (once the engine lands): every calculation change must keep the
-  golden-file test suite passing, or update the golden files with a clear
-  justification in the PR description.
+- **Engine PRs:** every calculation change must keep the golden-file test suite
+  passing (`npm test`), or update the golden files with a clear justification in
+  the PR description.
 
 ## Ground rules
 
@@ -28,8 +33,8 @@ arrangements, and underwriting conventions the schema cannot yet express cleanly
 ## Development
 
 The reference engine is TypeScript (Node ≥ 20). Repo layout is described in the
-[README](README.md). Until the engine scaffolding lands, the spec is the active
-surface: JSON Schema draft 2020-12, validated examples, documented fields.
+[README](README.md). `npm test` builds the engine, validates every example
+against the schema, and reproduces the golden outputs — run it before any PR.
 
 ## License
 

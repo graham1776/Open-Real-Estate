@@ -25,7 +25,8 @@ npm run cli -- compute examples/single-tenant-nnn.ore | jq .returns
 ## Packaging status
 
 The package is not yet published to npm (planned usage:
-`npx @ore-format/cli validate deal.ore`, via the `ore` bin). In-repo it reads
+`npx @ore-format/cli validate deal.ore`, via the `ore` bin) — tracked in
+[#39](https://github.com/graham1776/Open-Real-Estate/issues/39). In-repo it reads
 schemas from `../spec/schema` and the engine from `../engine/dist`; publishing
 will bundle both so the CLI is self-contained. Until then, run it from a clone
 as shown above.

@@ -115,21 +115,18 @@ format exists to surface. The `.ore` file states the inputs once, and any engine
 choices become auditable against a conformance suite instead of buried in cell
 formulas.
 
-## Gaps observed and deferred (roadmap candidates)
+## Gaps observed and deferred (now tracked as issues)
 
 - **Per-lease rollover overrides** (renewal probability, downtime, renewal rent %
-  per tenant). This model applied uniform assumptions, so profiles sufficed; other
-  shops set them per tenant. Likely shape: optional `lease.rollover` overriding
-  profile fields.
+  per tenant) — [#26](https://github.com/graham1776/Open-Real-Estate/issues/26).
 - **Estate/multi-building attribution**: per-building cap rates, land areas, and
-  returns inside one property. The portfolio roll-up (`computePortfolio`) covers
-  the N-files case; a `property.buildings[]` map with a `lease.building` key is
-  the single-file version.
+  returns inside one property — [#22](https://github.com/graham1776/Open-Real-Estate/issues/22)
+  (hierarchy field names); the multi-*property* container is
+  [#16](https://github.com/graham1776/Open-Real-Estate/issues/16).
 - **Yield-on-cost outputs** (stabilized NOI ÷ total project cost, trended and
-  untrended) — the model's primary return-threshold metrics; computable from
-  existing fields, worth adding to `computeAll` outputs.
-- **Growth compounding convention** — a `growthCompounding: "monthly" | "annual"`
-  switch on `marketAssumptions` would remove the largest benign source of
-  out-year drift.
+  untrended) — [#27](https://github.com/graham1776/Open-Real-Estate/issues/27).
+- **Growth compounding convention** (monthly vs annual-anniversary) —
+  [#28](https://github.com/graham1776/Open-Real-Estate/issues/28); the sibling IRR
+  convention is [#13](https://github.com/graham1776/Open-Real-Estate/issues/13).
 - **Terminal marketing/reversion period** (the model carries a 24-month terminal
   reversion window) — not modeled; document-only for now.

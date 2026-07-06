@@ -79,7 +79,7 @@ is published as a single ingestible document: [`llms.txt`](llms.txt).
 | Format spec & JSON Schema | [`spec/`](spec/) | All v0.1 modules drafted |
 | Reference engine (TypeScript) | [`engine/`](engine/) | Working: full cash model, valuation, debt, returns, sensitivity; goldens locked (`npm test`) |
 | Viewer / demo | [`demo/`](demo/) | Working: drag `.ore` files → deal view or multi-file portfolio roll-up; watches files for live refresh; edit and save in the browser (Edit JSON tab) (`npm run demo`) |
-| Example deal files | [`examples/`](examples/) | Three examples, all validating (`npm run validate`) |
+| Example deal files | [`examples/`](examples/) | Six examples, all validating (`npm run validate`) — including one extracted from a live institutional underwrite and benchmarked against it |
 | LLM ingestible spec | [`llms.txt`](llms.txt) | Published |
 | Validator CLI | [`validator/`](validator/) | Working: `validate` / `summarize` / `compute` (`npm run cli -- validate examples`); npm publish pending |
 | Documentation site | [`docs/`](docs/) | Decision and design notes; site not started |
@@ -101,7 +101,11 @@ walks, levered/unlevered returns, an annual cash flow table, and a sensitivity g
 ## Contributing
 
 Issues and PRs welcome — edge-case arguments are a feature; they harden the spec.
-See [CONTRIBUTING.md](CONTRIBUTING.md) and [GOVERNANCE.md](GOVERNANCE.md).
+All planned work lives in the
+[issue tracker](https://github.com/graham1776/Open-Real-Estate/issues) (one issue
+per format/engine gap); [ROADMAP.md](ROADMAP.md) is the milestone view and
+[`spec/coverage.md`](spec/coverage.md) the field-by-field scope matrix. See
+[CONTRIBUTING.md](CONTRIBUTING.md) and [GOVERNANCE.md](GOVERNANCE.md).
 
 ## License
 
