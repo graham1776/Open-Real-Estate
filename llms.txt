@@ -216,8 +216,9 @@ are provided it should equal their sum.
 | `leaseId` **(R)** | string | Stable identifier, unique within the file. |
 | `tenant` **(R)** | object | `name` **(R)**, `dba`, `parentCompany`, `industry`, `creditNotes`. |
 | `suite` | string | Suite/unit identifier; optional for single-tenant. |
+| `spaceType` | string | Key into `marketAssumptions.marketLeasing`, selecting the leasing profile that prices this space at rollover. Omit when one profile applies property-wide. |
 | `leasedSF` **(R)** | number | Leased area, SF. Denominator for per-SF rent; numerator for pro-rata share. |
-| `commencementDate` **(R)** | date | Lease commencement. |
+| `commencementDate` **(R)** | date | Lease commencement. May be after `rentRoll.asOfDate` (a signed-but-not-yet-commenced lease): engines model no rent, occupancy, or recoveries before commencement. |
 | `expirationDate` **(R)** | date | Current expiration, reflecting executed amendments and exercised options. |
 | `baseRent` **(R)** | object | Stepped rent schedule — see below. |
 | `escalation` | object | Rule generating steps beyond the enumerated schedule — see below. |
@@ -253,6 +254,15 @@ When present, engines apply the rule starting one frequency-interval after the l
 enumerated step's `startDate`, through expiration. Enumerated steps are always
 authoritative over generated ones.
 
+> **Anchoring mid-lease escalation anniversaries.** Because generated steps are
+> timed off the last enumerated step's `startDate`, a rent roll struck mid-lease
+> anchors correctly by dating that step at the *most recent escalation date* (not
+> `asOfDate`) with the current rent. Example: current rent $15.68/SF/yr, last
+> bumped September 2025 on a 12-month cycle — a schedule step of
+> `{"startDate": "2025-09-01", "amount": 15.68}` puts every future bump on the
+> lease's true September anniversary. Institutional rent rolls state this as a
+> "first/next review date"; this pattern carries it without a dedicated field.
+
 | Field | Type | Definition |
 |---|---|---|
 | `type` **(R)** | enum | `fixed_percent`, `fixed_amount`, `cpi`, `none`. |
@@ -268,15 +278,26 @@ authoritative over generated ones.
 | `structure` **(R)** | enum | `NNN` — tenant reimburses pro-rata share of all recoverable expenses. `NN` — as NNN, except landlord retains roof/structure. `MG` — tenant reimburses increases over a base year or expense stop. `Gross` — no reimbursement. |
 | `proRataSharePercent` | number | Tenant's share, percent. Defaults to `leasedSF / property.physical.buildingSF × 100`. |
 | `baseYear` | integer | MG base year (provide this **or** `expenseStopPerSF`, not both). |
+| `baseYearExpenseAmount` | number | Actual building-level annual recoverable expenses in the base year. Optional companion to `baseYear`; when present the engine uses it as the MG base instead of deflating current expenses (removes the estimate warning). |
 | `expenseStopPerSF` | number | MG expense stop, USD/SF/yr. |
-| `adminFeePercent` | number | Admin/management markup on recoveries, percent. |
+| `adminFeePercent` | number | Admin/management markup on recoverable expenses, percent. The engine adds it as additional recovery income on top of the tenant's recoverable-expense share (e.g. `15` = the tenant reimburses 115% of its share). |
+| `expenseCap` | object | Annual cap on growth of the tenant’s recoverable **controllable** expenses (NNN/NN): `capPercent` **(R)**, `basis` (`cumulative_compounded` default / `cumulative` / `non_cumulative`), optional `baseYearControllableAmount` (else the controllable level at analysis start is the base). Non-controllable expenses are uncapped. |
 | `excludedExpenses[]` | string[] | `expenseId`s this lease excludes from recovery, overriding expense-level flags. |
 
 ### `lease.options[]`
 
+The reference engine models **renewal** options: at the lease's expiry the renewal
+branch of rollover uses the option's stated rent (`fixed` or `percent_of_market`,
+capped at market — a rational tenant won't renew above market) and `renewalTermMonths`,
+instead of the generic market-leasing assumptions. A `market`-basis renewal stays on
+the generic path. Renewal *probability* remains the market profile's
+`renewalProbabilityPercent`; when an option is below market the engine warns that real
+exercise is likely higher. termination/expansion/purchase/ROFR/ROFO are carried for
+diligence and do not yet affect cash flows.
+
 | Field | Type | Definition |
 |---|---|---|
-| `type` **(R)** | enum | `renewal`, `termination`, `purchase`, `expansion`, `right_of_first_refusal`, `right_of_first_offer`. Renewal options carry modelable economics; the rest are disclosed for diligence. |
+| `type` **(R)** | enum | `renewal`, `termination`, `purchase`, `expansion`, `right_of_first_refusal`, `right_of_first_offer`. Renewal options carry modelable economics (above); the rest are disclosed for diligence. |
 | `noticeMonths` | number | Required notice before the option date. |
 | `earliestExerciseDate` | date | Earliest effective date. |
 | `renewalTermMonths` | integer | Renewal term length (renewal only). |
@@ -307,6 +328,7 @@ per `marketAssumptions.growth.expenses` unless an item carries its own override.
 | `amount` **(R)** | number | Annual amount in `amountUnit`, as of `rentRoll.asOfDate`. |
 | `amountUnit` **(R)** | enum | `totalPerYear` (USD/yr), `perSFPerYear` (USD per `buildingSF` per yr), `percentOfEGR` (percent of effective gross revenue — the conventional management fee basis; `amount` is the percent value, e.g. `2.5`). |
 | `recoverable` **(R)** | boolean | Recoverable from tenants, subject to each lease's reimbursement structure and exclusions. |
+| `controllable` | boolean | Whether the item is a controllable expense (cap-eligible). Default by category when omitted: taxes/insurance/utilities non-controllable, all else controllable. Only matters with a lease `expenseCap`. |
 | `belowTheLine` | boolean | Excluded from NOI but included in cash flow (conventionally capital reserves). Default false. |
 | `growthOverridePercent` | number | Item-specific annual growth, percent. No effect on `percentOfEGR` items, which float with revenue. |
 
@@ -318,7 +340,7 @@ per `marketAssumptions.growth.expenses` unless an item carries its own override.
 | `growth` **(R)** | object | `marketRent` **(R)**, `expenses` **(R)**, `cpi` — each a growth curve (below). `cpi` required if any lease escalates on CPI. |
 | `generalVacancyPercent` | number | Percent of potential gross revenue, in addition to explicit downtime. Engines must not double-count downtime months. Default 0. |
 | `creditLossPercent` | number | Percent of scheduled revenue. Default 0. |
-| `marketLeasing` **(R)** | map | Leasing profiles keyed by space type (min 1) — see below. Keys are matched by `vacantSuites[].spaceType` and by leases at rollover. |
+| `marketLeasing` **(R)** | map | Leasing profiles keyed by space type (min 1) — see below. Keys are matched by `leases[].spaceType` and `vacantSuites[].spaceType`; spaces without a `spaceType` use the file's first profile. |
 
 **Growth curve:** either a flat annual rate in percent (`3.0`), or a stepped array of
 `{ fromYear, annualPercent }` where `fromYear` is the 1-based analysis year and each
@@ -358,6 +380,7 @@ inputs travel as structured, auditable disclosure until engine support lands.
 | `methods` **(R)** | array | Any of `dcf`, `direct_cap`, `sales_comparison`, `cost` (min 1, unique). |
 | `purchasePrice` | number | USD. When present, engines report IRR/NPV against it; when absent, concluded value only. |
 | `acquisitionCostsPercent` | number | Closing costs, percent of price, added to initial outflow. Default 0. |
+| `taxReassessment` | object | Opt-in property-tax reassessment on transfer (Prop 13). `effectiveTaxRatePercent` (else derived from current tax ÷ price), `reassessOnAcquisition` (default true — tax resets to price × rate from analysis start), `reassessAtReversion` (default true — terminal cap loaded by the tax rate so the exit reflects the buyer’s reassessment to sale price), `expenseId` (default: the real_estate_taxes item). Needs `purchasePrice`. |
 | `reconciliation` | object | Final conclusion across approaches — see below. |
 
 ### `valuation.dcf`
@@ -648,6 +671,10 @@ These are authoritative; prose above is explanatory.
           "type": "boolean",
           "description": "Whether the expense is recoverable from tenants, subject to each lease's reimbursement structure and exclusions."
         },
+        "controllable": {
+          "type": "boolean",
+          "description": "Whether the expense is a controllable expense, subject to a lease's controllable-expense cap (reimbursement.expenseCap). When omitted, the engine defaults by category: real_estate_taxes, insurance, and utilities are non-controllable; all others are controllable. Only matters when a recovering lease carries an expenseCap."
+        },
         "belowTheLine": {
           "type": "boolean",
           "default": false,
@@ -709,7 +736,7 @@ These are authoritative; prose above is explanatory.
     "marketLeasing": {
       "type": "object",
       "minProperties": 1,
-      "description": "Market leasing profiles keyed by space type. Keys are matched by rentRoll.vacantSuites[].spaceType and by leases at rollover (via leaseSpaceType or the file's single profile).",
+      "description": "Market leasing profiles keyed by space type. Keys are matched by rentRoll.leases[].spaceType and rentRoll.vacantSuites[].spaceType; spaces without a spaceType use the file's first profile.",
       "additionalProperties": { "$ref": "#/$defs/leasingProfile" }
     },
     "notes": { "type": "string" }
@@ -1120,6 +1147,10 @@ These are authoritative; prose above is explanatory.
           "type": "string",
           "description": "Suite or unit identifier. Optional for single-tenant properties."
         },
+        "spaceType": {
+          "type": "string",
+          "description": "Space type key matching an entry in marketAssumptions.marketLeasing, used to price this space at rollover (market rent, downtime, renewal terms). Omit when a single profile applies to the whole property."
+        },
         "leasedSF": {
           "type": "number",
           "exclusiveMinimum": 0,
@@ -1128,7 +1159,7 @@ These are authoritative; prose above is explanatory.
         "commencementDate": {
           "type": "string",
           "format": "date",
-          "description": "Lease commencement date (ISO 8601)."
+          "description": "Lease commencement date (ISO 8601). May be later than rentRoll.asOfDate for a signed-but-not-yet-commenced lease: the space produces no rent, occupancy, or recoveries before commencement."
         },
         "expirationDate": {
           "type": "string",
@@ -1306,6 +1337,11 @@ These are authoritative; prose above is explanatory.
           "maximum": 2200,
           "description": "Base year for MG leases: tenant pays its share of expense increases over this calendar year's expenses. Provide baseYear or expenseStopPerSF for MG, not both."
         },
+        "baseYearExpenseAmount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Actual building-level annual recoverable operating expenses in the base year (USD). Optional companion to baseYear: when present the engine uses it as the MG base instead of estimating by deflating current expenses. Should reflect the same recoverable expense set in force now (i.e. net of this lease's excludedExpenses)."
+        },
         "expenseStopPerSF": {
           "type": "number",
           "minimum": 0,
@@ -1320,6 +1356,30 @@ These are authoritative; prose above is explanatory.
           "type": "array",
           "items": { "type": "string" },
           "description": "expenseIds from the expenses module that this lease excludes from recovery, overriding the expense-level recoverable flag."
+        },
+        "expenseCap": {
+          "type": "object",
+          "required": ["capPercent"],
+          "additionalProperties": false,
+          "description": "Annual cap on the growth of the controllable recoverable expenses billed to the tenant (NNN/NN leases). Non-controllable expenses (taxes, insurance, …) are uncapped. The cap is measured off a base-year controllable level.",
+          "properties": {
+            "capPercent": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Annual cap on controllable-expense growth, in percent (e.g. 5 = 5% per year)."
+            },
+            "basis": {
+              "type": "string",
+              "enum": ["non_cumulative", "cumulative", "cumulative_compounded"],
+              "default": "cumulative_compounded",
+              "description": "cumulative_compounded: ceiling = base × (1+cap)^(year−1) (unused room carries forward and compounds). cumulative: ceiling = base × (1 + cap×(year−1)) (linear, unused room carries forward). non_cumulative: ceiling = prior year's billed controllable × (1+cap) (no carry-forward — a low year lowers the future ceiling)."
+            },
+            "baseYearControllableAmount": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Actual building-level annual controllable recoverable expenses in the base year. When omitted, the engine uses the controllable recoverable level at the analysis start as the base (year 1)."
+            }
+          }
         },
         "notes": { "type": "string" }
       }
@@ -1415,6 +1475,7 @@ These are authoritative; prose above is explanatory.
     "salesComparison": { "$ref": "#/$defs/salesComparison" },
     "costApproach": { "$ref": "#/$defs/costApproach" },
     "reconciliation": { "$ref": "#/$defs/reconciliation" },
+    "taxReassessment": { "$ref": "#/$defs/taxReassessment" },
     "notes": { "type": "string" }
   },
   "allOf": [
@@ -1858,6 +1919,32 @@ These are authoritative; prose above is explanatory.
         "marketingTimeMonths": { "type": "number", "minimum": 0 },
         "notes": { "type": "string", "description": "Reconciliation narrative: weighting rationale across approaches." }
       }
+    },
+    "taxReassessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Opt-in property-tax reassessment on transfer (e.g. California Proposition 13). Presence of this object enables it. Requires valuation.purchasePrice. Going-in: the reassessed property tax is set to the purchase price times the effective rate, in force from the analysis start. Reversion: the terminal cap is loaded by the tax rate so the hypothetical buyer's taxes reset to the sale price.",
+      "properties": {
+        "effectiveTaxRatePercent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Effective property-tax rate as a percent of assessed value per year (base rate plus direct assessments). If omitted, derived from the current property-tax expense divided by purchasePrice — which assumes the current taxes already reflect the purchase price (a weak default for a long-held asset)."
+        },
+        "reassessOnAcquisition": {
+          "type": "boolean",
+          "default": true,
+          "description": "Reset the property tax to purchasePrice x effective rate from the analysis start (affects operating NOI in every year)."
+        },
+        "reassessAtReversion": {
+          "type": "boolean",
+          "default": true,
+          "description": "Load the terminal cap rate by the effective tax rate so the exit value reflects the buyer's reassessment to the sale price (direct_cap terminal method only)."
+        },
+        "expenseId": {
+          "type": "string",
+          "description": "expenseId of the reassessable property-tax line. Defaults to the single expenses item with category real_estate_taxes."
+        }
+      }
     }
   }
 }
@@ -1958,8 +2045,9 @@ A complete, valid `.ore` file populating every module (synthetic data). This is 
             "noticeMonths": 9,
             "renewalTermMonths": 60,
             "renewalCount": 1,
-            "rentBasis": "market",
-            "notes": "Fair market rent, not less than rent in the final month of the initial term."
+            "rentBasis": "fixed",
+            "fixedRent": 1.50,
+            "notes": "Below-market fixed renewal at $1.50/SF/mo. The engine models the renewal branch at the option rent (capped at market), so this in-the-money option drags reversion value; before honoring options it rolled to full market."
           }
         ],
         "securityDeposit": {

@@ -52,6 +52,7 @@ export interface Lease {
   leaseId: string;
   tenant: { name: string; dba?: string; parentCompany?: string; industry?: string; creditNotes?: string };
   suite?: string;
+  spaceType?: string;
   leasedSF: number;
   commencementDate: string;
   expirationDate: string;

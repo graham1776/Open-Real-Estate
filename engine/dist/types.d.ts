@@ -70,6 +70,7 @@ export interface Lease {
         creditNotes?: string;
     };
     suite?: string;
+    spaceType?: string;
     leasedSF: number;
     commencementDate: string;
     expirationDate: string;

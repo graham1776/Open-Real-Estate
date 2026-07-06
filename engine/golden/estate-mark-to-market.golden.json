@@ -1,0 +1,330 @@
+{
+  "engineVersion": "0.1.0",
+  "property": {
+    "name": "Seven Palms Commerce Park",
+    "cityState": "Hollywood, FL",
+    "market": "South Florida",
+    "submarket": "Southwest Broward",
+    "buildingSF": 1154018,
+    "yearBuilt": null,
+    "clearHeightFt": null
+  },
+  "occupancy": {
+    "buildingSF": 1154018,
+    "occupiedSF": 1154018,
+    "vacantSF": 0,
+    "occupancyPercent": 100
+  },
+  "leaseMetrics": {
+    "waltYearsByRent": 4.01,
+    "waltYearsBySF": 4,
+    "rollNext12ByRentPercent": 6.97,
+    "rollNext12BySFPercent": 7.73
+  },
+  "rent": {
+    "inPlaceAnnualBaseRent": 13649978,
+    "inPlaceWARentPerSFPerMonth": 0.99,
+    "marketRentPerSFPerMonth": 1.46,
+    "inPlaceVsMarketPercent": -32.46
+  },
+  "expenses": {
+    "aboveLineAnnualExclMgmt": 4962277,
+    "belowTheLineAnnual": 0,
+    "managementFeePercentOfEGR": 3
+  },
+  "noi": {
+    "year1NOI": 13539738,
+    "stabilizedAtMarketNOI": 19692378
+  },
+  "noiBridgeYear1": {
+    "year": 1,
+    "months": 12,
+    "scheduledBaseRent": 13866948,
+    "freeRent": -309138,
+    "absorptionVacancy": -130162,
+    "expenseRecoveries": 5481094,
+    "generalVacancy": -265585,
+    "creditLoss": 0,
+    "effectiveGrossRevenue": 19082457,
+    "operatingExpenses": -4962277,
+    "managementFee": -580441,
+    "noi": 13539738,
+    "belowTheLine": 0,
+    "tiCosts": -393881,
+    "lcCosts": -553924,
+    "cashFlow": 12591933
+  },
+  "cashFlows": {
+    "annual": [
+      {
+        "year": 1,
+        "months": 12,
+        "scheduledBaseRent": 13866948,
+        "freeRent": -309138,
+        "absorptionVacancy": -130162,
+        "expenseRecoveries": 5481094,
+        "generalVacancy": -265585,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 19082457,
+        "operatingExpenses": -4962277,
+        "managementFee": -580441,
+        "noi": 13539738,
+        "belowTheLine": 0,
+        "tiCosts": -393881,
+        "lcCosts": -553924,
+        "cashFlow": 12591933
+      },
+      {
+        "year": 2,
+        "months": 12,
+        "scheduledBaseRent": 15124706,
+        "freeRent": -176738,
+        "absorptionVacancy": -118475,
+        "expenseRecoveries": 5704847,
+        "generalVacancy": -304020,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 20525533,
+        "operatingExpenses": -5111146,
+        "managementFee": -624887,
+        "noi": 14789501,
+        "belowTheLine": 0,
+        "tiCosts": -112900,
+        "lcCosts": -341424,
+        "cashFlow": 14335176
+      },
+      {
+        "year": 3,
+        "months": 12,
+        "scheduledBaseRent": 16354237,
+        "freeRent": -681338,
+        "absorptionVacancy": -476603,
+        "expenseRecoveries": 5798850,
+        "generalVacancy": -94142,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 22058945,
+        "operatingExpenses": -5264480,
+        "managementFee": -664593,
+        "noi": 16129872,
+        "belowTheLine": 0,
+        "tiCosts": -456940,
+        "lcCosts": -1373489,
+        "cashFlow": 14299443
+      },
+      {
+        "year": 4,
+        "months": 12,
+        "scheduledBaseRent": 18400782,
+        "freeRent": -317672,
+        "absorptionVacancy": -118902,
+        "expenseRecoveries": 6125469,
+        "generalVacancy": -403540,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 24122710,
+        "operatingExpenses": -5422414,
+        "managementFee": -735788,
+        "noi": 17964508,
+        "belowTheLine": 0,
+        "tiCosts": -173520,
+        "lcCosts": -640842,
+        "cashFlow": 17150146
+      },
+      {
+        "year": 5,
+        "months": 12,
+        "scheduledBaseRent": 20160702,
+        "freeRent": -433354,
+        "absorptionVacancy": -372961,
+        "expenseRecoveries": 6275664,
+        "generalVacancy": -265065,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 26171302,
+        "operatingExpenses": -5585087,
+        "managementFee": -793091,
+        "noi": 19793124,
+        "belowTheLine": 0,
+        "tiCosts": -243180,
+        "lcCosts": -698951,
+        "cashFlow": 18850993
+      },
+      {
+        "year": 6,
+        "months": 12,
+        "scheduledBaseRent": 21204701,
+        "freeRent": -436281,
+        "absorptionVacancy": -254465,
+        "expenseRecoveries": 6514376,
+        "generalVacancy": -313731,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 27405346,
+        "operatingExpenses": -5752640,
+        "managementFee": -831572,
+        "noi": 20821134,
+        "belowTheLine": 0,
+        "tiCosts": -260826,
+        "lcCosts": -901465,
+        "cashFlow": 19658843
+      },
+      {
+        "year": 7,
+        "months": 12,
+        "scheduledBaseRent": 22402205,
+        "freeRent": -419962,
+        "absorptionVacancy": -282542,
+        "expenseRecoveries": 6722404,
+        "generalVacancy": -335153,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 28789456,
+        "operatingExpenses": -5925219,
+        "managementFee": -873738,
+        "noi": 21990499,
+        "belowTheLine": 0,
+        "tiCosts": -227821,
+        "lcCosts": -844952,
+        "cashFlow": 20917726
+      },
+      {
+        "year": 8,
+        "months": 12,
+        "scheduledBaseRent": 22959621,
+        "freeRent": -1148127,
+        "absorptionVacancy": -851503,
+        "expenseRecoveries": 6763414,
+        "generalVacancy": -113650,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 29609385,
+        "operatingExpenses": -6102975,
+        "managementFee": -891691,
+        "noi": 22614719,
+        "belowTheLine": 0,
+        "tiCosts": -705378,
+        "lcCosts": -2484857,
+        "cashFlow": 19424484
+      },
+      {
+        "year": 9,
+        "months": 12,
+        "scheduledBaseRent": 25683333,
+        "freeRent": -434207,
+        "absorptionVacancy": -194149,
+        "expenseRecoveries": 7219871,
+        "generalVacancy": -476483,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 32426722,
+        "operatingExpenses": -6286065,
+        "managementFee": -987096,
+        "noi": 25153561,
+        "belowTheLine": 0,
+        "tiCosts": -138376,
+        "lcCosts": -436804,
+        "cashFlow": 24578382
+      },
+      {
+        "year": 10,
+        "months": 12,
+        "scheduledBaseRent": 26237739,
+        "freeRent": -612682,
+        "absorptionVacancy": -479167,
+        "expenseRecoveries": 7351914,
+        "generalVacancy": -263741,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 33325912,
+        "operatingExpenses": -6474646,
+        "managementFee": -1007690,
+        "noi": 25843576,
+        "belowTheLine": 0,
+        "tiCosts": -329979,
+        "lcCosts": -1264082,
+        "cashFlow": 24249515
+      }
+    ]
+  },
+  "directCap": {
+    "basis": "year1",
+    "basisNOI": 13539738,
+    "capRatePercent": 3.75,
+    "grossValue": 361059680,
+    "adjustmentsApplied": [],
+    "indicatedValue": 361059680,
+    "perSF": 312.87
+  },
+  "dcf": {
+    "holdMonths": 120,
+    "discountRatePercent": 8,
+    "reversionDiscountRatePercent": 8,
+    "pvOperating": 123641031,
+    "terminalGross": 483215074,
+    "terminalNet": 472052806,
+    "pvTerminal": 218651786,
+    "indicatedValue": 342292817,
+    "perSF": 296.61,
+    "unfundedObligationsDeducted": null
+  },
+  "debt": null,
+  "returns": {
+    "unlevered": {
+      "irrPercent": 7.57,
+      "npvAtDiscountRate": -11502383,
+      "equityMultiple": 1.86,
+      "totalProfit": 304314245
+    },
+    "levered": null
+  },
+  "sensitivity": {
+    "discountRatesPercent": [
+      7,
+      7.5,
+      8,
+      8.5,
+      9
+    ],
+    "exitCapRatesPercent": [
+      5.25,
+      5.5,
+      5.75,
+      6,
+      6.25
+    ],
+    "values": [
+      [
+        392393328,
+        380446883,
+        369539260,
+        359540605,
+        350341843
+      ],
+      [
+        377403774,
+        366001491,
+        355590711,
+        346047496,
+        337267739
+      ],
+      [
+        363116797,
+        352231534,
+        342292817,
+        333182326,
+        324800674
+      ],
+      [
+        349495568,
+        339101655,
+        329611561,
+        320912308,
+        312908995
+      ],
+      [
+        336505366,
+        326578516,
+        317514871,
+        309206529,
+        301562854
+      ]
+    ]
+  },
+  "concluded": {
+    "value": 342292817,
+    "source": "computed (dcf, engine)"
+  },
+  "warnings": []
+}

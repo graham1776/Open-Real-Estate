@@ -195,6 +195,31 @@ function marketRate(profile: LeasingProfile, sf: number, m: number, ctx: EngineC
 }
 
 /**
+ * Building-level market rent for month m, SF-weighted across the spaces in the
+ * rent roll (each lease and vacant suite priced by its own leasing profile via
+ * spaceType). With one profile — or no spaceType mapping — this reduces exactly
+ * to the single profile's rate on the full building SF.
+ */
+function blendedMarketMonthlyRent(ctx: EngineCtx, m: number): number | null {
+  const profiles = ctx.deal.marketAssumptions?.marketLeasing ?? {};
+  const keys = Object.keys(profiles);
+  if (keys.length === 0) return null;
+  let num = 0, den = 0;
+  const spaces: { sf: number; spaceType?: string }[] = [
+    ...ctx.deal.rentRoll.leases.map((l) => ({ sf: l.leasedSF, spaceType: l.spaceType })),
+    ...(ctx.deal.rentRoll.vacantSuites ?? []).map((v) => ({ sf: v.sf, spaceType: v.spaceType })),
+  ];
+  for (const s of spaces) {
+    const p = profileFor(ctx, s.spaceType);
+    if (!p) continue;
+    num += marketRate(p, s.sf, m, ctx);
+    den += s.sf;
+  }
+  if (den <= 0) return marketRate(profiles[keys[0]!]!, ctx.buildingSF, m, ctx);
+  return (num / den) * ctx.buildingSF;
+}
+
+/**
  * Expected-value stream from a rollover event at month t, memoized.
  * Renewal branch: lease starts at t (no downtime) at renewal % of market.
  * New-tenant branch: downtime, then a market lease with new-tenant costs.
@@ -369,7 +394,8 @@ function contractRate(lease: Lease, m: number, ctx: EngineCtx): number {
   for (const s of sched) {
     if (monthIndex(s.startDate, ctx.start) <= m) { step = s; found = true; }
   }
-  if (!found) {
+  if (!found && m >= monthIndex(lease.commencementDate, ctx.start)) {
+    // pre-commencement queries (metrics on a signed-not-yet-commenced lease) are fine
     ctx.warnings.add("schedule_starts_late", `Lease ${lease.leaseId}: rent schedule starts after an analysis month; earliest step used.`, "ssl:" + lease.leaseId);
   }
   let rate = monthlyTotal(step.amount, lease.baseRent.unit, lease.leasedSF);
@@ -520,13 +546,14 @@ export function buildModel(deal: OreFile, horizon: number, warnings: Warnings): 
 
   // --- in-place leases (or market terms throughout, if fee simple)
   for (const lease of deal.rentRoll.leases) {
-    const profile = profileFor(ctx, undefined);
+    const profile = profileFor(ctx, lease.spaceType);
     const memo = new Map<number, Streams>();
     if (feeSimple) {
       if (profile) addInto(total, rolloverStreams(0, lease.leasedSF, profile, ctx, memo), 1, horizon);
       continue;
     }
     const expiry = monthIndex(lease.expirationDate, ctx.start) + 1; // active through expiration month
+    const c0 = Math.max(0, monthIndex(lease.commencementDate, ctx.start)); // signed-not-yet-commenced: nothing before commencement
     const share = (lease.reimbursement.proRataSharePercent ?? (lease.leasedSF / ctx.buildingSF) * 100) / 100;
     const structure = lease.reimbursement.structure;
 
@@ -561,7 +588,7 @@ export function buildModel(deal: OreFile, horizon: number, warnings: Warnings): 
       ctx.warnings.add("expense_cap_applied", `Lease ${lease.leaseId}: ${cap.capPercent}% ${cap.basis ?? "cumulative_compounded"} cap applied to recoverable controllable expenses (taxes/insurance/utilities uncapped).`, "cap:" + lease.leaseId);
     }
 
-    for (let m = 0; m < Math.min(expiry, horizon); m++) {
+    for (let m = c0; m < Math.min(expiry, horizon); m++) {
       const rate = contractRate(lease, m, ctx);
       const ab = abatement(lease, m, ctx);
       total.pot[m]! += rate;
@@ -603,7 +630,7 @@ export function buildModel(deal: OreFile, horizon: number, warnings: Warnings): 
     const tiAmt = lease.tenantImprovements
       ? (lease.tenantImprovements.totalAmount ?? (lease.tenantImprovements.amountPerSF ?? 0) * lease.leasedSF) : 0;
     if (tiAmt > 0) {
-      const fm = lease.tenantImprovements!.fundingDate ? Math.max(0, monthIndex(lease.tenantImprovements!.fundingDate, ctx.start)) : 1;
+      const fm = lease.tenantImprovements!.fundingDate ? Math.max(0, monthIndex(lease.tenantImprovements!.fundingDate, ctx.start)) : Math.max(1, c0);
       if (fm < horizon) total.ti[fm]! += tiAmt;
     }
     const lcObj = lease.leasingCommissions;
@@ -611,10 +638,10 @@ export function buildModel(deal: OreFile, horizon: number, warnings: Warnings): 
       let lcAmt = lcObj.totalAmount ?? (lcObj.amountPerSF != null ? lcObj.amountPerSF * lease.leasedSF : 0);
       if (lcObj.percentOfTotalRent != null) {
         let totRent = 0;
-        for (let m = Math.max(0, monthIndex(lease.commencementDate, ctx.start)); m < expiry; m++) totRent += contractRate(lease, m, ctx);
+        for (let m = c0; m < expiry; m++) totRent += contractRate(lease, m, ctx);
         lcAmt = (lcObj.percentOfTotalRent / 100) * totRent;
       }
-      const fm = lcObj.fundingDate ? Math.max(0, monthIndex(lcObj.fundingDate, ctx.start)) : 1;
+      const fm = lcObj.fundingDate ? Math.max(0, monthIndex(lcObj.fundingDate, ctx.start)) : Math.max(1, c0);
       if (lcAmt > 0 && fm < horizon) total.lc[fm]! += lcAmt;
     }
 
@@ -712,7 +739,7 @@ function stabilizedAnnualNOI(deal: OreFile, atMonth: number, warnings: Warnings)
     taxOverride: reassess?.reassessAcq ? { expenseId: reassess.expenseId, baseAnnual: reassess.baseAnnual } : undefined,
   };
   const profile = profiles[key]!;
-  const rentM = marketRate(profile, ctx.buildingSF, atMonth, ctx);
+  const rentM = blendedMarketMonthlyRent(ctx, atMonth) ?? marketRate(profile, ctx.buildingSF, atMonth, ctx);
   const e = expensesAt(ctx, atMonth);
   const nnn = (profile.reimbursementStructure ?? "NNN") === "NNN" || (profile.reimbursementStructure ?? "NNN") === "NN";
   const recovFrac = nnn ? 1 : 0;
@@ -1156,9 +1183,8 @@ export function computeAll(deal: OreFile) {
   for (const lease of deal.rentRoll.leases) inPlaceMonthly += contractRate(lease, 0, ctx0);
   const waInPlace = occupiedSF > 0 ? inPlaceMonthly / occupiedSF : null;
 
-  const profiles = deal.marketAssumptions?.marketLeasing ?? {};
-  const pk = Object.keys(profiles)[0];
-  const waMarket = pk ? monthlyTotal(profiles[pk]!.marketRent.amount, profiles[pk]!.marketRent.unit, 1) : null;
+  const blended = blendedMarketMonthlyRent({ ...ctx0, horizon: 1 }, 0);
+  const waMarket = blended != null ? blended / sf : null;
   const gapPct = waInPlace != null && waMarket ? round2(((waInPlace - waMarket) / waMarket) * 100) : null;
 
   const e0 = expensesAt({ ...ctx0, horizon: 1 }, 0);

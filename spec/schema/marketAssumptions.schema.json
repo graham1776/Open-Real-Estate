@@ -40,7 +40,7 @@
     "marketLeasing": {
       "type": "object",
       "minProperties": 1,
-      "description": "Market leasing profiles keyed by space type. Keys are matched by rentRoll.vacantSuites[].spaceType and by leases at rollover (via leaseSpaceType or the file's single profile).",
+      "description": "Market leasing profiles keyed by space type. Keys are matched by rentRoll.leases[].spaceType and rentRoll.vacantSuites[].spaceType; spaces without a spaceType use the file's first profile.",
       "additionalProperties": { "$ref": "#/$defs/leasingProfile" }
     },
     "notes": { "type": "string" }
