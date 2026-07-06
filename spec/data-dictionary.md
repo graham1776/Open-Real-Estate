@@ -99,8 +99,9 @@ are provided it should equal their sum.
 | `leaseId` **(R)** | string | Stable identifier, unique within the file. |
 | `tenant` **(R)** | object | `name` **(R)**, `dba`, `parentCompany`, `industry`, `creditNotes`. |
 | `suite` | string | Suite/unit identifier; optional for single-tenant. |
+| `spaceType` | string | Key into `marketAssumptions.marketLeasing`, selecting the leasing profile that prices this space at rollover. Omit when one profile applies property-wide. |
 | `leasedSF` **(R)** | number | Leased area, SF. Denominator for per-SF rent; numerator for pro-rata share. |
-| `commencementDate` **(R)** | date | Lease commencement. |
+| `commencementDate` **(R)** | date | Lease commencement. May be after `rentRoll.asOfDate` (a signed-but-not-yet-commenced lease): engines model no rent, occupancy, or recoveries before commencement. |
 | `expirationDate` **(R)** | date | Current expiration, reflecting executed amendments and exercised options. |
 | `baseRent` **(R)** | object | Stepped rent schedule — see below. |
 | `escalation` | object | Rule generating steps beyond the enumerated schedule — see below. |
@@ -135,6 +136,15 @@ schedule enumerates every step through expiration, omit this or use type `none`.
 When present, engines apply the rule starting one frequency-interval after the last
 enumerated step's `startDate`, through expiration. Enumerated steps are always
 authoritative over generated ones.
+
+> **Anchoring mid-lease escalation anniversaries.** Because generated steps are
+> timed off the last enumerated step's `startDate`, a rent roll struck mid-lease
+> anchors correctly by dating that step at the *most recent escalation date* (not
+> `asOfDate`) with the current rent. Example: current rent $15.68/SF/yr, last
+> bumped September 2025 on a 12-month cycle — a schedule step of
+> `{"startDate": "2025-09-01", "amount": 15.68}` puts every future bump on the
+> lease's true September anniversary. Institutional rent rolls state this as a
+> "first/next review date"; this pattern carries it without a dedicated field.
 
 | Field | Type | Definition |
 |---|---|---|
@@ -213,7 +223,7 @@ per `marketAssumptions.growth.expenses` unless an item carries its own override.
 | `growth` **(R)** | object | `marketRent` **(R)**, `expenses` **(R)**, `cpi` — each a growth curve (below). `cpi` required if any lease escalates on CPI. |
 | `generalVacancyPercent` | number | Percent of potential gross revenue, in addition to explicit downtime. Engines must not double-count downtime months. Default 0. |
 | `creditLossPercent` | number | Percent of scheduled revenue. Default 0. |
-| `marketLeasing` **(R)** | map | Leasing profiles keyed by space type (min 1) — see below. Keys are matched by `vacantSuites[].spaceType` and by leases at rollover. |
+| `marketLeasing` **(R)** | map | Leasing profiles keyed by space type (min 1) — see below. Keys are matched by `leases[].spaceType` and `vacantSuites[].spaceType`; spaces without a `spaceType` use the file's first profile. |
 
 **Growth curve:** either a flat annual rate in percent (`3.0`), or a stepped array of
 `{ fromYear, annualPercent }` where `fromYear` is the 1-based analysis year and each

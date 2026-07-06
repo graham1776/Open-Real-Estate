@@ -1,6 +1,6 @@
 {
   "engineVersion": "0.1.0",
-  "dealCount": 5,
+  "dealCount": 6,
   "deals": [
     {
       "label": "corporate-net-lease",
@@ -27,6 +27,19 @@
       "concludedValue": 126500000,
       "valuePerSF": 319.04,
       "unleveredIRRPercent": 8.26
+    },
+    {
+      "label": "estate-mark-to-market",
+      "name": "Seven Palms Commerce Park",
+      "cityState": "Hollywood, FL",
+      "buildingSF": 1154018,
+      "occupancyPercent": 100,
+      "inPlaceWARentPerSFPerMonth": 0.99,
+      "inPlaceVsMarketPercent": -32.46,
+      "year1NOI": 13539738,
+      "concludedValue": 342292817,
+      "valuePerSF": 296.61,
+      "unleveredIRRPercent": 7.57
     },
     {
       "label": "multi-tenant-infill",
@@ -69,226 +82,227 @@
     }
   ],
   "totals": {
-    "buildingSF": 880420,
-    "occupiedSF": 866220,
+    "buildingSF": 2034438,
+    "occupiedSF": 2020238,
     "vacantSF": 14200,
-    "occupancyPercent": 98.39,
-    "inPlaceAnnualBaseRent": 14797433,
-    "inPlaceWARentPerSFPerMonth": 1.42,
-    "marketWARentPerSFPerMonth": 1.29,
-    "inPlaceVsMarketPercent": 9.99,
-    "year1NOI": 14879317,
-    "stabilizedAtMarketNOI": 13572288,
-    "purchasePrice": 264300000,
-    "concludedValue": 266290464,
-    "concludedValuePerSF": 302.46
+    "occupancyPercent": 99.3,
+    "inPlaceAnnualBaseRent": 28447411,
+    "inPlaceWARentPerSFPerMonth": 1.17,
+    "marketWARentPerSFPerMonth": 1.39,
+    "inPlaceVsMarketPercent": -15.48,
+    "year1NOI": 28419055,
+    "stabilizedAtMarketNOI": 33264666,
+    "purchasePrice": 616300000,
+    "concludedValue": 608583281,
+    "concludedValuePerSF": 299.14
   },
   "leaseMetrics": {
-    "waltYearsByRent": 7.28,
-    "waltYearsBySF": 6.83,
-    "rollNext12ByRentPercent": 1.81,
-    "rollNext12BySFPercent": 2.18
+    "waltYearsByRent": 5.71,
+    "waltYearsBySF": 5.21,
+    "rollNext12ByRentPercent": 4.29,
+    "rollNext12BySFPercent": 5.35
   },
   "cashFlows": {
     "annual": [
       {
         "year": 1,
         "months": 12,
-        "scheduledBaseRent": 14983247,
-        "freeRent": -52065,
-        "absorptionVacancy": -156112,
-        "expenseRecoveries": 1607822,
-        "generalVacancy": -7763,
+        "scheduledBaseRent": 28850195,
+        "freeRent": -361203,
+        "absorptionVacancy": -286275,
+        "expenseRecoveries": 7088916,
+        "generalVacancy": -273348,
         "creditLoss": -20767,
-        "effectiveGrossRevenue": 16562540,
-        "operatingExpenses": -1512604,
-        "managementFee": -170620,
-        "noi": 14879316,
+        "effectiveGrossRevenue": 35644997,
+        "operatingExpenses": -6474881,
+        "managementFee": -751061,
+        "noi": 28419054,
         "belowTheLine": -58512,
-        "tiCosts": -69085,
-        "lcCosts": -91886,
-        "cashFlow": 14659833
+        "tiCosts": -462966,
+        "lcCosts": -645810,
+        "cashFlow": 27251766
       },
       {
         "year": 2,
         "months": 12,
-        "scheduledBaseRent": 15595535,
-        "freeRent": -134667,
-        "absorptionVacancy": -399924,
-        "expenseRecoveries": 1649859,
-        "generalVacancy": -43404,
+        "scheduledBaseRent": 30720241,
+        "freeRent": -311405,
+        "absorptionVacancy": -518399,
+        "expenseRecoveries": 7354706,
+        "generalVacancy": -347425,
         "creditLoss": -21299,
-        "effectiveGrossRevenue": 17180691,
-        "operatingExpenses": -1552450,
-        "managementFee": -181122,
-        "noi": 15447119,
+        "effectiveGrossRevenue": 37706224,
+        "operatingExpenses": -6663596,
+        "managementFee": -806008,
+        "noi": 30236619,
         "belowTheLine": -60267,
-        "tiCosts": -278050,
-        "lcCosts": -531964,
-        "cashFlow": 14576838
+        "tiCosts": -390950,
+        "lcCosts": -873388,
+        "cashFlow": 28912013
       },
       {
         "year": 3,
         "months": 12,
-        "scheduledBaseRent": 16614049,
-        "freeRent": -36528,
-        "absorptionVacancy": -132276,
-        "expenseRecoveries": 1748524,
-        "generalVacancy": -40987,
+        "scheduledBaseRent": 32968286,
+        "freeRent": -717865,
+        "absorptionVacancy": -608879,
+        "expenseRecoveries": 7547374,
+        "generalVacancy": -135130,
         "creditLoss": -28693,
-        "effectiveGrossRevenue": 18292893,
-        "operatingExpenses": -1593381,
-        "managementFee": -201546,
-        "noi": 16497966,
+        "effectiveGrossRevenue": 40351838,
+        "operatingExpenses": -6857861,
+        "managementFee": -866139,
+        "noi": 32627838,
         "belowTheLine": -62075,
-        "tiCosts": -90840,
-        "lcCosts": -186377,
-        "cashFlow": 16158673
+        "tiCosts": -547780,
+        "lcCosts": -1559866,
+        "cashFlow": 30458116
       },
       {
         "year": 4,
         "months": 12,
-        "scheduledBaseRent": 17108300,
-        "freeRent": 0,
-        "absorptionVacancy": 0,
-        "expenseRecoveries": 1831810,
-        "generalVacancy": -56277,
+        "scheduledBaseRent": 35509082,
+        "freeRent": -317672,
+        "absorptionVacancy": -118902,
+        "expenseRecoveries": 7957279,
+        "generalVacancy": -459817,
         "creditLoss": -30526,
-        "effectiveGrossRevenue": 18853308,
-        "operatingExpenses": -1635427,
-        "managementFee": -210403,
-        "noi": 17007478,
+        "effectiveGrossRevenue": 42976018,
+        "operatingExpenses": -7057841,
+        "managementFee": -946191,
+        "noi": 34971986,
         "belowTheLine": -63938,
-        "tiCosts": 0,
-        "lcCosts": 0,
-        "cashFlow": 16943540
+        "tiCosts": -173520,
+        "lcCosts": -640842,
+        "cashFlow": 34093686
       },
       {
         "year": 5,
         "months": 12,
-        "scheduledBaseRent": 17103653,
-        "freeRent": -21025,
-        "absorptionVacancy": -142133,
-        "expenseRecoveries": 1837329,
-        "generalVacancy": -23972,
+        "scheduledBaseRent": 37264355,
+        "freeRent": -454379,
+        "absorptionVacancy": -515094,
+        "expenseRecoveries": 8112993,
+        "generalVacancy": -289037,
         "creditLoss": -30572,
-        "effectiveGrossRevenue": 18886438,
-        "operatingExpenses": -1678619,
-        "managementFee": -205082,
-        "noi": 17002737,
+        "effectiveGrossRevenue": 45057739,
+        "operatingExpenses": -7263706,
+        "managementFee": -998173,
+        "noi": 36795860,
         "belowTheLine": -65856,
-        "tiCosts": -79530,
-        "lcCosts": -140954,
-        "cashFlow": 16716397
+        "tiCosts": -322710,
+        "lcCosts": -839905,
+        "cashFlow": 35567389
       },
       {
         "year": 6,
         "months": 12,
-        "scheduledBaseRent": 16084440,
-        "freeRent": -11785,
-        "absorptionVacancy": -740856,
-        "expenseRecoveries": 1549631,
-        "generalVacancy": -28772,
+        "scheduledBaseRent": 37289140,
+        "freeRent": -448066,
+        "absorptionVacancy": -995321,
+        "expenseRecoveries": 8064007,
+        "generalVacancy": -342503,
         "creditLoss": -19296,
-        "effectiveGrossRevenue": 17586003,
-        "operatingExpenses": -1516681,
-        "managementFee": -172256,
-        "noi": 15897066,
+        "effectiveGrossRevenue": 44991349,
+        "operatingExpenses": -7269321,
+        "managementFee": -1003828,
+        "noi": 36718200,
         "belowTheLine": -57050,
-        "tiCosts": -309713,
-        "lcCosts": -575970,
-        "cashFlow": 14954333
+        "tiCosts": -570539,
+        "lcCosts": -1477435,
+        "cashFlow": 34613175
       },
       {
         "year": 7,
         "months": 12,
-        "scheduledBaseRent": 15022015,
-        "freeRent": -738927,
-        "absorptionVacancy": -1504843,
-        "expenseRecoveries": 1359898,
-        "generalVacancy": -20761,
+        "scheduledBaseRent": 37424219,
+        "freeRent": -1158890,
+        "absorptionVacancy": -1787385,
+        "expenseRecoveries": 8082302,
+        "generalVacancy": -355914,
         "creditLoss": -15418,
-        "effectiveGrossRevenue": 16345734,
-        "operatingExpenses": -1487295,
-        "managementFee": -145953,
-        "noi": 14712487,
+        "effectiveGrossRevenue": 45135190,
+        "operatingExpenses": -7412514,
+        "managementFee": -1019691,
+        "noi": 36702985,
         "belowTheLine": -55060,
-        "tiCosts": -935236,
-        "lcCosts": -754506,
-        "cashFlow": 12967684
+        "tiCosts": -1163057,
+        "lcCosts": -1599459,
+        "cashFlow": 33885409
       },
       {
         "year": 8,
         "months": 12,
-        "scheduledBaseRent": 15980475,
-        "freeRent": -26307,
-        "absorptionVacancy": -105229,
-        "expenseRecoveries": 1284140,
-        "generalVacancy": 0,
+        "scheduledBaseRent": 38940096,
+        "freeRent": -1174435,
+        "absorptionVacancy": -956732,
+        "expenseRecoveries": 8047554,
+        "generalVacancy": -113650,
         "creditLoss": -5463,
-        "effectiveGrossRevenue": 17259152,
-        "operatingExpenses": -1185597,
-        "managementFee": -125018,
-        "noi": 15948537,
+        "effectiveGrossRevenue": 46868537,
+        "operatingExpenses": -7288572,
+        "managementFee": -1016709,
+        "noi": 38563256,
         "belowTheLine": -42249,
-        "tiCosts": -56400,
-        "lcCosts": -178455,
-        "cashFlow": 15671433
+        "tiCosts": -761778,
+        "lcCosts": -2663312,
+        "cashFlow": 35095917
       },
       {
         "year": 9,
         "months": 12,
-        "scheduledBaseRent": 16616255,
-        "freeRent": 0,
-        "absorptionVacancy": 0,
-        "expenseRecoveries": 1352649,
-        "generalVacancy": 0,
+        "scheduledBaseRent": 42299588,
+        "freeRent": -434207,
+        "absorptionVacancy": -194149,
+        "expenseRecoveries": 8572520,
+        "generalVacancy": -476483,
         "creditLoss": -6558,
-        "effectiveGrossRevenue": 17962345,
-        "operatingExpenses": -1219221,
-        "managementFee": -133428,
-        "noi": 16609696,
+        "effectiveGrossRevenue": 50389067,
+        "operatingExpenses": -7505285,
+        "managementFee": -1120524,
+        "noi": 41763257,
         "belowTheLine": -43516,
-        "tiCosts": 0,
-        "lcCosts": 0,
-        "cashFlow": 16566180
+        "tiCosts": -138376,
+        "lcCosts": -436804,
+        "cashFlow": 41144562
       },
       {
         "year": 10,
         "months": 12,
-        "scheduledBaseRent": 15369670,
-        "freeRent": 0,
-        "absorptionVacancy": 0,
-        "expenseRecoveries": 1391328,
-        "generalVacancy": 0,
+        "scheduledBaseRent": 41607410,
+        "freeRent": -612682,
+        "absorptionVacancy": -479167,
+        "expenseRecoveries": 8743242,
+        "generalVacancy": -263741,
         "creditLoss": -6771,
-        "effectiveGrossRevenue": 16754226,
-        "operatingExpenses": -1253815,
-        "managementFee": -137512,
-        "noi": 15362899,
+        "effectiveGrossRevenue": 50080139,
+        "operatingExpenses": -7728462,
+        "managementFee": -1145202,
+        "noi": 41206475,
         "belowTheLine": -44822,
-        "tiCosts": 0,
-        "lcCosts": 0,
-        "cashFlow": 15318077
+        "tiCosts": -329979,
+        "lcCosts": -1264082,
+        "cashFlow": 39567592
       }
     ]
   },
   "returns": {
     "unlevered": {
-      "irrPercent": 8.11,
-      "equityMultiple": 1.81,
-      "totalProfit": 215407124,
-      "initialInvestment": 265126500
+      "irrPercent": 7.79,
+      "equityMultiple": 1.84,
+      "totalProfit": 519721369,
+      "initialInvestment": 618921700
     },
     "levered": {
-      "irrPercent": 8.2,
-      "equityMultiple": 1.84,
-      "totalProfit": 208192705,
-      "initialEquity": 249034050
+      "irrPercent": 7.82,
+      "equityMultiple": 1.85,
+      "totalProfit": 512506950,
+      "initialEquity": 602829250
     },
     "includedDeals": [
       "corporate-net-lease",
       "covered-land-play",
+      "estate-mark-to-market",
       "multi-tenant-infill",
       "single-tenant-nnn",
       "value-add-rollover"
@@ -298,38 +312,56 @@
   "leaseExpirations": [
     {
       "year": 2026,
-      "sf": 18900,
-      "percentOfPortfolioSF": 2.15,
-      "expiringAnnualRent": 267624
+      "sf": 108154,
+      "percentOfPortfolioSF": 5.32,
+      "expiringAnnualRent": 1219184
     },
     {
       "year": 2027,
-      "sf": 62000,
-      "percentOfPortfolioSF": 7.04,
-      "expiringAnnualRent": 632400
+      "sf": 137267,
+      "percentOfPortfolioSF": 6.75,
+      "expiringAnnualRent": 1709347
     },
     {
       "year": 2028,
-      "sf": 69720,
-      "percentOfPortfolioSF": 7.92,
-      "expiringAnnualRent": 1225786
+      "sf": 374347,
+      "percentOfPortfolioSF": 18.4,
+      "expiringAnnualRent": 5098401
+    },
+    {
+      "year": 2029,
+      "sf": 32130,
+      "percentOfPortfolioSF": 1.58,
+      "expiringAnnualRent": 641654
     },
     {
       "year": 2030,
-      "sf": 20700,
-      "percentOfPortfolioSF": 2.35,
-      "expiringAnnualRent": 389870
+      "sf": 247200,
+      "percentOfPortfolioSF": 12.15,
+      "expiringAnnualRent": 3161679
+    },
+    {
+      "year": 2031,
+      "sf": 113500,
+      "percentOfPortfolioSF": 5.58,
+      "expiringAnnualRent": 2343593
     },
     {
       "year": 2032,
-      "sf": 298400,
-      "percentOfPortfolioSF": 33.89,
-      "expiringAnnualRent": 4755294
+      "sf": 342900,
+      "percentOfPortfolioSF": 16.85,
+      "expiringAnnualRent": 5341783
+    },
+    {
+      "year": 2033,
+      "sf": 268240,
+      "percentOfPortfolioSF": 13.18,
+      "expiringAnnualRent": 4100538
     },
     {
       "year": 2036,
       "sf": 396500,
-      "percentOfPortfolioSF": 45.04,
+      "percentOfPortfolioSF": 19.49,
       "expiringAnnualRent": 10195612
     }
   ],
@@ -338,7 +370,7 @@
       "name": "Lakeshore Parcel Express, Inc.",
       "sf": 396500,
       "annualRent": 7814087,
-      "percentOfPortfolioRent": 52.81,
+      "percentOfPortfolioRent": 27.47,
       "earliestExpiration": "2036-04-30",
       "deals": [
         "covered-land-play"
@@ -348,60 +380,90 @@
       "name": "Meridian Compute Systems, Inc.",
       "sf": 298400,
       "annualRent": 4567585,
-      "percentOfPortfolioRent": 30.87,
+      "percentOfPortfolioRent": 16.06,
       "earliestExpiration": "2032-02-29",
       "deals": [
         "corporate-net-lease"
       ]
     },
     {
+      "name": "Sunbeam Lighting & Sons",
+      "sf": 153830,
+      "annualRent": 1565989,
+      "percentOfPortfolioRent": 5.5,
+      "earliestExpiration": "2033-11-30",
+      "deals": [
+        "estate-mark-to-market"
+      ]
+    },
+    {
+      "name": "Coastal Cabinet Distributors",
+      "sf": 102720,
+      "annualRent": 980976,
+      "percentOfPortfolioRent": 3.45,
+      "earliestExpiration": "2030-04-30",
+      "deals": [
+        "estate-mark-to-market"
+      ]
+    },
+    {
+      "name": "AeroParts Distribution Co.",
+      "sf": 67000,
+      "annualRent": 942020,
+      "percentOfPortfolioRent": 3.31,
+      "earliestExpiration": "2028-05-30",
+      "deals": [
+        "estate-mark-to-market"
+      ]
+    },
+    {
+      "name": "Atlantic Aircraft Holdings",
+      "sf": 84247,
+      "annualRent": 877011,
+      "percentOfPortfolioRent": 3.08,
+      "earliestExpiration": "2028-12-31",
+      "deals": [
+        "estate-mark-to-market"
+      ]
+    },
+    {
       "name": "Pacific Coast Fulfillment LLC",
       "sf": 45120,
       "annualRent": 768845,
-      "percentOfPortfolioRent": 5.2,
+      "percentOfPortfolioRent": 2.7,
       "earliestExpiration": "2028-08-31",
       "deals": [
         "single-tenant-nnn"
       ]
     },
     {
-      "name": "Meridian Plastics Manufacturing Co.",
-      "sf": 62000,
-      "annualRent": 632400,
-      "percentOfPortfolioRent": 4.27,
-      "earliestExpiration": "2027-08-31",
-      "deals": [
-        "value-add-rollover"
-      ]
-    },
-    {
-      "name": "Hermanos Produce Distribution Inc.",
-      "sf": 24600,
-      "annualRent": 386712,
-      "percentOfPortfolioRent": 2.61,
-      "earliestExpiration": "2028-03-31",
-      "deals": [
-        "multi-tenant-infill"
-      ]
-    },
-    {
-      "name": "Sunpath Logistics Corp",
-      "sf": 20700,
-      "annualRent": 360180,
+      "name": "Everline Supply Chain Services",
+      "sf": 42660,
+      "annualRent": 691945,
       "percentOfPortfolioRent": 2.43,
-      "earliestExpiration": "2030-10-31",
+      "earliestExpiration": "2031-05-31",
       "deals": [
-        "multi-tenant-infill"
+        "estate-mark-to-market"
       ]
     },
     {
-      "name": "Brightline Cabinet Works LLC",
-      "sf": 18900,
-      "annualRent": 267624,
-      "percentOfPortfolioRent": 1.81,
-      "earliestExpiration": "2026-12-31",
+      "name": "Nourish Nutritionals",
+      "sf": 38340,
+      "annualRent": 661365,
+      "percentOfPortfolioRent": 2.32,
+      "earliestExpiration": "2031-01-31",
       "deals": [
-        "multi-tenant-infill"
+        "estate-mark-to-market"
+      ]
+    },
+    {
+      "name": "Skyward Aerospace Group",
+      "sf": 64380,
+      "annualRent": 639293,
+      "percentOfPortfolioRent": 2.25,
+      "earliestExpiration": "2030-04-30",
+      "deals": [
+        "estate-mark-to-market"
       ]
     }
   ],

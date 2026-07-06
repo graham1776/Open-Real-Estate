@@ -53,6 +53,10 @@
           "type": "string",
           "description": "Suite or unit identifier. Optional for single-tenant properties."
         },
+        "spaceType": {
+          "type": "string",
+          "description": "Space type key matching an entry in marketAssumptions.marketLeasing, used to price this space at rollover (market rent, downtime, renewal terms). Omit when a single profile applies to the whole property."
+        },
         "leasedSF": {
           "type": "number",
           "exclusiveMinimum": 0,
@@ -61,7 +65,7 @@
         "commencementDate": {
           "type": "string",
           "format": "date",
-          "description": "Lease commencement date (ISO 8601)."
+          "description": "Lease commencement date (ISO 8601). May be later than rentRoll.asOfDate for a signed-but-not-yet-commenced lease: the space produces no rent, occupancy, or recoveries before commencement."
         },
         "expirationDate": {
           "type": "string",
