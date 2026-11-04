@@ -52,6 +52,15 @@
   .btn { font: inherit; font-size: 13px; padding: 5px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--ink); cursor: pointer; }
   .btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
   .btn:disabled { opacity: .45; cursor: default; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; padding: 9px 18px; font-size: 14px; }
+  .btn.primary:hover:not(:disabled) { background: #0047cc; color: #fff; }
+  header .links { margin-left: auto; display: inline-flex; gap: 14px; font-size: 13px; }
+  header .links a { color: var(--accent); text-decoration: none; }
+  header .links a:hover { text-decoration: underline; }
+  #examples { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); cursor: default; }
+  #examples .row { margin-top: 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+  #examples .chip { background: var(--card); }
+  #examples-msg { margin-top: 8px; font-size: 12px; min-height: 1em; }
   #ed-text { width: 100%; min-height: 480px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 1.5; border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: var(--card); color: var(--ink); resize: vertical; }
   .dirtydot { color: var(--warn); font-weight: 700; }
   h2 { font-size: 14px; margin: 22px 0 6px; }
@@ -65,6 +74,7 @@
 <header>
   <h1>ORE Viewer</h1>
   <span class="tag">Open Real Estate format — see the deal in 30 seconds, edit it, save it. Runs entirely in your browser; nothing is uploaded.</span>
+  <span class="links"><a href="../">About ORE</a><a href="https://github.com/graham1776/Open-Real-Estate">GitHub</a></span>
 </header>
 
 <div id="filebar"></div>
@@ -73,6 +83,12 @@
   <strong>Drop <span class="code">.ore</span> files here</strong> or click to choose — one file shows the deal, several show the portfolio.<br>
   <span style="font-size:12px">A .ore file is standard JSON — property, rent roll, expenses, assumptions, and valuation in one self-contained file.</span>
   <input type="file" id="file" accept=".ore,.json" multiple hidden>
+  <div id="examples">
+    <div><strong>No file yet?</strong> Open a sample deal and see how it works.</div>
+    <div class="row"><button class="btn primary" data-x="multi-tenant-infill">Try an example deal</button></div>
+    <div class="row" id="example-chips"></div>
+    <div id="examples-msg" class="muted"></div>
+  </div>
 </div>
 
 <main id="single">
@@ -155,11 +171,6 @@ function removeEntry(id) {
 //  - fetch (the bundled examples): re-fetch with cache: no-store
 //  - handle (File System Access API — Chromium picker or drag): re-read from disk
 //  - plain File (other browsers' input/drag): snapshot only, not watchable
-
-async function loadFetch(name, url) {
-  const text = await fetch(url, { cache: "no-store" }).then((r) => r.text());
-  addEntry(makeEntry(name, text, { kind: "fetch", url }));
-}
 
 async function loadHandle(handle) {
   const file = await handle.getFile();
@@ -331,7 +342,7 @@ function renderSummary(deal, out) {
       ${card("In-place rent", r ? usd(r.inPlaceAnnualBaseRent) : "—", r?.inPlaceWARentPerSFPerMonth != null ? `$${num(r.inPlaceWARentPerSFPerMonth, 2)}/SF/mo` : "")}
       ${card("Vs market", r ? gapSpan(r.inPlaceVsMarketPercent) : "—", r?.marketRentPerSFPerMonth != null ? `market $${num(r.marketRentPerSFPerMonth, 2)}/SF/mo` : "")}
       ${out?.leaseMetrics ? card("WALT", out.leaseMetrics.waltYearsByRent != null ? `${num(out.leaseMetrics.waltYearsByRent, 1)} yrs` : "—", `${num(out.leaseMetrics.rollNext12ByRentPercent, 1)}% rolls &lt;12 mo`) : ""}
-      ${card("Year built", num(ph.yearBuilt), ph.yearRenovated ? `renovated ${ph.yearRenovated}` : "")}
+      ${card("Year built", ph.yearBuilt ?? "—", ph.yearRenovated ? `renovated ${ph.yearRenovated}` : "")}
       ${card("Clear height", ph.clearHeightFt ? `${ph.clearHeightFt} ft` : "—")}
       ${card("Loading", `${num(ph.dockHighDoors)} DH / ${num(ph.gradeLevelDoors)} GL`)}
       ${card("Site", deal.property.siteAreaAcres ? `${num(deal.property.siteAreaAcres, 2)} ac` : "—", ph.coverageRatio ? `${num(ph.coverageRatio * 100)}% coverage` : "")}
@@ -725,22 +736,44 @@ for (const target of [$("drop"), document.body]) {
   target.addEventListener("drop", handleDrop);
 }
 
-// when served from the repo, offer the bundled examples
-fetch("../examples/single-tenant-nnn.ore", { cache: "no-store" }).then((r) => {
-  if (!r.ok) return;
-  const names = ["single-tenant-nnn", "multi-tenant-infill", "value-add-rollover"];
-  const div = document.createElement("div");
-  div.style.marginTop = "14px";
-  div.innerHTML = `<span class="muted" style="font-size:12px">or load examples: </span>` +
-    names.map((n) => `<button class="code" style="margin:0 4px;cursor:pointer" data-x="${n}">${n}.ore</button>`).join("") +
-    `<button class="code" style="margin:0 4px;cursor:pointer" data-x="__all">all three (portfolio)</button>`;
-  $("drop").appendChild(div);
-  div.querySelectorAll("button").forEach((b) => b.onclick = async (e) => {
-    e.stopPropagation();
-    const which = b.dataset.x === "__all" ? names : [b.dataset.x];
-    for (const n of which) await loadFetch(n + ".ore", `../examples/${n}.ore`);
-  });
-}).catch(() => {});
+// sample deals: same-origin when served from the repo (GitHub Pages, npm run demo),
+// falling back to the copies on GitHub when the page is opened some other way
+const EXAMPLES = ["single-tenant-nnn", "multi-tenant-infill", "value-add-rollover",
+  "corporate-net-lease", "covered-land-play", "estate-mark-to-market"];
+const EXAMPLE_REMOTE = "https://raw.githubusercontent.com/graham1776/Open-Real-Estate/main/examples/";
+
+async function loadExample(n) {
+  for (const url of [`../examples/${n}.ore`, EXAMPLE_REMOTE + n + ".ore"]) {
+    try {
+      const r = await fetch(url, { cache: "no-store" });
+      if (!r.ok) continue;
+      addEntry(makeEntry(n + ".ore", await r.text(), { kind: "fetch", url }));
+      return true;
+    } catch { /* try the next source */ }
+  }
+  return false;
+}
+
+async function loadExamples(names) {
+  $("examples-msg").textContent = "Loading…";
+  const failed = [];
+  for (const n of names) if (!(await loadExample(n))) failed.push(n);
+  $("examples-msg").textContent = failed.length
+    ? `Couldn't load ${failed.join(", ")}. The examples live in the repo's examples/ folder on GitHub.` : "";
+}
+
+$("example-chips").innerHTML = EXAMPLES.map((n) => `<button class="chip" data-x="${n}">${n}</button>`).join("") +
+  `<button class="chip" data-x="__all">all six as a portfolio</button>`;
+$("examples").onclick = (e) => {
+  e.stopPropagation();
+  const b = e.target.closest("button[data-x]");
+  if (b) loadExamples(b.dataset.x === "__all" ? EXAMPLES : [b.dataset.x]);
+};
+
+// deep links: ?example=<name> or ?example=all
+const wanted = new URLSearchParams(location.search).get("example");
+if (wanted === "all") loadExamples(EXAMPLES);
+else if (EXAMPLES.includes(wanted)) loadExamples([wanted]);
 </script>
 </body>
 </html>

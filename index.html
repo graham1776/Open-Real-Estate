@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ORE: Open Real Estate</title>
+<meta name="description" content="An open, JSON-based file format for commercial real estate underwriting data, and an open-source reference engine that computes it.">
+<style>
+  :root {
+    --ink: #1a2433; --muted: #5b6b80; --line: #dfe5ec; --bg: #f6f8fa;
+    --card: #ffffff; --accent: #0b5fff; --accent-dark: #0047cc;
+    --code-bg: #0f1722; --code-ink: #d5dde8; --code-key: #8cc8ff; --code-str: #a8e0a0; --code-num: #f5c07a; --code-lit: #f59ab0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.55 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--ink); background: var(--bg); }
+  a { color: var(--accent); }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+
+  header.top { background: var(--card); border-bottom: 1px solid var(--line); }
+  header.top .wrap { display: flex; align-items: center; gap: 20px; height: 56px; }
+  header.top .mark { font-weight: 700; font-size: 18px; letter-spacing: .02em; }
+  header.top nav { margin-left: auto; display: flex; gap: 18px; font-size: 14px; }
+  header.top nav a { color: var(--muted); text-decoration: none; }
+  header.top nav a:hover { color: var(--accent); }
+
+  .hero { background: var(--card); border-bottom: 1px solid var(--line); padding: 56px 0 48px; }
+  .hero h1 { font-size: 42px; line-height: 1.15; margin: 0 0 14px; letter-spacing: -.01em; max-width: 820px; }
+  .hero .lede { font-size: 19px; color: var(--muted); max-width: 720px; margin: 0 0 28px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { display: inline-block; padding: 13px 22px; border-radius: 8px; font-weight: 600; font-size: 16px; text-decoration: none; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: #fff; }
+  .hero .fine { margin-top: 14px; font-size: 13px; color: var(--muted); }
+
+  .pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; padding: 40px 0 8px; }
+  .panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 10px; }
+  .panel p { margin: 10px 0 0; font-size: 14px; color: var(--muted); }
+  .file { background: var(--code-bg); border-radius: 10px; overflow: hidden; border: 1px solid #1f2a3a; }
+  .file .bar { display: flex; align-items: center; gap: 10px; padding: 9px 14px; background: #172131; color: #9fb0c6; font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .file .bar a { margin-left: auto; color: #8cc8ff; text-decoration: none; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .file pre { margin: 0; padding: 14px 16px; height: 420px; overflow: auto; color: var(--code-ink); font: 12.5px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .k { color: var(--code-key); } .s { color: var(--code-str); } .n { color: var(--code-num); } .l { color: var(--code-lit); }
+  .shot { display: block; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: var(--card); }
+  .shot img { display: block; width: 100%; height: auto; }
+
+  section.block { padding: 40px 0 8px; }
+  section.block h2 { font-size: 26px; margin: 0 0 12px; }
+  section.block p { max-width: 760px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+  .grid3.grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+  .card h3 { margin: 0 0 6px; font-size: 17px; }
+  .card p { margin: 0; font-size: 15px; color: var(--muted); }
+  table { border-collapse: collapse; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-top: 16px; font-size: 15px; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); background: #fbfcfd; }
+  tr:last-child td { border-bottom: none; }
+  code { font: 14px ui-monospace, SFMono-Regular, Menlo, monospace; background: #eef2f7; padding: 1px 5px; border-radius: 4px; }
+
+  .join { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 28px; margin: 40px 0; }
+  .join h2 { margin-top: 0; }
+  footer { padding: 24px 0 40px; color: var(--muted); font-size: 14px; }
+
+  @media (max-width: 860px) {
+    .pair, .grid3, .grid3.grid2 { grid-template-columns: minmax(0, 1fr); }
+    .hero { padding: 36px 0 32px; }
+    .hero h1 { font-size: 30px; }
+    .hero .lede { font-size: 17px; }
+    .file pre { height: 320px; }
+  }
+  @media (max-width: 560px) {
+    .wrap { padding: 0 16px; }
+    header.top nav a.opt { display: none; }
+    .cta .btn { flex: 1 1 100%; text-align: center; }
+    th, td { padding: 8px 10px; font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <span class="mark">ORE</span>
+    <nav>
+      <a href="demo/">Viewer</a>
+      <a class="opt" href="https://github.com/graham1776/Open-Real-Estate/blob/main/spec/README.md">Spec</a>
+      <a class="opt" href="https://github.com/graham1776/Open-Real-Estate/tree/main/examples">Examples</a>
+      <a href="https://github.com/graham1776/Open-Real-Estate">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <h1>Deal data should belong to the deal, not to any software license.</h1>
+    <p class="lede">ORE (Open Real Estate) is an open, JSON-based file format for commercial real estate underwriting data, and an open-source engine that computes it. One file carries the rent roll, expenses, assumptions, and valuation. Anyone can read it, write it, and check the math.</p>
+    <div class="cta">
+      <a class="btn primary" href="demo/?example=multi-tenant-infill">Try an example deal</a>
+      <a class="btn" href="demo/">Open the viewer</a>
+      <a class="btn" href="https://github.com/graham1776/Open-Real-Estate">View on GitHub</a>
+    </div>
+    <div class="fine">The viewer runs entirely in your browser. Nothing is uploaded, nothing to install.</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="pair">
+    <div class="panel">
+      <h2>The file</h2>
+      <div class="file">
+        <div class="bar"><span>multi-tenant-infill.ore</span><a href="demo/?example=multi-tenant-infill">Open in viewer →</a></div>
+        <pre id="ore">Loading the example file…</pre>
+      </div>
+      <p>Plain JSON with a published schema. Field names carry their units, conventions are stated in the file, and the underwriting assumptions travel with the data.</p>
+    </div>
+    <div class="panel">
+      <h2>The same deal in the viewer</h2>
+      <a class="shot" href="demo/?example=multi-tenant-infill"><img src="docs/images/viewer-example-outputs.png" width="1400" height="967" alt="The ORE viewer showing computed outputs for the example deal: year-1 and stabilized NOI, direct cap and DCF values, and the direct cap walk."></a>
+      <p>Drop a <code>.ore</code> file and the reference engine computes NOI, cash flows, DCF and direct cap values, levered and unlevered returns, and a sensitivity grid. Anything it estimated is listed in a Warnings tab.</p>
+    </div>
+  </div>
+
+  <section class="block">
+    <h2>Why</h2>
+    <p>Rent rolls, lease abstracts, operating histories, and underwriting assumptions move between brokers, buyers, and appraisers in formats that force re-keying at every hand-off. Errors compound, hours disappear, and no two parties can confirm they are computing the same NOI from the same inputs.</p>
+    <div class="grid3">
+      <div class="card"><h3>Brokers</h3><p>Send a deal any buyer can open on day one, at no cost to them.</p></div>
+      <div class="card"><h3>Buyers</h3><p>Ingest the rent roll and assumptions directly. Spend analyst time on judgment, not data entry.</p></div>
+      <div class="card"><h3>Appraisers</h3><p>Audit the inputs and the method line by line. The math is open source.</p></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>What a <code>.ore</code> file carries</h2>
+    <table>
+      <tr><th>Module</th><th>Holds</th></tr>
+      <tr><td><code>property</code></td><td>Identity, location, industrial physicals (SF, clear height, docks, power)</td></tr>
+      <tr><td><code>rentRoll</code></td><td>Leases with rent steps, escalations, NNN / NN / MG / Gross recoveries, free rent, TI/LC, options; vacant suites</td></tr>
+      <tr><td><code>expenses</code></td><td>Operating expenses with recoverability and growth</td></tr>
+      <tr><td><code>marketAssumptions</code></td><td>Market rent, growth, downtime, renewal probability, leasing costs</td></tr>
+      <tr><td><code>valuation</code></td><td>DCF, direct cap, sales comparison, and cost inputs</td></tr>
+      <tr><td><code>debt</code></td><td>Optional loan terms for levered returns</td></tr>
+      <tr><td><code>provenance</code></td><td>Who produced the file, when, and from what sources</td></tr>
+    </table>
+    <p>Version 0.1 covers US industrial, single- and multi-tenant. Every example deal has locked expected outputs, so any implementation of the engine can prove it computes the same answers.</p>
+  </section>
+
+  <div class="join">
+    <h2>Help build it</h2>
+    <p>ORE is early and open. Two kinds of help matter most right now:</p>
+    <div class="grid3 grid2">
+      <div class="card"><h3>Real estate people</h3><p>Bring the lease structures, expense arrangements, and underwriting conventions the format can't express yet. Edge cases harden the spec.</p></div>
+      <div class="card"><h3>Developers</h3><p>The engine is TypeScript with a golden-file test suite. Pick up a scoped issue, or start the Python port.</p></div>
+    </div>
+    <div class="cta" style="margin-top:20px">
+      <a class="btn primary" href="https://github.com/graham1776/Open-Real-Estate/issues">See open issues</a>
+      <a class="btn" href="https://github.com/graham1776/Open-Real-Estate/blob/main/CONTRIBUTING.md">How to contribute</a>
+    </div>
+  </div>
+
+  <footer>
+    ORE (Open Real Estate). Format and reference engine under the <a href="https://github.com/graham1776/Open-Real-Estate/blob/main/LICENSE">Apache 2.0 license</a>, free to implement.
+  </footer>
+</div>
+
+<script>
+// show the example file itself, same-origin first, GitHub copy as a fallback
+(async () => {
+  const pre = document.getElementById("ore");
+  const sources = ["examples/multi-tenant-infill.ore",
+    "https://raw.githubusercontent.com/graham1776/Open-Real-Estate/main/examples/multi-tenant-infill.ore"];
+  for (const url of sources) {
+    try {
+      const r = await fetch(url);
+      if (!r.ok) continue;
+      const json = JSON.stringify(JSON.parse(await r.text()), null, 2);
+      const esc = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      pre.innerHTML = esc.replace(/("(?:\\.|[^"\\])*")(\s*:)?|\b(-?\d+(?:\.\d+)?(?:e[+-]?\d+)?)\b|\b(true|false|null)\b/g,
+        (m, str, colon, num, lit) =>
+          str ? (colon ? `<span class="k">${str}</span>${colon}` : `<span class="s">${str}</span>`)
+          : num ? `<span class="n">${num}</span>` : `<span class="l">${lit}</span>`);
+      return;
+    } catch { /* try the next source */ }
+  }
+  pre.textContent = "Couldn't load the example here. It's in the examples/ folder on GitHub.";
+})();
+</script>
+</body>
+</html>
