@@ -41,11 +41,12 @@ perfect institutional DCF.
       packages the demo loader's checks as `validate` / `summarize` / `compute`;
       runs from the repo (`npm run cli`); npm publish moved to the distribution
       backlog below
-- [x] One real (anonymized) deal run end-to-end as the case study: a live
-      institutional buyer model (seven buildings, 25 tenants) extracted into
-      `examples/estate-mark-to-market.ore` and benchmarked against the model's own
-      outputs, with a memo on what mapped cleanly, what differs, and what was
-      deferred (`docs/design/institutional-model-benchmark.md`)
+- [x] One real (anonymized) deal run end-to-end as the case study: an
+      institutional buyer model extracted into ORE and benchmarked against the
+      model's own outputs, with a memo on what mapped cleanly, what differs, and
+      what was deferred (`docs/design/institutional-model-benchmark.md`); the
+      published example (`examples/estate-mark-to-market.ore`) keeps the
+      structure with every identifying element and figure replaced
 - [x] Hardened reference engine (TypeScript, `engine/src/`) replaces the kernel:
       MG base-year/stop recoveries, true two-branch rollover, TI/LC split,
       general-vacancy de-dup, debt schedule, levered/unlevered IRR, NOI bridge,

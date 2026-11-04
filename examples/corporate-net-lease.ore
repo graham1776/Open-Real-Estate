@@ -2,26 +2,26 @@
   "$schema": "https://oreformat.org/schema/0.1.0/ore.schema.json",
   "formatVersion": "0.1.0",
   "property": {
-    "name": "2200 Foster Court",
+    "name": "2200 Kittyhawk Court",
     "propertyType": "industrial",
     "propertySubtype": "warehouse_distribution",
     "tenancy": "single",
-    "description": "Synthetic example: single-tenant corporate net-lease warehouse on a 17.25-acre infill site, fully leased long-term to a server and data-center hardware manufacturer. Deal profile modeled on an institutional core-plus acquisition underwriting; all names, locations, dates, and figures are fictional.",
+    "description": "Synthetic example: single-tenant corporate net-lease warehouse on a 17.25-acre infill site, fully leased long-term to an electronics manufacturer. The deal profile follows a typical institutional core-plus acquisition underwriting; all names, locations, dates, and figures are fictional.",
     "address": {
-      "street1": "2200 Foster Ct",
-      "city": "Bensenville",
-      "state": "IL",
-      "postalCode": "60106",
-      "county": "DuPage",
+      "street1": "2200 Kittyhawk Ct",
+      "city": "Prairie Junction",
+      "state": "TX",
+      "postalCode": "75000",
+      "county": "Dallas",
       "country": "US"
     },
     "location": {
-      "market": "Chicago",
-      "submarket": "O'Hare"
+      "market": "Dallas-Fort Worth",
+      "submarket": "DFW Airport"
     },
     "parcels": [
       {
-        "apn": "03-11-400-019",
+        "apn": "00000-000-0019",
         "landAcres": 17.25,
         "zoning": "I-2"
       }
@@ -53,9 +53,9 @@
         "leaseId": "L-001",
         "tenant": {
           "name": "Meridian Compute Systems, Inc.",
-          "industry": "server and data-center hardware manufacturing",
-          "parentCompany": "Meridian Electronics Holdings (NASDAQ-listed)",
-          "creditNotes": "Wholly owned subsidiary of a NASDAQ-listed contract electronics manufacturer; this facility is the tenant's primary US integration hub."
+          "industry": "electronics manufacturing and integration",
+          "parentCompany": "Meridian Electronics Holdings",
+          "creditNotes": "Wholly owned subsidiary of a publicly traded electronics manufacturer; this facility is a primary operating site for the tenant."
         },
         "leasedSF": 298400,
         "commencementDate": "2022-03-01",
@@ -204,9 +204,9 @@
         "capRatePercent": 5.5,
         "noiBasis": "stabilizedAtMarket",
         "sellingCostsPercent": 0.75,
-        "notes": "Exit capitalizes fully-marked-to-market NOI (all space at grown market rent) — the seller's residual below/above-market lease position is stripped from the terminal value, matching the buyer model this example is patterned on."
+        "notes": "Exit capitalizes fully-marked-to-market NOI (all space at grown market rent) — the seller's residual below/above-market lease position is stripped from the terminal value, as institutional buyers commonly underwrite it."
       },
-      "notes": "Going-in yield of ~5.3% on year-1 NOI. IRR convention note: this file's underwriting source computed IRR on annual end-of-year cash flows; the ORE reference engine computes a monthly-compounded IRR, which reads roughly 20-30 bps higher on identical cash flows."
+      "notes": "Going-in yield of ~5.3% on year-1 NOI. IRR convention note: many underwriting models compute IRR on annual end-of-year cash flows; the ORE reference engine computes a monthly-compounded IRR, which reads roughly 20-30 bps higher on identical cash flows."
     },
     "directCap": {
       "capRatePercent": 5.4,
@@ -241,6 +241,6 @@
       }
     ],
     "confidentiality": "None — fully synthetic example data published with the ORE specification.",
-    "notes": "Deal structure inspired by a real institutional single-tenant net-lease acquisition; every name, address, date, and figure has been fictionalized or perturbed. No confidential information is contained in this file."
+    "notes": "The structure follows common institutional single-tenant net-lease underwriting. All names, addresses, dates, and figures are synthetic; the file describes no real property or transaction."
   }
 }

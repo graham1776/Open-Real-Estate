@@ -79,7 +79,7 @@ is published as a single ingestible document: [`llms.txt`](llms.txt).
 | Format spec & JSON Schema | [`spec/`](spec/) | All v0.1 modules drafted |
 | Reference engine (TypeScript) | [`engine/`](engine/) | Working: full cash model, valuation, debt, returns, sensitivity; goldens locked (`npm test`) |
 | Viewer / demo | [`demo/`](demo/) | Working: drag `.ore` files → deal view or multi-file portfolio roll-up; watches files for live refresh; edit and save in the browser (Edit JSON tab) (`npm run demo`) |
-| Example deal files | [`examples/`](examples/) | Six examples, all validating (`npm run validate`), one extracted from and [benchmarked against a live institutional model](docs/design/institutional-model-benchmark.md) |
+| Example deal files | [`examples/`](examples/) | Six examples, all validating (`npm run validate`), one structured on a real underwrite and [benchmarked against an institutional model](docs/design/institutional-model-benchmark.md) |
 | LLM ingestible spec | [`llms.txt`](llms.txt) | Published |
 | Validator CLI | [`validator/`](validator/) | Working: `validate` / `summarize` / `compute` (`npm run cli -- validate examples`) |
 | Documentation site | [`docs/`](docs/) | Decision and design notes; site not started |

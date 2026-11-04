@@ -1,10 +1,10 @@
 {
   "engineVersion": "0.1.0",
   "property": {
-    "name": "2200 Foster Court",
-    "cityState": "Bensenville, IL",
-    "market": "Chicago",
-    "submarket": "O'Hare",
+    "name": "2200 Kittyhawk Court",
+    "cityState": "Prairie Junction, TX",
+    "market": "Dallas-Fort Worth",
+    "submarket": "DFW Airport",
     "buildingSF": 298400,
     "yearBuilt": 1979,
     "clearHeightFt": 26

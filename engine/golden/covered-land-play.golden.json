@@ -1,10 +1,10 @@
 {
   "engineVersion": "0.1.0",
   "property": {
-    "name": "4400 Landmeier Road",
-    "cityState": "Elk Grove Village, IL",
-    "market": "Chicago",
-    "submarket": "O'Hare",
+    "name": "400 Marsh Creek Road",
+    "cityState": "Meadow Junction, NJ",
+    "market": "Northern New Jersey",
+    "submarket": "Meadowlands",
     "buildingSF": 396500,
     "yearBuilt": 1968,
     "clearHeightFt": 18
