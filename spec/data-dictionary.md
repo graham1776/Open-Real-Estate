@@ -99,7 +99,7 @@ are provided it should equal their sum.
 | `leaseId` **(R)** | string | Stable identifier, unique within the file. |
 | `tenant` **(R)** | object | `name` **(R)**, `dba`, `parentCompany`, `industry`, `creditNotes`. |
 | `suite` | string | Suite/unit identifier; optional for single-tenant. |
-| `spaceType` | string | Key into `marketAssumptions.marketLeasing`, selecting the leasing profile that prices this space at rollover. Omit when one profile applies property-wide. |
+| `spaceType` | string | Key into `marketAssumptions.leasingProfiles`, selecting the leasing profile that prices this space at rollover. Omit when one profile applies property-wide. |
 | `leasedSF` **(R)** | number | Leased area, SF. Denominator for per-SF rent; numerator for pro-rata share. |
 | `commencementDate` **(R)** | date | Lease commencement. May be after `rentRoll.asOfDate` (a signed-but-not-yet-commenced lease): engines model no rent, occupancy, or recoveries before commencement. |
 | `expirationDate` **(R)** | date | Current expiration, reflecting executed amendments and exercised options. |
@@ -223,14 +223,14 @@ per `marketAssumptions.growth.expenses` unless an item carries its own override.
 | `growth` **(R)** | object | `marketRent` **(R)**, `expenses` **(R)**, `cpi` — each a growth curve (below). `cpi` required if any lease escalates on CPI. |
 | `generalVacancyPercent` | number | Percent of potential gross revenue, in addition to explicit downtime. Engines must not double-count downtime months. Default 0. |
 | `creditLossPercent` | number | Percent of scheduled revenue. Default 0. |
-| `marketLeasing` **(R)** | map | Leasing profiles keyed by space type (min 1) — see below. Keys are matched by `leases[].spaceType` and `vacantSuites[].spaceType`; spaces without a `spaceType` use the file's first profile. |
+| `leasingProfiles` **(R)** | map | Leasing profiles keyed by space type (min 1) — see below. Keys are matched by `leases[].spaceType` and `vacantSuites[].spaceType`; spaces without a `spaceType` use the file's first profile. |
 
 **Growth curve:** either a flat annual rate in percent (`3.0`), or a stepped array of
 `{ fromYear, annualPercent }` where `fromYear` is the 1-based analysis year and each
 entry applies until the next. The first entry must have `fromYear: 1`. Growth
 compounds annually on each anniversary of the analysis start.
 
-### `marketAssumptions.marketLeasing.<spaceType>`
+### `marketAssumptions.leasingProfiles.<spaceType>`
 
 At each lease expiration, engines blend the renewal and new-tenant outcomes by
 `renewalProbabilityPercent`.

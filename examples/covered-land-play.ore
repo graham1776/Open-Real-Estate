@@ -2,26 +2,26 @@
   "$schema": "https://oreformat.org/schema/0.1.0/ore.schema.json",
   "formatVersion": "0.1.0",
   "property": {
-    "name": "4400 Landmeier Road",
+    "name": "400 Marsh Creek Road",
     "propertyType": "industrial",
     "propertySubtype": "warehouse_distribution",
     "tenancy": "single",
     "description": "Synthetic example: 1968-vintage big-box warehouse on an oversized 27.4-acre infill site — a covered-land play. Value is driven by the land under the income stream: in-place rent is well above market, the exit is underwritten to residual land value rather than capitalized income, and the site carries roughly 9 acres of excess trailer parking. All names, locations, dates, and figures are fictional.",
     "address": {
-      "street1": "4400 Landmeier Rd",
-      "city": "Elk Grove Village",
-      "state": "IL",
-      "postalCode": "60007",
-      "county": "Cook",
+      "street1": "400 Marsh Creek Rd",
+      "city": "Meadow Junction",
+      "state": "NJ",
+      "postalCode": "07000",
+      "county": "Bergen",
       "country": "US"
     },
     "location": {
-      "market": "Chicago",
-      "submarket": "O'Hare"
+      "market": "Northern New Jersey",
+      "submarket": "Meadowlands"
     },
     "parcels": [
       {
-        "apn": "08-27-300-041",
+        "apn": "Block 0000, Lot 41",
         "landAcres": 27.4,
         "zoning": "I-1"
       }
@@ -53,9 +53,9 @@
       {
         "leaseId": "L-001",
         "tenant": {
-          "name": "Lakeshore Parcel Express, Inc.",
+          "name": "Harbor Parcel Express, Inc.",
           "industry": "parcel logistics and package delivery",
-          "creditNotes": "National parcel carrier; investment-grade, NYSE-listed. Tenant has fully subleased the premises to a home-furnishings importer but remains directly and fully obligated on the lease."
+          "creditNotes": "National parcel carrier; investment-grade. Tenant has fully subleased the premises to a third party but remains directly and fully obligated on the lease."
         },
         "leasedSF": 396500,
         "commencementDate": "2021-05-01",
@@ -108,7 +108,7 @@
     },
     "generalVacancyPercent": 0,
     "creditLossPercent": 0,
-    "marketLeasing": {
+    "leasingProfiles": {
       "warehouse": {
         "marketRent": {
           "amount": 14.5,
@@ -159,14 +159,14 @@
         "sellingCostsPercent": 0.75,
         "notes": "Residual land-value exit, not capitalized income. Derivation: 27.4 acres = 1,193,544 land SF; 45% FAR = 537,095 buildable SF; land value of $185 per buildable SF today, grown at 4%/yr over the hold = $273.85 per buildable SF at exit; 537,095 x $273.85 = ~$147.08M. The land basis exceeds the capitalized-income alternative (~$138M at a 5.75% cap on marked-to-market NOI), so the land approach is adopted. ORE v0.1 has no structured land-residual terminal method; fixed_value carries the conclusion and this note carries the math so any reader can reproduce it."
       },
-      "notes": "Hold period is 118 months so the exit lands exactly at the 2036-04-30 lease expiration — contract rent for the full hold, land value at the end, no rollover modeled. Going-in yield ~6.2% on year-1 NOI. IRR convention note: the underwriting source computed IRR on annual end-of-year cash flows; the ORE engine's monthly-compounded IRR reads roughly 25-30 bps higher on identical cash flows."
+      "notes": "Hold period is 118 months so the exit lands exactly at the 2036-04-30 lease expiration — contract rent for the full hold, land value at the end, no rollover modeled. Going-in yield ~6.2% on year-1 NOI. IRR convention note: many underwriting models compute IRR on annual end-of-year cash flows; the ORE engine's monthly-compounded IRR reads roughly 25-30 bps higher on identical cash flows."
     },
     "salesComparison": {
       "unitBasis": "land_sf",
       "comparables": [
         {
           "name": "Airport-adjacent covered land sale",
-          "address": { "city": "Des Plaines", "state": "IL" },
+          "address": { "city": "Carlton Heights", "state": "NJ" },
           "salePrice": 38500000,
           "saleDate": "2025-03-15",
           "landAcres": 6.9,
@@ -180,11 +180,11 @@
             }
           ],
           "adjustedPricePerUnit": 115.28,
-          "source": "public record"
+          "source": "synthetic"
         },
         {
           "name": "Infill redevelopment land sale",
-          "address": { "city": "Franklin Park", "state": "IL" },
+          "address": { "city": "Bayview Park", "state": "NJ" },
           "salePrice": 38000000,
           "saleDate": "2025-01-20",
           "landAcres": 7.1,
@@ -198,11 +198,11 @@
             }
           ],
           "adjustedPricePerUnit": 116.73,
-          "source": "buyer's broker (confirmed)"
+          "source": "synthetic"
         },
         {
           "name": "Large-site industrial land sale",
-          "address": { "city": "Melrose Park", "state": "IL" },
+          "address": { "city": "Riverside Flats", "state": "NJ" },
           "salePrice": 89500000,
           "saleDate": "2024-06-10",
           "landAcres": 21.7,
@@ -221,7 +221,7 @@
             }
           ],
           "adjustedPricePerUnit": 107.3,
-          "source": "public record"
+          "source": "synthetic"
         }
       ],
       "concludedValuePerUnit": 106.0,
@@ -258,6 +258,6 @@
       }
     ],
     "confidentiality": "None — fully synthetic example data published with the ORE specification.",
-    "notes": "Deal structure inspired by a real institutional covered-land acquisition; every name, address, date, and figure has been fictionalized or perturbed. No confidential information is contained in this file."
+    "notes": "The structure follows a common institutional covered-land underwriting. All names, addresses, dates, comparables, and figures are synthetic; the file describes no real property or transaction."
   }
 }

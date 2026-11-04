@@ -75,7 +75,7 @@ ships data *into* Excel rather than competing with the workbook.
 
 `ore export-xlsx deal.ore` (CLI command and a button in the viewer/demo) produces a
 workbook of typed, named tables — `ore_RentRoll`, `ore_Expenses`,
-`ore_MarketLeasing`, `ore_Valuation`, etc. — under a small documented **ORE Excel
+`ore_LeasingProfiles`, `ore_Valuation`, etc. — under a small documented **ORE Excel
 Layout** convention (sheet and table names, column order, units columns).
 
 The naming convention is the point: a shop retrofits its house model once to

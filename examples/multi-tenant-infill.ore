@@ -242,7 +242,7 @@
     },
     "generalVacancyPercent": 3.0,
     "creditLossPercent": 0.5,
-    "marketLeasing": {
+    "leasingProfiles": {
       "small_bay": {
         "marketRent": {
           "amount": 1.5,

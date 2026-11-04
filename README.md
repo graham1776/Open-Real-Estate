@@ -5,9 +5,13 @@ an open-source reference engine that computes it.**
 
 > Deal data should belong to the deal, not to any software license.
 
+[![Try an example deal](https://img.shields.io/badge/Try_an_example_deal-0b5fff?style=for-the-badge)](https://graham1776.github.io/Open-Real-Estate/demo/?example=multi-tenant-infill)
+[![Open the viewer](https://img.shields.io/badge/Open_the_viewer-1a2433?style=for-the-badge)](https://graham1776.github.io/Open-Real-Estate/demo/)
+[![Project home](https://img.shields.io/badge/Project_home-5b6b80?style=for-the-badge)](https://graham1776.github.io/Open-Real-Estate/)
+
 ![The ORE viewer: drop a .ore file and see the deal — summary, rent roll, computed DCF, returns, and warnings — in seconds, entirely in the browser.](docs/images/viewer-demo.gif)
 
-<p align="center"><em>Drop a <code>.ore</code> file into the <a href="demo/">viewer</a> and the whole deal renders — property, rent roll, NOI, DCF, returns, sensitivity — with zero re-keying. No install, no upload, no license.</em></p>
+<p align="center"><em>Drop a <code>.ore</code> file into the <a href="https://graham1776.github.io/Open-Real-Estate/demo/">viewer</a> and the whole deal renders — property, rent roll, NOI, DCF, returns, sensitivity — with zero re-keying. No install, no upload, no license.</em></p>
 
 ## The problem
 
@@ -31,6 +35,11 @@ The model is PDF, not a software product: any tool can produce the format, any t
 can consume it, and no one owns it.
 
 ## See it in 30 seconds
+
+**In the browser:** open the [viewer](https://graham1776.github.io/Open-Real-Estate/demo/)
+and click *Try an example deal*. Nothing to install, nothing uploaded.
+
+**Locally:**
 
 ```bash
 git clone https://github.com/graham1776/Open-Real-Estate.git
@@ -72,16 +81,16 @@ is published as a single ingestible document: [`llms.txt`](llms.txt).
 
 ## Status
 
-**Pre-v0.1.** Current scope: US industrial (single- and multi-tenant). See [ROADMAP.md](ROADMAP.md).
+**v0.1 feature-complete; looking for collaborators.** Current scope: US industrial (single- and multi-tenant). See [ROADMAP.md](ROADMAP.md).
 
 | Component | Where | State |
 |---|---|---|
 | Format spec & JSON Schema | [`spec/`](spec/) | All v0.1 modules drafted |
 | Reference engine (TypeScript) | [`engine/`](engine/) | Working: full cash model, valuation, debt, returns, sensitivity; goldens locked (`npm test`) |
 | Viewer / demo | [`demo/`](demo/) | Working: drag `.ore` files → deal view or multi-file portfolio roll-up; watches files for live refresh; edit and save in the browser (Edit JSON tab) (`npm run demo`) |
-| Example deal files | [`examples/`](examples/) | Three examples, all validating (`npm run validate`) |
+| Example deal files | [`examples/`](examples/) | Six examples, all validating (`npm run validate`), one structured on a real underwrite and [benchmarked against an institutional model](docs/design/institutional-model-benchmark.md) |
 | LLM ingestible spec | [`llms.txt`](llms.txt) | Published |
-| Validator CLI | [`validator/`](validator/) | Working: `validate` / `summarize` / `compute` (`npm run cli -- validate examples`); npm publish pending |
+| Validator CLI | [`validator/`](validator/) | Working: `validate` / `summarize` / `compute` (`npm run cli -- validate examples`) |
 | Documentation site | [`docs/`](docs/) | Decision and design notes; site not started |
 
 ## Why the math is open too

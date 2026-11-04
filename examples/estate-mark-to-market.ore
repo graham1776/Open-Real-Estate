@@ -2,30 +2,30 @@
   "$schema": "https://oreformat.org/schema/0.1.0/ore.schema.json",
   "formatVersion": "0.1.0",
   "property": {
-    "name": "Seven Palms Commerce Park",
+    "name": "Saguaro Gateway Business Park",
     "propertyType": "industrial",
     "propertySubtype": "warehouse_distribution",
     "tenancy": "multi",
-    "description": "Patterned on a live institutional buyer underwriting of a seven-building, 1.15M SF multi-tenant industrial estate in South Florida; every name and address is fictional, the economics are preserved. Deep loss-to-lease profile: in-place rents roughly one-third below market, marking to market through staggered rollover over the 10-year hold.",
+    "description": "Synthetic example: seven-building multi-tenant industrial estate with a deep loss-to-lease profile (in-place rents roughly 30% below market) marking to market through staggered rollover over a 10-year hold. Its structure follows an institutional buyer underwriting; the location, building sizes, rents, dates, costs, and tenants have all been changed, so it corresponds to no real property or transaction.",
     "address": {
-      "street1": "4300-4360 Seven Palms Boulevard",
-      "city": "Hollywood",
-      "state": "FL",
-      "postalCode": "33023",
-      "county": "Broward",
+      "street1": "5100-5180 W Saguaro Gateway Pkwy",
+      "city": "Mesquite Flats",
+      "state": "AZ",
+      "postalCode": "85000",
+      "county": "Maricopa",
       "country": "US"
     },
     "location": {
-      "market": "South Florida",
-      "submarket": "Southwest Broward"
+      "market": "Phoenix",
+      "submarket": "Southwest Valley"
     },
-    "siteAreaAcres": 68.77,
+    "siteAreaAcres": 56.2,
     "physical": {
-      "buildingSF": 1154018,
+      "buildingSF": 937060,
       "stories": 1,
       "coverageRatio": 0.39
     },
-    "notes": "Seven buildings (A-G) totaling 1,154,018 SF GLA on 68.77 gross acres (net FAR 0.385). Leases identify their building in the suite field. Building SF: A 122,175; B 167,175; C 205,440; D 150,380; E 225,580; F 168,494; G 114,774."
+    "notes": "Seven buildings (A-G) totaling 937,060 SF GLA on 56.2 gross acres. Leases identify their building in the suite field. Building SF: A 99,090; B 136,320; C 167,420; D 121,630; E 184,350; F 135,360; G 92,890."
   },
   "rentRoll": {
     "asOfDate": "2026-06-01",
@@ -38,7 +38,7 @@
         },
         "suite": "A-1",
         "spaceType": "mid_bay",
-        "leasedSF": 32500,
+        "leasedSF": 27030,
         "commencementDate": "2026-08-01",
         "expirationDate": "2031-07-31",
         "baseRent": {
@@ -46,7 +46,7 @@
           "schedule": [
             {
               "startDate": "2026-08-01",
-              "amount": 17.75
+              "amount": 17.0
             }
           ]
         },
@@ -65,38 +65,38 @@
           }
         ],
         "tenantImprovements": {
-          "totalAmount": 260000,
+          "totalAmount": 216240,
           "fundingDate": "2026-07-01"
         },
         "leasingCommissions": {
-          "totalAmount": 178819,
+          "totalAmount": 142438,
           "fundingDate": "2026-08-01"
         },
-        "notes": "Underwritten lease-up of the one vacant suite: $17.75/SF/yr NNN ($0.25 over the small-bay market rate), 60-month term, 3 months free, $8/SF TI, 6% LC."
+        "notes": "Underwritten lease-up of the one vacant suite: $17.00/SF/yr NNN ($0.25 over the mid-bay market rate), 60-month term, 3 months free, $8/SF TI, 6% LC."
       },
       {
         "leaseId": "L-A-2",
         "tenant": {
-          "name": "Palmetto Staging & Events LLC",
-          "industry": "event production"
+          "name": "Copperline Logistics LLC",
+          "industry": "e-commerce fulfillment"
         },
         "suite": "A-2",
         "spaceType": "small_bay",
-        "leasedSF": 16250,
-        "commencementDate": "2018-05-01",
-        "expirationDate": "2028-08-30",
+        "leasedSF": 13490,
+        "commencementDate": "2018-04-01",
+        "expirationDate": "2028-07-31",
         "baseRent": {
           "unit": "perSFPerYear",
           "schedule": [
             {
-              "startDate": "2025-09-01",
-              "amount": 15.68
+              "startDate": "2025-08-01",
+              "amount": 14.71
             }
           ]
         },
         "escalation": {
           "type": "fixed_percent",
-          "rate": 6.48,
+          "rate": 6.0,
           "frequencyMonths": 12
         },
         "reimbursement": {
@@ -106,26 +106,26 @@
       {
         "leaseId": "L-A-3",
         "tenant": {
-          "name": "Meridian Worldwide Marketing Corp",
-          "industry": "consumer products distribution"
+          "name": "Ridgeway Building Supply",
+          "industry": "pool & spa supply"
         },
         "suite": "A-3",
         "spaceType": "mid_bay",
-        "leasedSF": 48925,
-        "commencementDate": "2016-07-01",
-        "expirationDate": "2028-08-30",
+        "leasedSF": 38720,
+        "commencementDate": "2016-09-01",
+        "expirationDate": "2028-10-31",
         "baseRent": {
           "unit": "perSFPerYear",
           "schedule": [
             {
-              "startDate": "2025-08-01",
-              "amount": 9.73
+              "startDate": "2025-10-01",
+              "amount": 10.5
             }
           ]
         },
         "escalation": {
           "type": "fixed_percent",
-          "rate": 7.35,
+          "rate": 7.75,
           "frequencyMonths": 12
         },
         "reimbursement": {
@@ -135,26 +135,26 @@
       {
         "leaseId": "L-A-4",
         "tenant": {
-          "name": "Crescendo Group",
-          "industry": "furniture distribution"
+          "name": "Verde Valley Foods",
+          "industry": "food & beverage distribution"
         },
         "suite": "A-4",
         "spaceType": "small_bay",
-        "leasedSF": 24500,
-        "commencementDate": "2015-03-01",
-        "expirationDate": "2027-07-31",
+        "leasedSF": 19850,
+        "commencementDate": "2015-04-01",
+        "expirationDate": "2027-08-31",
         "baseRent": {
           "unit": "perSFPerYear",
           "schedule": [
             {
-              "startDate": "2025-08-01",
-              "amount": 15.52
+              "startDate": "2025-09-01",
+              "amount": 15.51
             }
           ]
         },
         "escalation": {
           "type": "fixed_percent",
-          "rate": 22.93,
+          "rate": 23.0,
           "frequencyMonths": 12
         },
         "reimbursement": {
@@ -164,107 +164,20 @@
       {
         "leaseId": "L-B-1",
         "tenant": {
-          "name": "Blue Horizon Cruise Supply",
-          "industry": "marine hospitality logistics"
+          "name": "Arroyo Auto Parts",
+          "industry": "HVAC equipment distribution"
         },
         "suite": "B-1",
         "spaceType": "mid_bay",
-        "leasedSF": 44500,
-        "commencementDate": "2017-03-01",
-        "expirationDate": "2032-03-30",
+        "leasedSF": 35720,
+        "commencementDate": "2017-06-01",
+        "expirationDate": "2032-06-30",
         "baseRent": {
           "unit": "perSFPerYear",
           "schedule": [
             {
-              "startDate": "2026-04-01",
-              "amount": 10.76
-            }
-          ]
-        },
-        "escalation": {
-          "type": "fixed_percent",
-          "rate": 4.14,
-          "frequencyMonths": 12
-        },
-        "reimbursement": {
-          "structure": "NNN"
-        }
-      },
-      {
-        "leaseId": "L-B-2",
-        "tenant": {
-          "name": "Granite Peak Records Management",
-          "industry": "records storage"
-        },
-        "suite": "B-2",
-        "spaceType": "small_bay",
-        "leasedSF": 22500,
-        "commencementDate": "2018-02-01",
-        "expirationDate": "2028-07-31",
-        "baseRent": {
-          "unit": "perSFPerYear",
-          "schedule": [
-            {
-              "startDate": "2026-03-01",
-              "amount": 9.69
-            }
-          ]
-        },
-        "escalation": {
-          "type": "fixed_percent",
-          "rate": 5.2,
-          "frequencyMonths": 12
-        },
-        "reimbursement": {
-          "structure": "NNN"
-        }
-      },
-      {
-        "leaseId": "L-B-3",
-        "tenant": {
-          "name": "KardTech Americas",
-          "industry": "industrial components"
-        },
-        "suite": "B-3",
-        "spaceType": "mid_bay",
-        "leasedSF": 33175,
-        "commencementDate": "2018-05-01",
-        "expirationDate": "2028-08-31",
-        "baseRent": {
-          "unit": "perSFPerYear",
-          "schedule": [
-            {
-              "startDate": "2025-09-01",
-              "amount": 9.82
-            }
-          ]
-        },
-        "escalation": {
-          "type": "fixed_percent",
-          "rate": 4.84,
-          "frequencyMonths": 12
-        },
-        "reimbursement": {
-          "structure": "NNN"
-        }
-      },
-      {
-        "leaseId": "L-B-4",
-        "tenant": {
-          "name": "AeroParts Distribution Co.",
-          "industry": "aerospace parts distribution"
-        },
-        "suite": "B-4",
-        "spaceType": "mid_bay",
-        "leasedSF": 67000,
-        "commencementDate": "2018-02-01",
-        "expirationDate": "2028-05-30",
-        "baseRent": {
-          "unit": "perSFPerYear",
-          "schedule": [
-            {
-              "startDate": "2026-06-01",
-              "amount": 14.06
+              "startDate": "2025-07-01",
+              "amount": 10.68
             }
           ]
         },
@@ -278,287 +191,22 @@
         }
       },
       {
-        "leaseId": "L-C-1",
+        "leaseId": "L-B-2",
         "tenant": {
-          "name": "Skyward Aerospace Group",
-          "industry": "aerospace MRO distribution"
+          "name": "Cactus Wren Fulfillment",
+          "industry": "industrial components"
         },
-        "suite": "C-1",
-        "spaceType": "mid_bay",
-        "leasedSF": 64380,
-        "commencementDate": "2020-04-01",
-        "expirationDate": "2030-04-30",
-        "baseRent": {
-          "unit": "perSFPerYear",
-          "schedule": [
-            {
-              "startDate": "2026-05-01",
-              "amount": 9.93
-            }
-          ]
-        },
-        "escalation": {
-          "type": "fixed_percent",
-          "rate": 3.09,
-          "frequencyMonths": 12
-        },
-        "reimbursement": {
-          "structure": "NNN"
-        }
-      },
-      {
-        "leaseId": "L-C-2",
-        "tenant": {
-          "name": "Nourish Nutritionals",
-          "industry": "food & beverage distribution"
-        },
-        "suite": "C-2",
-        "spaceType": "mid_bay",
-        "leasedSF": 38340,
-        "commencementDate": "2020-10-01",
-        "expirationDate": "2031-01-31",
-        "baseRent": {
-          "unit": "perSFPerYear",
-          "schedule": [
-            {
-              "startDate": "2026-02-01",
-              "amount": 17.25
-            }
-          ]
-        },
-        "escalation": {
-          "type": "fixed_percent",
-          "rate": 4.37,
-          "frequencyMonths": 12
-        },
-        "reimbursement": {
-          "structure": "NNN"
-        }
-      },
-      {
-        "leaseId": "L-C-3",
-        "tenant": {
-          "name": "Coastal Cabinet Distributors",
-          "industry": "building products distribution"
-        },
-        "suite": "C-3",
-        "spaceType": "bulk_distribution",
-        "leasedSF": 102720,
-        "commencementDate": "2019-11-01",
-        "expirationDate": "2030-04-30",
-        "baseRent": {
-          "unit": "perSFPerYear",
-          "schedule": [
-            {
-              "startDate": "2025-12-01",
-              "amount": 9.55
-            }
-          ]
-        },
-        "escalation": {
-          "type": "fixed_percent",
-          "rate": 4.14,
-          "frequencyMonths": 12
-        },
-        "reimbursement": {
-          "structure": "NNN"
-        }
-      },
-      {
-        "leaseId": "L-D-1",
-        "tenant": {
-          "name": "LumenStage Lighting",
-          "industry": "entertainment lighting"
-        },
-        "suite": "D-1",
-        "spaceType": "mid_bay",
-        "leasedSF": 32530,
-        "commencementDate": "2018-05-01",
-        "expirationDate": "2028-08-31",
-        "baseRent": {
-          "unit": "perSFPerYear",
-          "schedule": [
-            {
-              "startDate": "2026-06-01",
-              "amount": 10.58
-            }
-          ]
-        },
-        "escalation": {
-          "type": "fixed_percent",
-          "rate": 4.84,
-          "frequencyMonths": 12
-        },
-        "reimbursement": {
-          "structure": "NNN"
-        }
-      },
-      {
-        "leaseId": "L-D-2",
-        "tenant": {
-          "name": "Everline Supply Chain Services",
-          "industry": "3PL / reverse logistics"
-        },
-        "suite": "D-2",
-        "spaceType": "mid_bay",
-        "leasedSF": 42660,
-        "commencementDate": "2018-12-01",
-        "expirationDate": "2031-05-31",
-        "baseRent": {
-          "unit": "perSFPerYear",
-          "schedule": [
-            {
-              "startDate": "2026-05-01",
-              "amount": 16.22
-            }
-          ]
-        },
-        "escalation": {
-          "type": "fixed_percent",
-          "rate": 5.02,
-          "frequencyMonths": 12
-        },
-        "reimbursement": {
-          "structure": "NNN"
-        }
-      },
-      {
-        "leaseId": "L-D-3",
-        "tenant": {
-          "name": "Gulfstream International Trading",
-          "industry": "import/export"
-        },
-        "suite": "D-3",
-        "spaceType": "mid_bay",
-        "leasedSF": 32130,
-        "commencementDate": "2019-10-01",
-        "expirationDate": "2029-12-31",
+        "suite": "B-2",
+        "spaceType": "small_bay",
+        "leasedSF": 18100,
+        "commencementDate": "2017-12-01",
+        "expirationDate": "2028-05-31",
         "baseRent": {
           "unit": "perSFPerYear",
           "schedule": [
             {
               "startDate": "2026-01-01",
-              "amount": 17.42
-            }
-          ]
-        },
-        "escalation": {
-          "type": "fixed_percent",
-          "rate": 4.66,
-          "frequencyMonths": 12
-        },
-        "reimbursement": {
-          "structure": "NNN"
-        }
-      },
-      {
-        "leaseId": "L-D-4",
-        "tenant": {
-          "name": "PackRight Supply",
-          "industry": "packaging & shipping supplies"
-        },
-        "suite": "D-4",
-        "spaceType": "small_bay",
-        "leasedSF": 21060,
-        "commencementDate": "2020-05-01",
-        "expirationDate": "2030-06-30",
-        "baseRent": {
-          "unit": "perSFPerYear",
-          "schedule": [
-            {
-              "startDate": "2025-07-01",
-              "amount": 17.25
-            }
-          ]
-        },
-        "escalation": {
-          "type": "fixed_percent",
-          "rate": 5.22,
-          "frequencyMonths": 12
-        },
-        "reimbursement": {
-          "structure": "NNN"
-        }
-      },
-      {
-        "leaseId": "L-D-5",
-        "tenant": {
-          "name": "Heritage Hardware America",
-          "industry": "specialty hardware distribution"
-        },
-        "suite": "D-5",
-        "spaceType": "small_bay",
-        "leasedSF": 22000,
-        "commencementDate": "2020-08-01",
-        "expirationDate": "2027-11-30",
-        "baseRent": {
-          "unit": "perSFPerYear",
-          "schedule": [
-            {
-              "startDate": "2026-06-01",
-              "amount": 10.37
-            },
-            {
-              "startDate": "2026-09-01",
-              "amount": 10.37
-            }
-          ]
-        },
-        "escalation": {
-          "type": "fixed_percent",
-          "rate": 6.09,
-          "frequencyMonths": 12
-        },
-        "reimbursement": {
-          "structure": "NNN"
-        }
-      },
-      {
-        "leaseId": "L-E-1",
-        "tenant": {
-          "name": "Granite Peak Information Services",
-          "industry": "records & information management"
-        },
-        "suite": "E-1",
-        "spaceType": "mid_bay",
-        "leasedSF": 36380,
-        "commencementDate": "2022-12-01",
-        "expirationDate": "2033-03-31",
-        "baseRent": {
-          "unit": "perSFPerYear",
-          "schedule": [
-            {
-              "startDate": "2025-12-01",
-              "amount": 13.03
-            }
-          ]
-        },
-        "escalation": {
-          "type": "fixed_percent",
-          "rate": 4.21,
-          "frequencyMonths": 12
-        },
-        "reimbursement": {
-          "structure": "NNN"
-        }
-      },
-      {
-        "leaseId": "L-E-2",
-        "tenant": {
-          "name": "MedEquip Health Services",
-          "industry": "medical equipment logistics"
-        },
-        "suite": "E-2",
-        "spaceType": "mid_bay",
-        "leasedSF": 35370,
-        "commencementDate": "2022-12-01",
-        "expirationDate": "2033-04-30",
-        "baseRent": {
-          "unit": "perSFPerYear",
-          "schedule": [
-            {
-              "startDate": "2026-01-01",
-              "amount": 14.34
+              "amount": 9.24
             }
           ]
         },
@@ -572,28 +220,380 @@
         }
       },
       {
-        "leaseId": "L-E-3",
+        "leaseId": "L-B-3",
         "tenant": {
-          "name": "Sunbeam Lighting & Sons",
-          "industry": "lighting manufacturing"
+          "name": "Summit Air Distribution",
+          "industry": "auto parts distribution"
         },
-        "suite": "E-3",
-        "spaceType": "bulk_distribution",
-        "leasedSF": 153830,
-        "commencementDate": "2023-06-01",
-        "expirationDate": "2033-11-30",
+        "suite": "B-3",
+        "spaceType": "mid_bay",
+        "leasedSF": 27260,
+        "commencementDate": "2018-04-01",
+        "expirationDate": "2028-07-31",
         "baseRent": {
           "unit": "perSFPerYear",
           "schedule": [
             {
-              "startDate": "2025-07-01",
-              "amount": 10.18
+              "startDate": "2025-08-01",
+              "amount": 10.54
             }
           ]
         },
         "escalation": {
           "type": "fixed_percent",
-          "rate": 4.32,
+          "rate": 5.5,
+          "frequencyMonths": 12
+        },
+        "reimbursement": {
+          "structure": "NNN"
+        }
+      },
+      {
+        "leaseId": "L-B-4",
+        "tenant": {
+          "name": "Mesa Print & Pack",
+          "industry": "apparel distribution"
+        },
+        "suite": "B-4",
+        "spaceType": "mid_bay",
+        "leasedSF": 55240,
+        "commencementDate": "2018-01-01",
+        "expirationDate": "2028-04-30",
+        "baseRent": {
+          "unit": "perSFPerYear",
+          "schedule": [
+            {
+              "startDate": "2026-05-01",
+              "amount": 14.1
+            }
+          ]
+        },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 4.5,
+          "frequencyMonths": 12
+        },
+        "reimbursement": {
+          "structure": "NNN"
+        }
+      },
+      {
+        "leaseId": "L-C-1",
+        "tenant": {
+          "name": "Canyon Home Furnishings",
+          "industry": "electronics assembly"
+        },
+        "suite": "C-1",
+        "spaceType": "mid_bay",
+        "leasedSF": 52120,
+        "commencementDate": "2020-07-01",
+        "expirationDate": "2030-07-31",
+        "baseRent": {
+          "unit": "perSFPerYear",
+          "schedule": [
+            {
+              "startDate": "2025-08-01",
+              "amount": 9.83
+            }
+          ]
+        },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 2.75,
+          "frequencyMonths": 12
+        },
+        "reimbursement": {
+          "structure": "NNN"
+        }
+      },
+      {
+        "leaseId": "L-C-2",
+        "tenant": {
+          "name": "Bright Circuit Electric Supply",
+          "industry": "flooring distribution"
+        },
+        "suite": "C-2",
+        "spaceType": "mid_bay",
+        "leasedSF": 31920,
+        "commencementDate": "2020-07-01",
+        "expirationDate": "2030-10-31",
+        "baseRent": {
+          "unit": "perSFPerYear",
+          "schedule": [
+            {
+              "startDate": "2025-11-01",
+              "amount": 18.59
+            }
+          ]
+        },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 4.75,
+          "frequencyMonths": 12
+        },
+        "reimbursement": {
+          "structure": "NNN"
+        }
+      },
+      {
+        "leaseId": "L-C-3",
+        "tenant": {
+          "name": "Palo Verde Medical Supply",
+          "industry": "building products distribution"
+        },
+        "suite": "C-3",
+        "spaceType": "bulk_distribution",
+        "leasedSF": 83380,
+        "commencementDate": "2019-10-01",
+        "expirationDate": "2030-03-31",
+        "baseRent": {
+          "unit": "perSFPerYear",
+          "schedule": [
+            {
+              "startDate": "2025-11-01",
+              "amount": 9.49
+            }
+          ]
+        },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 3.75,
+          "frequencyMonths": 12
+        },
+        "reimbursement": {
+          "structure": "NNN"
+        }
+      },
+      {
+        "leaseId": "L-D-1",
+        "tenant": {
+          "name": "Sunrise Solar Supply",
+          "industry": "beverage distribution"
+        },
+        "suite": "D-1",
+        "spaceType": "mid_bay",
+        "leasedSF": 26910,
+        "commencementDate": "2018-02-01",
+        "expirationDate": "2028-05-31",
+        "baseRent": {
+          "unit": "perSFPerYear",
+          "schedule": [
+            {
+              "startDate": "2026-03-01",
+              "amount": 11.31
+            }
+          ]
+        },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 4.75,
+          "frequencyMonths": 12
+        },
+        "reimbursement": {
+          "structure": "NNN"
+        }
+      },
+      {
+        "leaseId": "L-D-2",
+        "tenant": {
+          "name": "Trailhead Sports",
+          "industry": "medical supply distribution"
+        },
+        "suite": "D-2",
+        "spaceType": "mid_bay",
+        "leasedSF": 33460,
+        "commencementDate": "2018-10-01",
+        "expirationDate": "2031-03-31",
+        "baseRent": {
+          "unit": "perSFPerYear",
+          "schedule": [
+            {
+              "startDate": "2026-03-01",
+              "amount": 15.2
+            }
+          ]
+        },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 5.75,
+          "frequencyMonths": 12
+        },
+        "reimbursement": {
+          "structure": "NNN"
+        }
+      },
+      {
+        "leaseId": "L-D-3",
+        "tenant": {
+          "name": "Desert Flow Plumbing",
+          "industry": "electrical supply"
+        },
+        "suite": "D-3",
+        "spaceType": "mid_bay",
+        "leasedSF": 26530,
+        "commencementDate": "2019-07-01",
+        "expirationDate": "2029-09-30",
+        "baseRent": {
+          "unit": "perSFPerYear",
+          "schedule": [
+            {
+              "startDate": "2025-10-01",
+              "amount": 18.03
+            }
+          ]
+        },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 4.75,
+          "frequencyMonths": 12
+        },
+        "reimbursement": {
+          "structure": "NNN"
+        }
+      },
+      {
+        "leaseId": "L-D-4",
+        "tenant": {
+          "name": "Ironwood Components",
+          "industry": "records storage"
+        },
+        "suite": "D-4",
+        "spaceType": "small_bay",
+        "leasedSF": 17530,
+        "commencementDate": "2020-04-01",
+        "expirationDate": "2030-05-31",
+        "baseRent": {
+          "unit": "perSFPerYear",
+          "schedule": [
+            {
+              "startDate": "2025-06-01",
+              "amount": 18.01
+            }
+          ]
+        },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 5.5,
+          "frequencyMonths": 12
+        },
+        "reimbursement": {
+          "structure": "NNN"
+        }
+      },
+      {
+        "leaseId": "L-D-5",
+        "tenant": {
+          "name": "Agave Apparel Co.",
+          "industry": "appliance parts"
+        },
+        "suite": "D-5",
+        "spaceType": "small_bay",
+        "leasedSF": 17200,
+        "commencementDate": "2020-07-01",
+        "expirationDate": "2027-10-31",
+        "baseRent": {
+          "unit": "perSFPerYear",
+          "schedule": [
+            {
+              "startDate": "2026-05-01",
+              "amount": 9.67
+            },
+            {
+              "startDate": "2026-08-01",
+              "amount": 9.67
+            }
+          ]
+        },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 6.5,
+          "frequencyMonths": 12
+        },
+        "reimbursement": {
+          "structure": "NNN"
+        }
+      },
+      {
+        "leaseId": "L-E-1",
+        "tenant": {
+          "name": "Old Pueblo Specialty Foods",
+          "industry": "plumbing supply"
+        },
+        "suite": "E-1",
+        "spaceType": "mid_bay",
+        "leasedSF": 30430,
+        "commencementDate": "2023-01-01",
+        "expirationDate": "2033-04-30",
+        "baseRent": {
+          "unit": "perSFPerYear",
+          "schedule": [
+            {
+              "startDate": "2026-01-01",
+              "amount": 13.3
+            }
+          ]
+        },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 4.0,
+          "frequencyMonths": 12
+        },
+        "reimbursement": {
+          "structure": "NNN"
+        }
+      },
+      {
+        "leaseId": "L-E-2",
+        "tenant": {
+          "name": "Red Rock Flooring",
+          "industry": "furniture distribution"
+        },
+        "suite": "E-2",
+        "spaceType": "mid_bay",
+        "leasedSF": 28010,
+        "commencementDate": "2022-10-01",
+        "expirationDate": "2033-02-28",
+        "baseRent": {
+          "unit": "perSFPerYear",
+          "schedule": [
+            {
+              "startDate": "2025-11-01",
+              "amount": 13.43
+            }
+          ]
+        },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 5.5,
+          "frequencyMonths": 12
+        },
+        "reimbursement": {
+          "structure": "NNN"
+        }
+      },
+      {
+        "leaseId": "L-E-3",
+        "tenant": {
+          "name": "Kestrel Appliance Parts",
+          "industry": "third-party logistics"
+        },
+        "suite": "E-3",
+        "spaceType": "bulk_distribution",
+        "leasedSF": 125910,
+        "commencementDate": "2023-08-01",
+        "expirationDate": "2034-01-31",
+        "baseRent": {
+          "unit": "perSFPerYear",
+          "schedule": [
+            {
+              "startDate": "2025-09-01",
+              "amount": 9.51
+            }
+          ]
+        },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 4.5,
           "frequencyMonths": 12
         },
         "reimbursement": {
@@ -603,26 +603,26 @@
       {
         "leaseId": "L-F-1",
         "tenant": {
-          "name": "Atlantic Aircraft Holdings",
-          "industry": "aircraft parts & support"
+          "name": "Bluewater Pool Supply",
+          "industry": "specialty foods"
         },
         "suite": "F-1",
         "spaceType": "bulk_distribution",
-        "leasedSF": 84247,
-        "commencementDate": "2021-09-01",
-        "expirationDate": "2028-12-31",
+        "leasedSF": 66190,
+        "commencementDate": "2021-06-01",
+        "expirationDate": "2028-09-30",
         "baseRent": {
           "unit": "perSFPerYear",
           "schedule": [
             {
-              "startDate": "2025-09-01",
-              "amount": 10.41
+              "startDate": "2025-06-01",
+              "amount": 10.6
             }
           ]
         },
         "escalation": {
           "type": "fixed_percent",
-          "rate": 5.76,
+          "rate": 5.5,
           "frequencyMonths": 12
         },
         "reimbursement": {
@@ -632,26 +632,26 @@
       {
         "leaseId": "L-F-2",
         "tenant": {
-          "name": "Gebhardt Flow Systems",
-          "industry": "piping systems"
+          "name": "Monsoon Beverage Co.",
+          "industry": "sporting goods distribution"
         },
         "suite": "F-2",
         "spaceType": "mid_bay",
-        "leasedSF": 42660,
-        "commencementDate": "2022-09-01",
-        "expirationDate": "2033-02-28",
+        "leasedSF": 34730,
+        "commencementDate": "2022-06-01",
+        "expirationDate": "2032-11-30",
         "baseRent": {
           "unit": "perSFPerYear",
           "schedule": [
             {
-              "startDate": "2025-09-01",
-              "amount": 10.38
+              "startDate": "2025-06-01",
+              "amount": 10.48
             }
           ]
         },
         "escalation": {
           "type": "fixed_percent",
-          "rate": 3.66,
+          "rate": 3.75,
           "frequencyMonths": 12
         },
         "reimbursement": {
@@ -661,20 +661,20 @@
       {
         "leaseId": "L-F-3",
         "tenant": {
-          "name": "Amara Pharmaceutical Corp",
-          "industry": "pharmaceutical distribution"
+          "name": "Highline Signs",
+          "industry": "solar equipment distribution"
         },
         "suite": "F-3",
         "spaceType": "mid_bay",
-        "leasedSF": 41587,
-        "commencementDate": "2021-03-01",
-        "expirationDate": "2026-12-31",
+        "leasedSF": 34440,
+        "commencementDate": "2021-05-01",
+        "expirationDate": "2027-02-28",
         "baseRent": {
           "unit": "perSFPerYear",
           "schedule": [
             {
-              "startDate": "2026-06-01",
-              "amount": 10.72
+              "startDate": "2025-08-01",
+              "amount": 11.12
             }
           ]
         },
@@ -688,26 +688,26 @@
       {
         "leaseId": "L-G-1",
         "tenant": {
-          "name": "National Benefits Fulfillment",
-          "industry": "healthcare fulfillment"
+          "name": "Quartz Assembly Inc.",
+          "industry": "printing & packaging"
         },
         "suite": "G-1",
         "spaceType": "small_bay",
-        "leasedSF": 28767,
-        "commencementDate": "2020-07-01",
-        "expirationDate": "2027-12-31",
+        "leasedSF": 22950,
+        "commencementDate": "2020-10-01",
+        "expirationDate": "2028-03-31",
         "baseRent": {
           "unit": "perSFPerYear",
           "schedule": [
             {
-              "startDate": "2025-07-01",
-              "amount": 10.43
+              "startDate": "2025-10-01",
+              "amount": 10.74
             }
           ]
         },
         "escalation": {
           "type": "fixed_percent",
-          "rate": 10.67,
+          "rate": 9.75,
           "frequencyMonths": 12
         },
         "reimbursement": {
@@ -717,26 +717,26 @@
       {
         "leaseId": "L-G-2",
         "tenant": {
-          "name": "Eurostyle Cabinetry",
-          "industry": "cabinet manufacturing"
+          "name": "Vault Records Storage",
+          "industry": "signage manufacturing"
         },
         "suite": "G-2",
         "spaceType": "mid_bay",
-        "leasedSF": 38340,
-        "commencementDate": "2022-02-01",
-        "expirationDate": "2030-09-30",
+        "leasedSF": 31160,
+        "commencementDate": "2022-03-01",
+        "expirationDate": "2030-10-31",
         "baseRent": {
           "unit": "perSFPerYear",
           "schedule": [
             {
-              "startDate": "2026-02-01",
-              "amount": 10.69
+              "startDate": "2026-03-01",
+              "amount": 11.11
             }
           ]
         },
         "escalation": {
           "type": "fixed_percent",
-          "rate": 3.61,
+          "rate": 3.75,
           "frequencyMonths": 12
         },
         "reimbursement": {
@@ -746,20 +746,20 @@
       {
         "leaseId": "L-G-3",
         "tenant": {
-          "name": "Sunshine Cable & Telecom",
-          "industry": "telecom services"
+          "name": "Sandstone Tile & Stone",
+          "industry": "tile & stone distribution"
         },
         "suite": "G-3",
         "spaceType": "mid_bay",
-        "leasedSF": 47667,
-        "commencementDate": "2021-03-01",
-        "expirationDate": "2026-07-31",
+        "leasedSF": 38780,
+        "commencementDate": "2021-04-01",
+        "expirationDate": "2026-08-31",
         "baseRent": {
           "unit": "perSFPerYear",
           "schedule": [
             {
-              "startDate": "2026-06-01",
-              "amount": 10.61
+              "startDate": "2025-07-01",
+              "amount": 9.81
             }
           ]
         },
@@ -779,7 +779,7 @@
         "expenseId": "E-CAM",
         "name": "Common Area Maintenance",
         "category": "cam",
-        "amount": 0.69,
+        "amount": 0.62,
         "amountUnit": "perSFPerYear",
         "recoverable": true
       },
@@ -787,7 +787,7 @@
         "expenseId": "E-UTIL",
         "name": "Utilities",
         "category": "utilities",
-        "amount": 0.14,
+        "amount": 0.12,
         "amountUnit": "perSFPerYear",
         "recoverable": true
       },
@@ -795,7 +795,7 @@
         "expenseId": "E-INS",
         "name": "Insurance",
         "category": "insurance",
-        "amount": 0.33,
+        "amount": 0.41,
         "amountUnit": "perSFPerYear",
         "recoverable": true
       },
@@ -803,7 +803,7 @@
         "expenseId": "E-TAX",
         "name": "Real Estate Taxes",
         "category": "real_estate_taxes",
-        "amount": 3.09,
+        "amount": 2.35,
         "amountUnit": "perSFPerYear",
         "recoverable": true
       },
@@ -811,7 +811,7 @@
         "expenseId": "E-ASSN",
         "name": "Association Fee",
         "category": "other",
-        "amount": 0.05,
+        "amount": 0.04,
         "amountUnit": "perSFPerYear",
         "recoverable": true
       },
@@ -824,7 +824,7 @@
         "recoverable": true
       }
     ],
-    "notes": "Fully recoverable NNN expense pool of $4.30/SF plus a recoverable 3% management fee. The source model computes the fee on effective base rent; ORE states it as percentOfEGR - an immaterial basis difference at full recovery."
+    "notes": "Fully recoverable NNN expense pool of $3.54/SF plus a recoverable 3% management fee."
   },
   "marketAssumptions": {
     "asOfDate": "2026-06-01",
@@ -833,13 +833,13 @@
       "expenses": 3.0
     },
     "generalVacancyPercent": 2.0,
-    "marketLeasing": {
+    "leasingProfiles": {
       "bulk_distribution": {
         "marketRent": {
-          "amount": 17.25,
+          "amount": 16.5,
           "unit": "perSFPerYear"
         },
-        "termMonths": 64,
+        "termMonths": 60,
         "escalation": {
           "type": "fixed_percent",
           "rate": 4.0,
@@ -862,10 +862,10 @@
       },
       "mid_bay": {
         "marketRent": {
-          "amount": 17.5,
+          "amount": 16.75,
           "unit": "perSFPerYear"
         },
-        "termMonths": 64,
+        "termMonths": 60,
         "escalation": {
           "type": "fixed_percent",
           "rate": 4.0,
@@ -888,10 +888,10 @@
       },
       "small_bay": {
         "marketRent": {
-          "amount": 18.25,
+          "amount": 17.5,
           "unit": "perSFPerYear"
         },
-        "termMonths": 64,
+        "termMonths": 60,
         "escalation": {
           "type": "fixed_percent",
           "rate": 4.0,
@@ -913,7 +913,7 @@
         "renewalRentPercentOfMarket": 100
       }
     },
-    "notes": "Three market-rent tiers ($17.25 / $17.50 / $18.25 NNN) mapped per lease via spaceType; identical rollover friction across tiers: 64-month terms, 75% renewal probability, 4 months downtime on a new deal, new 3 mo free / $3 TI / 6% LC vs renewal 1 mo free / $1 TI / 3.5% LC, renewals at 100% of market."
+    "notes": "Three market-rent tiers ($16.50 / $16.75 / $17.50 NNN) mapped per lease via spaceType; identical rollover friction across tiers: 60-month terms, 75% renewal probability, 4 months downtime on a new deal, new 3 mo free / $3 TI / 6% LC vs renewal 1 mo free / $1 TI / 3.5% LC, renewals at 100% of market."
   },
   "valuation": {
     "analysisStartDate": "2026-06-01",
@@ -924,8 +924,8 @@
       "dcf",
       "direct_cap"
     ],
-    "purchasePrice": 352000000,
-    "acquisitionCostsPercent": 0.51,
+    "purchasePrice": 271500000,
+    "acquisitionCostsPercent": 0.5,
     "dcf": {
       "holdPeriodMonths": 120,
       "discountRatePercent": 8.0,
@@ -933,25 +933,26 @@
       "periodConvention": "end",
       "terminalValue": {
         "method": "direct_cap",
-        "capRatePercent": 5.75,
+        "capRatePercent": 5.5,
         "noiBasis": "stabilizedAtMarket",
-        "sellingCostsPercent": 2.31,
-        "notes": "Source model caps fully-marked market NOI at exit (June 2036) at a 200 bps spread over the 3.75% going-in cap, less ~2.3% of gross in disposition adjustments."
+        "sellingCostsPercent": 2.0,
+        "notes": "Exit capitalizes fully marked-to-market NOI at a 150 bps spread over the 4.0% going-in cap, less 2% of gross in disposition costs."
       }
     },
     "directCap": {
-      "capRatePercent": 3.75,
+      "capRatePercent": 4.0,
       "noiBasis": "year1",
-      "notes": "Source model capped stabilized contract NOI of $13.07M (all 25 leases in place, no vacancy allowance) at 3.75% for a $348.6M gross going-in value; year-1 NOI differs by lease-up timing, free rent, and the 2% vacancy allowance."
+      "notes": "Going-in cap on year-1 NOI; the low cap reflects the loss-to-lease a buyer is paying for."
     },
-    "notes": "Unlevered institutional underwriting: 10-year monthly DCF at an 8% discount rate against a $352M purchase price (source model total project cost $353.8M including closing costs). Source model results for conformance context: 10-year unlevered IRR 7.58%, stabilized yield on cost 3.69%, untrended (market) yield on cost 5.70%."
+    "notes": "Unlevered underwriting: 10-year monthly DCF at an 8% discount rate. The structure mirrors a deep mark-to-market estate acquisition; every figure in this file is synthetic."
   },
   "provenance": {
-    "generatedAt": "2026-07-06T00:00:00Z",
+    "generatedAt": "2026-11-04T00:00:00Z",
     "generatedBy": {
       "name": "ORE Project Examples",
       "organization": "ORE (Open Real Estate)",
-      "role": "buyer"
+      "role": "other",
+      "email": "examples@oreformat.org"
     },
     "software": {
       "name": "claude-code + ORE reference engine",
@@ -959,12 +960,12 @@
     },
     "sourceDocuments": [
       {
-        "name": "Institutional acquisition underwriting model (Excel workbook, 45 sheets), seven-building industrial estate",
-        "type": "other",
-        "date": "2026-06-30"
+        "name": "Synthetic Rent Roll June 2026",
+        "type": "rent_roll",
+        "date": "2026-06-01"
       }
     ],
-    "confidentiality": "Names, address, and tenant identities fictionalized; underwriting economics preserved with the owner's permission for the ORE example library.",
-    "notes": "Authored by an LLM (Claude) by structured extraction from the buyer's Excel underwriting model - the 'LLM as author' mode described in the ORE design docs. Schema validation gates form; the reference engine gates coherence."
+    "confidentiality": "None. Synthetic example data published with the ORE specification.",
+    "notes": "The structure of this file (lease-by-lease extraction, market tiers, rollover friction, a carried lease-up) was first built by an LLM extracting from a buyer's underwriting model, the \"LLM as author\" mode in the ORE design docs. Every identifying element and every figure was then replaced, so the file describes no real property, tenant, or transaction."
   }
 }

@@ -39,10 +39,14 @@ perfect institutional DCF.
 - [x] Golden output files locked for all examples (`npm run golden`)
 - [x] Validator CLI works (`validator/cli.mjs`, package `@ore-format/cli`) —
       packages the demo loader's checks as `validate` / `summarize` / `compute`;
-      npm publish (for `npx @ore-format/cli ...`) deferred until first release
-- [ ] One real (anonymized) deal run end-to-end as the case study: source summary,
-      anonymized `.ore`, computed outputs, memo (what mapped cleanly, what was
-      ambiguous, what required human review)
+      runs from the repo (`npm run cli`); npm publish moved to the distribution
+      backlog below
+- [x] One real (anonymized) deal run end-to-end as the case study: an
+      institutional buyer model extracted into ORE and benchmarked against the
+      model's own outputs, with a memo on what mapped cleanly, what differs, and
+      what was deferred (`docs/design/institutional-model-benchmark.md`); the
+      published example (`examples/estate-mark-to-market.ore`) keeps the
+      structure with every identifying element and figure replaced
 - [x] Hardened reference engine (TypeScript, `engine/src/`) replaces the kernel:
       MG base-year/stop recoveries, true two-branch rollover, TI/LC split,
       general-vacancy de-dup, debt schedule, levered/unlevered IRR, NOI bridge,
@@ -122,3 +126,8 @@ implies, roughly in build order)
 - Engine support for sales comparison and cost approach outputs
 - Additional asset classes, starting with the simplest lease structures first
 - Formal governance (technical steering committee), then consortium/foundation home
+
+**Distribution (later, not needed for v0.1)**
+- CI: run `npm test` on every pull request
+- Publish `@ore-format/cli` and `@ore-format/engine` to npm (so
+  `npx @ore-format/cli validate deal.ore` works without cloning)
