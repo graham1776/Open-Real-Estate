@@ -11,7 +11,7 @@ arrangements, and underwriting conventions the schema cannot yet express cleanly
 - **Schema PRs:** changes to `spec/schema/` must update the data dictionary
   (`spec/data-dictionary.md`) in the same PR, and must keep every file in
   `examples/` validating.
-- **Engine PRs** (once the engine lands): every calculation change must keep the
+- **Engine PRs:** every calculation change must keep the
   golden-file test suite passing, or update the golden files with a clear
   justification in the PR description.
 
@@ -28,8 +28,12 @@ arrangements, and underwriting conventions the schema cannot yet express cleanly
 ## Development
 
 The reference engine is TypeScript (Node ≥ 20). Repo layout is described in the
-[README](README.md). Until the engine scaffolding lands, the spec is the active
-surface: JSON Schema draft 2020-12, validated examples, documented fields.
+[README](README.md). Before opening a PR, run `npm install && npm test`: it builds
+the engine, validates every example, and reproduces every golden output.
+
+Good places to start: the open issues, and the gap backlog in
+[`spec/coverage.md`](spec/coverage.md) (items G3, G6, G9, G10, G12 are scoped and
+self-contained).
 
 ## License
 
