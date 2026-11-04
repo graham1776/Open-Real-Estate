@@ -4,7 +4,7 @@
   "title": "ORE Market Assumptions Module",
   "description": "Market rent, growth, and rollover assumptions. These travel with the file so any conforming engine reproduces identical lease-up and rollover cash flows.",
   "type": "object",
-  "required": ["growth", "marketLeasing"],
+  "required": ["growth", "leasingProfiles"],
   "additionalProperties": false,
   "properties": {
     "asOfDate": {
@@ -37,10 +37,10 @@
       "default": 0,
       "description": "Credit loss allowance as a percent of scheduled revenue."
     },
-    "marketLeasing": {
+    "leasingProfiles": {
       "type": "object",
       "minProperties": 1,
-      "description": "Market leasing profiles keyed by space type. Keys are matched by rentRoll.leases[].spaceType and rentRoll.vacantSuites[].spaceType; spaces without a spaceType use the file's first profile.",
+      "description": "Leasing profiles keyed by space type. Keys are matched by rentRoll.leases[].spaceType and rentRoll.vacantSuites[].spaceType; spaces without a spaceType use the file's first profile.",
       "additionalProperties": { "$ref": "#/$defs/leasingProfile" }
     },
     "notes": { "type": "string" }

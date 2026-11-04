@@ -55,7 +55,7 @@
         },
         "spaceType": {
           "type": "string",
-          "description": "Space type key matching an entry in marketAssumptions.marketLeasing, used to price this space at rollover (market rent, downtime, renewal terms). Omit when a single profile applies to the whole property."
+          "description": "Space type key matching an entry in marketAssumptions.leasingProfiles, used to price this space at rollover (market rent, downtime, renewal terms). Omit when a single profile applies to the whole property."
         },
         "leasedSF": {
           "type": "number",

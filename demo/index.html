@@ -395,7 +395,7 @@ function renderMarket(deal) {
   const ma = deal.marketAssumptions;
   if (!ma) { $("tab-market").innerHTML = `<p class="muted">No marketAssumptions module in this file.</p>`; return; }
   const growthStr = (g) => g == null ? "—" : typeof g === "number" ? `${g}%/yr` : g.map((s) => `yr ${s.fromYear}+: ${s.annualPercent}%`).join(", ");
-  const profs = Object.entries(ma.marketLeasing ?? {}).map(([k, p]) => `
+  const profs = Object.entries(ma.leasingProfiles ?? {}).map(([k, p]) => `
     <table><thead><tr><th colspan="2">Profile: ${esc(k)}</th></tr></thead><tbody>
       <tr><td>Market rent</td><td>${p.marketRent.amount} ${esc(p.marketRent.unit)}</td></tr>
       <tr><td>Term / downtime</td><td>${p.termMonths} mo / ${p.downtimeMonths} mo</td></tr>
@@ -413,7 +413,7 @@ function renderMarket(deal) {
       ${card("CPI", growthStr(ma.growth?.cpi))}
       ${card("Gen. vacancy / credit loss", `${ma.generalVacancyPercent ?? 0}% / ${ma.creditLossPercent ?? 0}%`)}
     </div>
-    <h2>Market leasing</h2>${profs}`;
+    <h2>Leasing profiles</h2>${profs}`;
 }
 
 function renderValuation(deal) {

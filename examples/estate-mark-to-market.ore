@@ -833,7 +833,7 @@
       "expenses": 3.0
     },
     "generalVacancyPercent": 2.0,
-    "marketLeasing": {
+    "leasingProfiles": {
       "bulk_distribution": {
         "marketRent": {
           "amount": 16.5,

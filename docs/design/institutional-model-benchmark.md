@@ -69,7 +69,7 @@ offsetting; the table above is the honest picture.
   the last enumerated step one review cycle before the next contractual review).
 - **Rollover friction**: market lease term, renewal probability, downtime on new
   deals, and branch-specific costs (free rent, TI, LC for new vs renewal),
-  renewals at a percent of market. All native `marketLeasing` profile fields.
+  renewals at a percent of market. All native `leasingProfiles` profile fields.
 - **The underwritten lease-up** of the one vacant suite, with its negotiated
   rate, free rent, TI, and LC, carried as a signed-not-yet-commenced lease so the
   deal-specific terms travel in the file, with `tenant.creditNotes` disclosing it
@@ -84,7 +84,7 @@ offsetting; the table above is the honest picture.
 
 1. **`leases[].spaceType`**: the model prices suites at three market-rent tiers.
    Leases previously fell back to the file's first leasing profile; they now key
-   into `marketAssumptions.marketLeasing` exactly like vacant suites.
+   into `marketAssumptions.leasingProfiles` exactly like vacant suites.
    Stabilized/market NOI and the market-rent metric are now SF-weighted blends
    across profiles (identical to prior behavior for single-profile files).
 2. **Signed-but-not-yet-commenced leases**: the engine now models no rent,

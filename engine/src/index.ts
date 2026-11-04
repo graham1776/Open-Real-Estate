@@ -177,14 +177,14 @@ function escalationFactor(esc: Escalation | undefined, monthsIntoLease: number, 
 }
 
 function profileFor(ctx: EngineCtx, spaceType: string | undefined): LeasingProfile | null {
-  const profiles = ctx.deal.marketAssumptions?.marketLeasing ?? {};
+  const profiles = ctx.deal.marketAssumptions?.leasingProfiles ?? {};
   const keys = Object.keys(profiles);
   if (keys.length === 0) return null;
   if (spaceType && profiles[spaceType]) return profiles[spaceType]!;
   if (spaceType && !profiles[spaceType]) {
-    ctx.warnings.add("space_type_unmapped", `Space type "${spaceType}" has no market leasing profile; first profile ("${keys[0]}") applied.`, "stu:" + spaceType);
+    ctx.warnings.add("space_type_unmapped", `Space type "${spaceType}" has no leasing profile; first profile ("${keys[0]}") applied.`, "stu:" + spaceType);
   } else if (keys.length > 1) {
-    ctx.warnings.add("profile_fallback", `Multiple market leasing profiles and no space-type mapping for a lease; first profile ("${keys[0]}") applied.`);
+    ctx.warnings.add("profile_fallback", `Multiple leasing profiles and no space-type mapping for a lease; first profile ("${keys[0]}") applied.`);
   }
   return profiles[keys[0]!]!;
 }
@@ -201,7 +201,7 @@ function marketRate(profile: LeasingProfile, sf: number, m: number, ctx: EngineC
  * to the single profile's rate on the full building SF.
  */
 function blendedMarketMonthlyRent(ctx: EngineCtx, m: number): number | null {
-  const profiles = ctx.deal.marketAssumptions?.marketLeasing ?? {};
+  const profiles = ctx.deal.marketAssumptions?.leasingProfiles ?? {};
   const keys = Object.keys(profiles);
   if (keys.length === 0) return null;
   let num = 0, den = 0;
@@ -238,7 +238,7 @@ function rolloverStreams(t: number, sf: number, profile: LeasingProfile, ctx: En
   const D = profile.downtimeMonths ?? 0;
   const nnn = (profile.reimbursementStructure ?? "NNN") === "NNN" || (profile.reimbursementStructure ?? "NNN") === "NN";
   if ((profile.reimbursementStructure ?? "NNN") === "MG") {
-    ctx.warnings.add("market_mg_simplified", "MG market leasing profile: first-calendar-year base year means near-zero recoveries early in each market lease; engine models zero recoveries for market MG leases.");
+    ctx.warnings.add("market_mg_simplified", "MG leasing profile: first-calendar-year base year means near-zero recoveries early in each market lease; engine models zero recoveries for market MG leases.");
   }
 
   // renewal branch (weight p)
@@ -373,7 +373,7 @@ function leaseSegment(dst: Streams, start: number, term: number, rate0: number, 
     else dst.sched[m]! += rate;
   }
   if (esc?.type === "fixed_amount") {
-    ctx.warnings.add("market_fixed_amount_escalation", "fixed_amount escalation on a market leasing profile is modeled as flat rent; use fixed_percent for market profiles in v0.1.");
+    ctx.warnings.add("market_fixed_amount_escalation", "fixed_amount escalation on a leasing profile is modeled as flat rent; use fixed_percent for market profiles in v0.1.");
   }
 }
 
@@ -653,7 +653,7 @@ export function buildModel(deal: OreFile, horizon: number, warnings: Warnings): 
           ? rolloverWithRenewalOption(expiry, lease.leasedSF, profile, ctx, memo, ov)
           : rolloverStreams(expiry, lease.leasedSF, profile, ctx, memo);
         addInto(total, streams, 1, horizon);
-      } else warnings.add("no_market_profile", "No marketAssumptions.marketLeasing profile: expired space produces no rent after expiry.");
+      } else warnings.add("no_market_profile", "No marketAssumptions.leasingProfiles profile: expired space produces no rent after expiry.");
     }
   }
 
@@ -661,7 +661,7 @@ export function buildModel(deal: OreFile, horizon: number, warnings: Warnings): 
   for (const suite of deal.rentRoll.vacantSuites ?? []) {
     const profile = profileFor(ctx, suite.spaceType);
     if (!profile) {
-      warnings.add("vacant_no_profile", `Vacant suite ${suite.suite ?? "?"} has no market leasing profile; modeled as permanently vacant.`, "vnp:" + (suite.suite ?? "?"));
+      warnings.add("vacant_no_profile", `Vacant suite ${suite.suite ?? "?"} has no leasing profile; modeled as permanently vacant.`, "vnp:" + (suite.suite ?? "?"));
       continue;
     }
     const memo = new Map<number, Streams>();
@@ -728,7 +728,7 @@ export function buildModel(deal: OreFile, horizon: number, warnings: Warnings): 
 // -------------------------------------------------------------- valuation
 
 function stabilizedAnnualNOI(deal: OreFile, atMonth: number, warnings: Warnings): number | null {
-  const profiles = deal.marketAssumptions?.marketLeasing ?? {};
+  const profiles = deal.marketAssumptions?.leasingProfiles ?? {};
   const key = Object.keys(profiles)[0];
   if (!key) return null;
   const reassess = resolveTaxReassessment(deal);

@@ -166,7 +166,7 @@ export interface MarketAssumptions {
     };
     generalVacancyPercent?: number;
     creditLossPercent?: number;
-    marketLeasing: Record<string, LeasingProfile>;
+    leasingProfiles: Record<string, LeasingProfile>;
     notes?: string;
 }
 export interface LeasingProfile {

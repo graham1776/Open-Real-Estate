@@ -125,7 +125,7 @@ export interface MarketAssumptions {
   growth: { marketRent: GrowthCurve; expenses: GrowthCurve; cpi?: GrowthCurve };
   generalVacancyPercent?: number;
   creditLossPercent?: number;
-  marketLeasing: Record<string, LeasingProfile>;
+  leasingProfiles: Record<string, LeasingProfile>;
   notes?: string;
 }
 

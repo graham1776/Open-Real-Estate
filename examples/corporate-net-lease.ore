@@ -154,7 +154,7 @@
     },
     "generalVacancyPercent": 0,
     "creditLossPercent": 0,
-    "marketLeasing": {
+    "leasingProfiles": {
       "warehouse": {
         "marketRent": {
           "amount": 15.0,
