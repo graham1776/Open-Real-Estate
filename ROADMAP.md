@@ -89,12 +89,17 @@ Strategy for the AI and Excel tracks: `docs/design/llm-and-excel.md`.
   don't reproduce
 
 **Excel** ("your model, ORE's data")
-- `ore export-xlsx`: typed, named tables under a documented ORE Excel Layout
-  convention (retrofit the house model once, every deal file plugs in); published
-  Power Query snippet for zero-install ingestion
+- [x] ORE Workbook (`excel/`, decided 2026-11-06): printable reader sheets plus
+      the engine rebuilt in native formulas, a Check sheet against the engine,
+      Import / Save-as-.ore buttons (`.xlsm`), `ore excel` and `ore tape` CLI
+      routes; conformance enforced by `npm run excel:test` (all examples plus
+      stress fixtures)
+- [ ] First open in Microsoft Excel on Windows and Mac (recalc, Import button,
+      no repair prompt); so far verified by recalculation in LibreOffice
+- [ ] CI job for `npm run excel:test` (needs LibreOffice in the runner)
+- Power Query snippet that builds the tape from a `.ore` file with no macros
 - Excel add-in (`@ore-format/excel`) embedding the TypeScript engine via Office.js:
   open/validate/edit/save `.ore` in place, engine outputs as custom functions
-- Non-goal: a formula-based reference workbook (a second engine breaks conformance)
 
 **Writer track** (reader → writer; raw-JSON editing shipped in the viewer — the
 items below are the rest of what "ORE files get *authored*, not just exchanged"

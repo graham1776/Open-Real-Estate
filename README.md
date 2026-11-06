@@ -60,6 +60,12 @@ npm run cli -- compute examples/single-tenant-nnn.ore | jq .returns
 npm test           # builds the engine, validates examples, reproduces golden outputs
 ```
 
+**In Excel:** open [`excel/ORE-Workbook.xlsm`](excel/) and click *Import .ore
+file*, or run `npm run cli -- excel examples/multi-tenant-infill.ore`. You get a
+printable deal summary, rent roll, cash flow and valuation, computed by native
+Excel formulas that reproduce the reference engine, with a Check sheet showing
+the two side by side. See [`excel/README.md`](excel/README.md).
+
 ## What a `.ore` file carries
 
 One JSON document, seven modules — `property` and `rentRoll` required, the rest
@@ -90,7 +96,8 @@ is published as a single ingestible document: [`llms.txt`](llms.txt).
 | Viewer / demo | [`demo/`](demo/) | Working: drag `.ore` files → deal view or multi-file portfolio roll-up; watches files for live refresh; edit and save in the browser (Edit JSON tab) (`npm run demo`) |
 | Example deal files | [`examples/`](examples/) | Six examples, all validating (`npm run validate`), one structured on a real underwrite and [benchmarked against an institutional model](docs/design/institutional-model-benchmark.md) |
 | LLM ingestible spec | [`llms.txt`](llms.txt) | Published |
-| Validator CLI | [`validator/`](validator/) | Working: `validate` / `summarize` / `compute` (`npm run cli -- validate examples`) |
+| Validator CLI | [`validator/`](validator/) | Working: `validate` / `summarize` / `compute` / `tape` / `excel` (`npm run cli -- validate examples`) |
+| Excel workbook | [`excel/`](excel/) | Working: reader sheets + engine in native formulas; matches the engine on every example and stress fixture (`npm run excel:test`); Import button in the `.xlsm` |
 | Documentation site | [`docs/`](docs/) | Decision and design notes; site not started |
 
 ## Why the math is open too

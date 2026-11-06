@@ -13,7 +13,9 @@ arrangements, and underwriting conventions the schema cannot yet express cleanly
   `examples/` validating.
 - **Engine PRs:** every calculation change must keep the
   golden-file test suite passing, or update the golden files with a clear
-  justification in the PR description.
+  justification in the PR description. A change that moves outputs must also update the Excel
+  workbook generator (`excel/build_workbook.py`) so `npm run excel:test` passes;
+  the workbook is a second conforming implementation and is held to the goldens.
 
 ## Ground rules
 
