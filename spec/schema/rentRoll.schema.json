@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://oreformat.org/schema/0.1.0/rentRoll.schema.json",
   "title": "ORE Rent Roll Module",
-  "description": "The in-place rent roll: every lease encumbering the property as of `asOfDate`, plus vacant suites available for lease-up. ORE v0.1 covers NNN, NN, and modified gross structures typical of US industrial.",
+  "description": "The in-place rent roll: every lease encumbering the property as of `asOfDate`, plus vacant suites available for lease-up. Covers NNN, NN, modified gross, and gross structures. Unit-based property (apartments, storage) can be written one unit per lease today; a compact unit mix is proposed.",
   "type": "object",
   "required": ["asOfDate", "leases"],
   "additionalProperties": false,

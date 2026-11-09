@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://oreformat.org/schema/0.1.0/ore.schema.json",
   "title": "ORE Deal File",
-  "description": "Root schema for an ORE (Open Real Estate) deal file. A .ore file is a single, self-contained JSON document conforming to this schema — all deal data and calculation assumptions travel together in one file. v0.1 scope: US industrial, DCF and direct capitalization.",
+  "description": "Root schema for an ORE (Open Real Estate) deal file. A .ore file is a single, self-contained JSON document conforming to this schema — all deal data and calculation assumptions travel together in one file. v0.1 scope: US property of any type (deepest engine coverage is industrial), DCF and direct capitalization.",
   "type": "object",
   "required": ["formatVersion", "property", "rentRoll"],
   "additionalProperties": false,

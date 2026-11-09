@@ -2,7 +2,7 @@
 
 Single source of truth for **what an ORE file can represent** and **what the
 reference engine actually computes** — by data domain, derived from a
-first-principles decomposition of a US industrial deal. This document is both the
+first-principles decomposition of a US industrial deal, where the project started. Coverage for other property types is summarized in the next section. This document is both the
 scope statement (design rationale) and the status checklist; the v0.2 backlog lives
 here too, so there is one place to look, not three.
 
@@ -22,7 +22,7 @@ the spec yet ignored by the engine (or absent from both):
   - ✅ honored · ◐ partial — simplified or estimated, **disclosed via a `warnings` entry** · ⚠️ **ignored silently** (no warning — the trust risk) · — not applicable (informational field, no cash-flow effect)
 
 **Target** marks intended work: blank = complete; `v0.2` = prioritized; `v0.x` =
-later; `scope` = deliberately out of v0.1's charter (US industrial, simple
+later; `scope` = deliberately out of v0.1's charter (simple
 structures). **Standard** notes an external definition to align with where one
 exists.
 
@@ -32,13 +32,45 @@ exists.
 
 ---
 
+## 0. Coverage by property type
+
+ORE is for every commercial property type. `property.propertyType` accepts all of
+the types below. What differs is how much of each type's conventions the reference
+engine models. Anything it does not model for a given file is named in that file's
+`property_type_coverage` warning; nothing is skipped silently.
+
+Two income shapes cover most property. **Lease-based** types are underwritten one
+lease at a time, which is the model ORE has today. **Unit-based** types are
+underwritten by unit type, which needs a unit mix the format does not have yet.
+
+| Property type | Shape | Format | Engine | Missing | Tracked |
+|---|---|---|---|---|---|
+| Industrial | lease | ✅ | ✅ | see the sections below | |
+| Office, medical office, life science | lease | ✅ | ◐ | load factor, expense gross-up, parking income | #49, #24, #20, #23 |
+| Retail | lease | ◐ | ◐ | percentage rent, recovery pools with anchor exclusions, co-tenancy | #49 |
+| Data center | lease | ◐ | ◐ | rent per kW, utility pass-throughs | |
+| Multifamily, student, senior housing | unit | ◐ | ◐ | unit mix, loss to lease, concessions, other income, per-unit metrics | #45, #23 |
+| Self-storage, manufactured housing | unit | ◐ | ◐ | same as multifamily | #45 |
+| Mixed use | both | ◐ | ◐ | whatever its components are missing | |
+| Hospitality | operating | ✗ | ✗ | room revenue model; not planned until someone needs it | |
+| Land | none | ✅ | — | no income to model; sales comparison inputs travel as disclosure | #38 |
+
+Until the unit mix lands, a unit-based property is written **one unit per lease**:
+`baseRent.unit: "totalPerMonth"`, `reimbursement.structure: "Gross"`, one leasing
+profile per unit type with a 12-month term. The engine computes that correctly.
+It is practical for a small property and verbose for a large one. See
+[`examples/small-multifamily.ore`](../examples/small-multifamily.ore) and the design
+note [`docs/design/property-types.md`](../docs/design/property-types.md).
+
+---
+
 ## 1. Asset identity & legal
 
 | Element | Spec | Engine | Target | Standard / notes |
 |---|---|---|---|---|
 | Name, situs address, market/submarket, lat-long | ✅ | — | | |
 | Parcels / APNs / zoning (per parcel) | ✅ | — | | |
-| Asset type / industrial subtype | ✅ | ✅ | v0.x | crosswalk to REDI *Industrial – {Manufacturing, Warehouse, Flex/R&D, Cold Storage, Life Science, Specialized}*; ORE adds IOS & truck-terminal granularity but **lacks `life_science`** — add it |
+| Asset type / subtype (all property types; industrial subtype list) | ✅ | ✅ | v0.x | crosswalk to REDI *Industrial – {Manufacturing, Warehouse, Flex/R&D, Cold Storage, Life Science, Specialized}*; ORE adds IOS & truck-terminal granularity but **lacks `life_science`** — add it |
 | Owner / title-holding entity (SPE) | ✗ | — | v0.2 | provenance names the *producer*, not the owner |
 | Ownership share / JV partner / investment structure | ✗ | — | v0.x | REDI *Legal Ownership Share*, *JV Partner*, *Investment Structure* — needed when an ORE file backs a partial-interest valuation |
 | Ground-lease vs fee; ground-rent payment stream | ◐ | ⚠️ | v0.2 | `interestAppraised: leasehold` flag exists; no ground-rent outflow modeled. REDI *Ownership Type* = Freehold/Leasehold |

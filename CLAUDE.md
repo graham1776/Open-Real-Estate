@@ -118,12 +118,16 @@ model** (the IFC/buildingSMART path) once there is a working v1 and momentum.
 ## 6. Build specification — v0.1
 
 ### Scope (deliberate constraints)
-- **Asset class:** US industrial only — single-tenant and multi-tenant. Simplest
-  lease structures (NN/NNN, modified gross), founder's domain expertise, expand later.
+- **Asset class:** all commercial property types (decided November 2026, after
+  launch feedback: a format that cannot carry multifamily is not a CRE format).
+  Industrial is where the examples and engine depth started, not a boundary. The
+  schema accepts every type; the engine warns per file about conventions it does
+  not yet model (`property_type_coverage`). Never describe ORE as an industrial
+  format. Design: `docs/design/property-types.md`.
 - **Valuation methods:** DCF and direct capitalization. Sales comparison later.
-- **Out of scope for v0.1:** retail percentage rent, office complex reimbursement
-  pools, hotel, multifamily unit-level, international conventions, debt waterfalls
-  (simple debt sizing only). Also out of scope permanently: import from or export to
+- **Not yet modeled:** retail percentage rent, office load factors and gross-up,
+  hotel operations, a multifamily unit mix, international conventions, debt
+  waterfalls (simple debt sizing only). Each is tracked as an issue. Also out of scope permanently: import from or export to
   any proprietary file format (see §0).
 
 ### Format design principles

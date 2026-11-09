@@ -2,10 +2,30 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://oreformat.org/schema/0.1.0/property.schema.json",
   "title": "ORE Property Module",
-  "description": "Identity, location, and physical characteristics of the property. ORE v0.1 scope is US industrial (single-tenant and multi-tenant).",
+  "description": "Identity, location, and physical characteristics of the property. Any commercial property type; the examples and the reference engine's deepest coverage are industrial (see spec/coverage.md for coverage by type).",
   "type": "object",
   "required": ["name", "propertyType", "address", "physical"],
   "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "propertyType": { "const": "industrial" } }, "required": ["propertyType"] },
+      "then": {
+        "properties": {
+          "propertySubtype": {
+            "enum": [
+              "warehouse_distribution",
+              "manufacturing",
+              "flex",
+              "cold_storage",
+              "truck_terminal",
+              "industrial_outdoor_storage",
+              "other"
+            ]
+          }
+        }
+      }
+    }
+  ],
   "properties": {
     "name": {
       "type": "string",
@@ -13,21 +33,30 @@
       "description": "Display name of the property, e.g. \"4250 Valley Blvd\" or \"Gateway Logistics Center\"."
     },
     "propertyType": {
-      "const": "industrial",
-      "description": "Asset class. ORE v0.1 supports industrial only; future versions will widen this enum."
+      "type": "string",
+      "enum": [
+        "industrial",
+        "office",
+        "medical_office",
+        "life_science",
+        "retail",
+        "multifamily",
+        "student_housing",
+        "senior_housing",
+        "manufactured_housing",
+        "self_storage",
+        "data_center",
+        "hospitality",
+        "mixed_use",
+        "land",
+        "other"
+      ],
+      "description": "Asset class. The format carries any of these; how much of each the reference engine models is listed by type in spec/coverage.md, and the engine names any gap for a given file in a `property_type_coverage` warning. Use \"mixed_use\" when no single use dominates, and \"other\" with a note in `description` if none fit."
     },
     "propertySubtype": {
       "type": "string",
-      "enum": [
-        "warehouse_distribution",
-        "manufacturing",
-        "flex",
-        "cold_storage",
-        "truck_terminal",
-        "industrial_outdoor_storage",
-        "other"
-      ],
-      "description": "Industrial subtype. Use \"other\" with a note in `description` if none fit."
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "Subtype within the asset class, lowercase snake_case. Industrial files use one of: warehouse_distribution, manufacturing, flex, cold_storage, truck_terminal, industrial_outdoor_storage, other. Other asset classes are open text until their lists are settled, e.g. \"garden\", \"mid_rise\", \"grocery_anchored\", \"suburban\"."
     },
     "tenancy": {
       "type": "string",
@@ -42,7 +71,7 @@
       "type": "object",
       "required": ["street1", "city", "state", "postalCode"],
       "additionalProperties": false,
-      "description": "Situs address. ORE v0.1 scope is US properties only.",
+      "description": "Situs address. US addresses only for now (see the international issue in the tracker).",
       "properties": {
         "street1": { "type": "string", "minLength": 1, "description": "Primary street address line." },
         "street2": { "type": "string", "description": "Secondary address line (suite, building, etc.)." },
@@ -106,6 +135,11 @@
           "type": "number",
           "exclusiveMinimum": 0,
           "description": "Total rentable building area in square feet. The denominator for per-SF metrics and pro-rata shares unless a lease overrides it."
+        },
+        "unitCount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of rentable units, for property counted in units (apartments, storage units, pads, beds). The denominator for per-unit metrics."
         },
         "officeSF": {
           "type": "number",

@@ -58,13 +58,13 @@ perfect institutional DCF.
 
 ## v0.1 scope (deliberate constraints)
 
-US industrial only; NNN/NN/modified gross leases; simple debt sizing only. The
+US property; NNN/NN/modified gross/gross leases; simple debt sizing only. The format accepts every commercial property type (decided November 2026: ORE is not an industrial format). The engine is deepest on industrial and warns, per file, about what it does not yet model for other types; see "Property types" below. The
 valuation schema carries inputs for all four approaches — DCF (with terminal value
 method options), direct capitalization (with stabilized/mark-to-market bases and
 near-term cost deductions), sales comparison, and cost — while the v0.1 reference
 engine computes DCF and direct cap; sales comparison and cost travel as structured
-disclosure until engine support lands. Out of scope for v0.1: retail percentage
-rent, office complex reimbursement pools, hotel, multifamily unit-level,
+disclosure until engine support lands. Not yet modeled: retail percentage
+rent, office load factors and gross-up, hotel operations, a multifamily unit mix,
 international conventions, debt waterfalls.
 
 **Field-level coverage and the v0.2 gap backlog** — what the format represents and
@@ -77,6 +77,15 @@ expenditures, and reserving the property→building→suite→lease hierarchy fi
 (the one change with a clock on it — see the coverage doc's open-decisions section).
 
 ## After v0.1
+
+**Property types** (design: `docs/design/property-types.md`)
+- Unit mix: a second income shape for multifamily, student and senior housing,
+  self-storage and manufactured housing (issue 45). Until then, units are written
+  one per lease, which works for small properties (`examples/small-multifamily.ore`)
+- Office and retail lease mechanics: percentage rent, load factors, gross-up,
+  parking income (issue 49)
+- One synthetic example per major type, each with a locked golden
+- International files: country, currency, area units (issue 50)
 
 Strategy for the AI and Excel tracks: `docs/design/llm-and-excel.md`.
 
@@ -124,7 +133,6 @@ implies, roughly in build order)
 **Format & ecosystem**
 - Python port of the reference engine
 - Engine support for sales comparison and cost approach outputs
-- Additional asset classes, starting with the simplest lease structures first
 - Formal governance (technical steering committee), then consortium/foundation home
 
 **Distribution (later, not needed for v0.1)**

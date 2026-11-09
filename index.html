@@ -135,7 +135,7 @@
     <h2>What a <code>.ore</code> file carries</h2>
     <table>
       <tr><th>Module</th><th>Holds</th></tr>
-      <tr><td><code>property</code></td><td>Identity, location, industrial physicals (SF, clear height, docks, power)</td></tr>
+      <tr><td><code>property</code></td><td>Identity, location, type, physicals (SF, unit count, clear height, docks, power)</td></tr>
       <tr><td><code>rentRoll</code></td><td>Leases with rent steps, escalations, NNN / NN / MG / Gross recoveries, free rent, TI/LC, options; vacant suites</td></tr>
       <tr><td><code>expenses</code></td><td>Operating expenses with recoverability and growth</td></tr>
       <tr><td><code>marketAssumptions</code></td><td>Market rent, growth, downtime, renewal probability, leasing costs</td></tr>
@@ -143,7 +143,7 @@
       <tr><td><code>debt</code></td><td>Optional loan terms for levered returns</td></tr>
       <tr><td><code>provenance</code></td><td>Who produced the file, when, and from what sources</td></tr>
     </table>
-    <p>Version 0.1 covers US industrial, single- and multi-tenant. Every example deal has locked expected outputs, so any implementation of the engine can prove it computes the same answers.</p>
+    <p>ORE is for every commercial property type. Version 0.1 is deepest on industrial, where the examples started; office, retail and multifamily files are accepted, and the engine says what it has not modeled yet. Every example deal has locked expected outputs, so any implementation of the engine can prove it computes the same answers.</p>
   </section>
 
   <div class="join">
