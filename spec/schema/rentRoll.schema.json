@@ -27,7 +27,7 @@
         "properties": {
           "suite": { "type": "string", "description": "Suite or unit identifier." },
           "sf": { "type": "number", "exclusiveMinimum": 0, "description": "Vacant area in square feet." },
-          "spaceType": { "type": "string", "description": "Space type key matching an entry in marketAssumptions.marketRent, used to price lease-up." },
+          "spaceType": { "type": "string", "description": "Space type key matching an entry in marketAssumptions.leasingProfiles, used to price lease-up. Omit when a single profile applies to the whole property." },
           "notes": { "type": "string" }
         }
       }
@@ -294,6 +294,7 @@
       "type": "object",
       "required": ["type"],
       "additionalProperties": false,
+      "description": "Tenant option. Renewal-only fields (renewalTermMonths, renewalCount, rentBasis, fixedRent, percentOfMarket) are rejected on any other type, and terminationFee is rejected except on termination. fixedRent is required when rentBasis is fixed; percentOfMarket is required when rentBasis is percent_of_market.",
       "properties": {
         "type": {
           "type": "string",
@@ -313,7 +314,51 @@
         "percentOfMarket": { "type": "number", "exclusiveMinimum": 0, "description": "Percent of fair market rent when rentBasis is percent_of_market, e.g. 95." },
         "terminationFee": { "type": "number", "minimum": 0, "description": "Fee payable on exercise of a termination option, in USD." },
         "notes": { "type": "string", "description": "Terms the structured fields cannot carry (e.g. expansion premises description, ROFR trigger)." }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "not": {
+              "properties": { "type": { "const": "renewal" } },
+              "required": ["type"]
+            }
+          },
+          "then": {
+            "properties": {
+              "renewalTermMonths": false,
+              "renewalCount": false,
+              "rentBasis": false,
+              "fixedRent": false,
+              "percentOfMarket": false
+            }
+          }
+        },
+        {
+          "if": {
+            "not": {
+              "properties": { "type": { "const": "termination" } },
+              "required": ["type"]
+            }
+          },
+          "then": {
+            "properties": { "terminationFee": false }
+          }
+        },
+        {
+          "if": {
+            "properties": { "rentBasis": { "const": "fixed" } },
+            "required": ["rentBasis"]
+          },
+          "then": { "required": ["fixedRent"] }
+        },
+        {
+          "if": {
+            "properties": { "rentBasis": { "const": "percent_of_market" } },
+            "required": ["rentBasis"]
+          },
+          "then": { "required": ["percentOfMarket"] }
+        }
+      ]
     }
   }
 }

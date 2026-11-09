@@ -1,0 +1,15 @@
+{
+  "schemaValid": false,
+  "issues": [
+    {
+      "code": "option_rent_incomplete",
+      "severity": "error",
+      "path": "/rentRoll/leases/0/options/0/fixedRent"
+    },
+    {
+      "code": "option_rent_incomplete",
+      "severity": "error",
+      "path": "/rentRoll/leases/0/options/1/percentOfMarket"
+    }
+  ]
+}

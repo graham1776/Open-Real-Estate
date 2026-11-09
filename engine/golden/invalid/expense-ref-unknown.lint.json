@@ -1,0 +1,20 @@
+{
+  "schemaValid": true,
+  "issues": [
+    {
+      "code": "expense_ref_unknown",
+      "severity": "error",
+      "path": "/rentRoll/leases/0/reimbursement/excludedExpenses/1"
+    },
+    {
+      "code": "expense_ref_unknown",
+      "severity": "error",
+      "path": "/valuation/directCap/excludeExpenseIds/0"
+    },
+    {
+      "code": "expense_ref_unknown",
+      "severity": "error",
+      "path": "/valuation/taxReassessment/expenseId"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "schemaValid": true,
+  "issues": [
+    {
+      "code": "lease_id_duplicate",
+      "severity": "error",
+      "path": "/rentRoll/leases/1/leaseId"
+    }
+  ]
+}

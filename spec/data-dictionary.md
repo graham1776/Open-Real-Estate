@@ -3,6 +3,8 @@
 Normative definitions live in the JSON Schema files under [`schema/`](schema/); this
 dictionary restates them for human readers and adds interpretation guidance. Fields
 are listed as JSON paths from the file root. **(R)** marks required fields.
+Cross-field checks — references, unique ids, option fields — are in
+[`validation.md`](validation.md). JSON Schema does not enforce them.
 
 ## Root
 
@@ -90,7 +92,7 @@ are provided it should equal their sum.
 |---|---|---|
 | `asOfDate` **(R)** | date | Date the rent roll was struck. All leases and vacancies reflect this date. |
 | `leases` **(R)** | array | All leases in place. Empty array = fully vacant building. |
-| `vacantSuites[]` | array | Vacant space available for lease-up: `suite`, `sf` **(R)**, `spaceType` (keys into `marketAssumptions.marketRent`), `notes`. |
+| `vacantSuites[]` | array | Vacant space available for lease-up: `suite`, `sf` **(R)**, `spaceType` (keys into `marketAssumptions.leasingProfiles`), `notes`. |
 | `notes` | string | Rent-roll-level notes (estoppel status, pending amendments). |
 
 ### `rentRoll.leases[]`
@@ -177,7 +179,11 @@ instead of the generic market-leasing assumptions. A `market`-basis renewal stay
 the generic path. Renewal *probability* remains the market profile's
 `renewalProbabilityPercent`; when an option is below market the engine warns that real
 exercise is likely higher. termination/expansion/purchase/ROFR/ROFO are carried for
-diligence and do not yet affect cash flows.
+diligence and do not yet affect cash flows. Renewal-only fields
+(`renewalTermMonths`, `renewalCount`, `rentBasis`, `fixedRent`, `percentOfMarket`)
+are rejected on any other option type, and `terminationFee` is rejected except on
+`termination`. `fixedRent` is required when `rentBasis` is `fixed`;
+`percentOfMarket` is required when `rentBasis` is `percent_of_market`.
 
 | Field | Type | Definition |
 |---|---|---|

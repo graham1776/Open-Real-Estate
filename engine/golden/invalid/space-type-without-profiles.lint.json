@@ -1,0 +1,15 @@
+{
+  "schemaValid": true,
+  "issues": [
+    {
+      "code": "space_type_unknown",
+      "severity": "error",
+      "path": "/rentRoll/leases/0/spaceType"
+    },
+    {
+      "code": "advice",
+      "severity": "warning",
+      "path": "/marketAssumptions"
+    }
+  ]
+}

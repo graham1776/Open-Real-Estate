@@ -16,7 +16,7 @@ npm run cli -- compute examples/single-tenant-nnn.ore | jq .returns
 
 | Command | Does | Exit code |
 |---|---|---|
-| `validate <file.ore \| dir> [...]` | JSON parse → schema validation → structural lint, per file. `advice`-level notes print but don't fail. | 0 all pass, 1 any fail |
+| `validate <file.ore \| dir> [...]` | JSON parse → schema validation → structural and cross-field lint, per file. Warning-severity notes (including `advice`) print but don't fail. Rule ids are in [`spec/validation.md`](../spec/validation.md). | 0 all pass, 1 any fail |
 | `summarize <file.ore> [...] [--json]` | Key metrics per deal: building, occupancy, WALT and near-term roll, in-place vs market rent, Year 1 / stabilized NOI, direct cap and DCF values, concluded value, returns. | 0, or 1 if a file fails validation |
 | `compute <file.ore>` | The full reference-engine output (`computeAll`) as JSON — cash flows, NOI bridge, valuations, debt, returns, sensitivity, warnings. Pipe to `jq`. | 0, or 1 if the file fails validation |
 | `tape <file.ore> [--engine] [--json]` | The file as a two-column data tape (path, value), tab-separated; `--engine` appends engine outputs under `$engine.*`. The tape format is defined in [`tape.mjs`](tape.mjs) and [`excel/README.md`](../excel/README.md). | 0, or 1 if the file fails validation |

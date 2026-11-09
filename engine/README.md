@@ -6,7 +6,7 @@ Node and the browser (the demo imports `dist/` directly).
 
 ```bash
 npm run build    # tsc -p engine  ->  engine/dist/
-npm test         # build + schema validation + golden reproduction
+npm test         # build + schema validation + golden reproduction + lint fixtures
 ```
 
 ## What it computes
@@ -40,6 +40,9 @@ npm run golden:update   # consciously re-lock after a methodology change
 ```
 
 A conforming third-party implementation reproduces the golden outputs exactly.
+Cross-field validation (`lint()`) is locked the same way: each file in
+`golden/invalid/` is paired with a `.lint.json` listing the rule id, severity,
+and JSON Pointer `lint()` must produce. See [`spec/validation.md`](../spec/validation.md).
 The [ORE Workbook](../excel/) is one: native Excel formulas, held to these outputs
 by `npm run excel:test`.
 Methodology changes must re-lock goldens with justification in the commit.

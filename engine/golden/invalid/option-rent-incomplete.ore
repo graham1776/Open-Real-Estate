@@ -1,0 +1,70 @@
+{
+  "formatVersion": "0.1.0",
+  "property": {
+    "name": "Lint fixture",
+    "propertyType": "industrial",
+    "address": {
+      "street1": "1 Fixture St",
+      "city": "Santa Fe Springs",
+      "state": "CA",
+      "postalCode": "90670"
+    },
+    "physical": { "buildingSF": 10000 }
+  },
+  "rentRoll": {
+    "asOfDate": "2026-01-01",
+    "leases": [
+      {
+        "leaseId": "L-1",
+        "tenant": { "name": "Fixture Tenant" },
+        "leasedSF": 10000,
+        "commencementDate": "2026-01-01",
+        "expirationDate": "2031-01-01",
+        "baseRent": {
+          "unit": "perSFPerYear",
+          "schedule": [{ "startDate": "2026-01-01", "amount": 12 }]
+        },
+        "reimbursement": { "structure": "NNN" },
+        "options": [
+          {
+            "type": "renewal",
+            "renewalTermMonths": 60,
+            "rentBasis": "fixed"
+          },
+          {
+            "type": "renewal",
+            "renewalTermMonths": 60,
+            "rentBasis": "percent_of_market"
+          }
+        ]
+      }
+    ]
+  },
+  "expenses": {
+    "items": [
+      {
+        "expenseId": "E-TAX",
+        "name": "Real Estate Taxes",
+        "amount": 10000,
+        "amountUnit": "totalPerYear",
+        "recoverable": true
+      }
+    ]
+  },
+  "marketAssumptions": {
+    "growth": { "marketRent": 3, "expenses": 3 },
+    "leasingProfiles": {
+      "small_bay": {
+        "marketRent": { "amount": 12, "unit": "perSFPerYear" },
+        "termMonths": 60,
+        "downtimeMonths": 3,
+        "renewalProbabilityPercent": 75
+      }
+    }
+  },
+  "valuation": {
+    "analysisStartDate": "2026-01-01",
+    "methods": ["direct_cap"],
+    "directCap": { "capRatePercent": 6, "noiBasis": "year1" }
+  }
+}

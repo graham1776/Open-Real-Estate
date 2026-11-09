@@ -1,0 +1,20 @@
+{
+  "schemaValid": false,
+  "issues": [
+    {
+      "code": "option_field_mismatch",
+      "severity": "error",
+      "path": "/rentRoll/leases/0/options/0/renewalTermMonths"
+    },
+    {
+      "code": "option_field_mismatch",
+      "severity": "error",
+      "path": "/rentRoll/leases/0/options/0/rentBasis"
+    },
+    {
+      "code": "option_field_mismatch",
+      "severity": "error",
+      "path": "/rentRoll/leases/0/options/1/terminationFee"
+    }
+  ]
+}

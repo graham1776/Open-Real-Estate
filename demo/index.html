@@ -146,6 +146,7 @@ const usd = (n) => n == null ? "—" : n.toLocaleString("en-US", { style: "curre
 const num = (n, d = 0) => n == null ? "—" : n.toLocaleString("en-US", { maximumFractionDigits: d });
 const pct = (n) => n == null ? "—" : `${num(n, 2)}%`;
 const esc = (s) => String(s ?? "—").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const lintError = (p) => (p.severity ? p.severity === "error" : p.code !== "advice");
 const gapSpan = (n) => n == null ? "—" : `<span class="${n < 0 ? "gap-neg" : "gap-pos"}">${pct(n)}</span>`;
 
 // ---------------------------------------------------------------- state
@@ -182,7 +183,7 @@ function applyText(entry, text) {
     return;
   }
   entry.problems = lint(entry.deal);
-  if (entry.problems.filter((p) => p.code !== "advice").length === 0) {
+  if (entry.problems.filter(lintError).length === 0) {
     try { entry.out = computeAll(entry.deal); } catch (e) { entry.error = `Engine error: ${e.message}`; }
   }
 }
@@ -289,7 +290,7 @@ function renderChips() {
     bits.push(`<span class="chip ${state.active === "portfolio" ? "on" : ""}" data-act="portfolio">Portfolio (${state.files.length})</span>`);
   }
   for (const f of state.files) {
-    const bad = f.error || f.problems.some((p) => p.code !== "advice");
+    const bad = f.error || f.problems.some(lintError);
     bits.push(`<span class="chip ${state.active === f.id ? "on" : ""}" data-act="file" data-id="${f.id}">${bad ? "⚠ " : ""}${hasUnsaved(f) ? `<span class="dirtydot" title="Unsaved changes">●</span> ` : ""}${esc(f.name)}<span class="x" data-act="remove" data-id="${f.id}" title="Remove">×</span></span>`);
   }
   bits.push(`<span class="chip action" data-act="add">+ Add files</span>`);
@@ -954,7 +955,10 @@ function annualCfTable(rows) {
 
 function renderWarnings(problems, out, err) {
   const blocks = [];
-  for (const p of problems) blocks.push(`<div class="${p.code === "advice" ? "warnbox" : "errbox"}"><span class="code">${esc(p.code)}</span> — ${esc(p.message)}</div>`);
+  for (const p of problems) {
+    const where = p.path ? ` <span class="code">${esc(p.path)}</span>` : "";
+    blocks.push(`<div class="${lintError(p) ? "errbox" : "warnbox"}"><span class="code">${esc(p.code)}</span>${where} — ${esc(p.message)}</div>`);
+  }
   if (err) blocks.push(`<div class="errbox"><span class="code">compute_error</span> — ${esc(err)}</div>`);
   for (const w of out?.warnings ?? []) blocks.push(`<div class="warnbox"><span class="code">${esc(w.code)}</span> — ${esc(w.message)}</div>`);
   $("tab-warnings").innerHTML = blocks.length
@@ -1096,7 +1100,7 @@ window.addEventListener("beforeunload", (e) => {
 // -------------------------------------------------------------- portfolio
 
 function renderPortfolio() {
-  const valid = state.files.filter((f) => f.deal && !f.error && f.problems.filter((p) => p.code !== "advice").length === 0);
+  const valid = state.files.filter((f) => f.deal && !f.error && f.problems.filter(lintError).length === 0);
   const invalid = state.files.filter((f) => !valid.includes(f));
   if (valid.length < 2) {
     $("portfolio").innerHTML = `<div class="errbox">Portfolio view needs at least two valid files. ${invalid.length ? "Fix or remove: " + invalid.map((f) => esc(f.name)).join(", ") : ""}</div>`;
