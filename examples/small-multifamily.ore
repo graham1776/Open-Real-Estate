@@ -1,0 +1,553 @@
+{
+  "$schema": "https://oreformat.org/schema/0.1.0/ore.schema.json",
+  "formatVersion": "0.1.0",
+  "property": {
+    "name": "Alder Street Apartments",
+    "propertyType": "multifamily",
+    "propertySubtype": "walk_up",
+    "tenancy": "multi",
+    "description": "Synthetic example: a 12-unit, three-story walk-up apartment building. All data in this file is fictional. It shows a unit-based property written one unit per lease, which is how ORE carries multifamily until a unit mix is added to the format.",
+    "address": {
+      "street1": "48 Alder St",
+      "city": "Nashua",
+      "state": "NH",
+      "postalCode": "03060",
+      "county": "Hillsborough",
+      "country": "US"
+    },
+    "location": {
+      "market": "Southern New Hampshire",
+      "submarket": "Nashua"
+    },
+    "siteAreaAcres": 0.42,
+    "physical": {
+      "buildingSF": 10300,
+      "unitCount": 12,
+      "yearBuilt": 1972,
+      "yearRenovated": 2018,
+      "stories": 3,
+      "construction": "wood_frame",
+      "sprinkler": "none",
+      "autoParkingStalls": 16
+    },
+    "notes": "buildingSF is net rentable area: four one-bedroom units at 650 SF, six two-bedroom units at 900 SF, two three-bedroom units at 1,150 SF. Residents are identified by unit number only; a unit-level file never carries a resident's name."
+  },
+  "rentRoll": {
+    "asOfDate": "2026-06-01",
+    "leases": [
+      {
+        "leaseId": "U-1A",
+        "tenant": {
+          "name": "Unit 1A resident"
+        },
+        "suite": "1A",
+        "spaceType": "one_bed",
+        "leasedSF": 650,
+        "commencementDate": "2025-09-01",
+        "expirationDate": "2026-08-31",
+        "baseRent": {
+          "unit": "totalPerMonth",
+          "schedule": [
+            {
+              "startDate": "2025-09-01",
+              "amount": 1475
+            }
+          ]
+        },
+        "escalation": {
+          "type": "none"
+        },
+        "reimbursement": {
+          "structure": "Gross"
+        }
+      },
+      {
+        "leaseId": "U-1B",
+        "tenant": {
+          "name": "Unit 1B resident"
+        },
+        "suite": "1B",
+        "spaceType": "one_bed",
+        "leasedSF": 650,
+        "commencementDate": "2025-07-01",
+        "expirationDate": "2026-06-30",
+        "baseRent": {
+          "unit": "totalPerMonth",
+          "schedule": [
+            {
+              "startDate": "2025-07-01",
+              "amount": 1450
+            }
+          ]
+        },
+        "escalation": {
+          "type": "none"
+        },
+        "reimbursement": {
+          "structure": "Gross"
+        }
+      },
+      {
+        "leaseId": "U-1C",
+        "tenant": {
+          "name": "Unit 1C resident"
+        },
+        "suite": "1C",
+        "spaceType": "two_bed",
+        "leasedSF": 900,
+        "commencementDate": "2026-02-01",
+        "expirationDate": "2027-01-31",
+        "baseRent": {
+          "unit": "totalPerMonth",
+          "schedule": [
+            {
+              "startDate": "2026-02-01",
+              "amount": 1850
+            }
+          ]
+        },
+        "escalation": {
+          "type": "none"
+        },
+        "reimbursement": {
+          "structure": "Gross"
+        }
+      },
+      {
+        "leaseId": "U-1D",
+        "tenant": {
+          "name": "Unit 1D resident"
+        },
+        "suite": "1D",
+        "spaceType": "two_bed",
+        "leasedSF": 900,
+        "commencementDate": "2025-10-01",
+        "expirationDate": "2026-09-30",
+        "baseRent": {
+          "unit": "totalPerMonth",
+          "schedule": [
+            {
+              "startDate": "2025-10-01",
+              "amount": 1800
+            }
+          ]
+        },
+        "escalation": {
+          "type": "none"
+        },
+        "reimbursement": {
+          "structure": "Gross"
+        }
+      },
+      {
+        "leaseId": "U-2A",
+        "tenant": {
+          "name": "Unit 2A resident"
+        },
+        "suite": "2A",
+        "spaceType": "one_bed",
+        "leasedSF": 650,
+        "commencementDate": "2026-04-01",
+        "expirationDate": "2027-03-31",
+        "baseRent": {
+          "unit": "totalPerMonth",
+          "schedule": [
+            {
+              "startDate": "2026-04-01",
+              "amount": 1525
+            }
+          ]
+        },
+        "escalation": {
+          "type": "none"
+        },
+        "reimbursement": {
+          "structure": "Gross"
+        }
+      },
+      {
+        "leaseId": "U-2B",
+        "tenant": {
+          "name": "Unit 2B resident"
+        },
+        "suite": "2B",
+        "spaceType": "one_bed",
+        "leasedSF": 650,
+        "commencementDate": "2025-12-01",
+        "expirationDate": "2026-11-30",
+        "baseRent": {
+          "unit": "totalPerMonth",
+          "schedule": [
+            {
+              "startDate": "2025-12-01",
+              "amount": 1500
+            }
+          ]
+        },
+        "escalation": {
+          "type": "none"
+        },
+        "reimbursement": {
+          "structure": "Gross"
+        }
+      },
+      {
+        "leaseId": "U-2C",
+        "tenant": {
+          "name": "Unit 2C resident"
+        },
+        "suite": "2C",
+        "spaceType": "two_bed",
+        "leasedSF": 900,
+        "commencementDate": "2026-05-01",
+        "expirationDate": "2027-04-30",
+        "baseRent": {
+          "unit": "totalPerMonth",
+          "schedule": [
+            {
+              "startDate": "2026-05-01",
+              "amount": 1925
+            }
+          ]
+        },
+        "escalation": {
+          "type": "none"
+        },
+        "reimbursement": {
+          "structure": "Gross"
+        }
+      },
+      {
+        "leaseId": "U-2D",
+        "tenant": {
+          "name": "Unit 2D resident"
+        },
+        "suite": "2D",
+        "spaceType": "two_bed",
+        "leasedSF": 900,
+        "commencementDate": "2025-11-01",
+        "expirationDate": "2026-10-31",
+        "baseRent": {
+          "unit": "totalPerMonth",
+          "schedule": [
+            {
+              "startDate": "2025-11-01",
+              "amount": 1875
+            }
+          ]
+        },
+        "escalation": {
+          "type": "none"
+        },
+        "reimbursement": {
+          "structure": "Gross"
+        }
+      },
+      {
+        "leaseId": "U-3A",
+        "tenant": {
+          "name": "Unit 3A resident"
+        },
+        "suite": "3A",
+        "spaceType": "two_bed",
+        "leasedSF": 900,
+        "commencementDate": "2026-03-01",
+        "expirationDate": "2027-02-28",
+        "baseRent": {
+          "unit": "totalPerMonth",
+          "schedule": [
+            {
+              "startDate": "2026-03-01",
+              "amount": 1900
+            }
+          ]
+        },
+        "escalation": {
+          "type": "none"
+        },
+        "reimbursement": {
+          "structure": "Gross"
+        }
+      },
+      {
+        "leaseId": "U-3C",
+        "tenant": {
+          "name": "Unit 3C resident"
+        },
+        "suite": "3C",
+        "spaceType": "three_bed",
+        "leasedSF": 1150,
+        "commencementDate": "2026-01-01",
+        "expirationDate": "2026-12-31",
+        "baseRent": {
+          "unit": "totalPerMonth",
+          "schedule": [
+            {
+              "startDate": "2026-01-01",
+              "amount": 2300
+            }
+          ]
+        },
+        "escalation": {
+          "type": "none"
+        },
+        "reimbursement": {
+          "structure": "Gross"
+        }
+      },
+      {
+        "leaseId": "U-3D",
+        "tenant": {
+          "name": "Unit 3D resident"
+        },
+        "suite": "3D",
+        "spaceType": "three_bed",
+        "leasedSF": 1150,
+        "commencementDate": "2025-08-01",
+        "expirationDate": "2026-07-31",
+        "baseRent": {
+          "unit": "totalPerMonth",
+          "schedule": [
+            {
+              "startDate": "2025-08-01",
+              "amount": 2250
+            }
+          ]
+        },
+        "escalation": {
+          "type": "none"
+        },
+        "reimbursement": {
+          "structure": "Gross"
+        }
+      }
+    ],
+    "vacantSuites": [
+      {
+        "suite": "3B",
+        "sf": 900,
+        "spaceType": "two_bed",
+        "notes": "Vacated May 2026; turn in progress."
+      }
+    ],
+    "notes": "Rents are total dollars per unit per month (baseRent.unit: totalPerMonth). All leases are gross: the owner pays operating expenses and there are no recoveries."
+  },
+  "expenses": {
+    "items": [
+      {
+        "expenseId": "E-TAX",
+        "name": "Real Estate Taxes",
+        "category": "real_estate_taxes",
+        "amount": 31000,
+        "amountUnit": "totalPerYear",
+        "recoverable": false
+      },
+      {
+        "expenseId": "E-INS",
+        "name": "Insurance",
+        "category": "insurance",
+        "amount": 9600,
+        "amountUnit": "totalPerYear",
+        "recoverable": false
+      },
+      {
+        "expenseId": "E-UTIL",
+        "name": "Utilities (water, sewer, common electric)",
+        "category": "utilities",
+        "amount": 14400,
+        "amountUnit": "totalPerYear",
+        "recoverable": false
+      },
+      {
+        "expenseId": "E-RM",
+        "name": "Repairs and Maintenance",
+        "category": "repairs_maintenance",
+        "amount": 12000,
+        "amountUnit": "totalPerYear",
+        "recoverable": false,
+        "controllable": true
+      },
+      {
+        "expenseId": "E-GND",
+        "name": "Landscaping and Snow Removal",
+        "category": "cam",
+        "amount": 6500,
+        "amountUnit": "totalPerYear",
+        "recoverable": false,
+        "controllable": true
+      },
+      {
+        "expenseId": "E-ADM",
+        "name": "Administrative",
+        "category": "administrative",
+        "amount": 3000,
+        "amountUnit": "totalPerYear",
+        "recoverable": false,
+        "controllable": true
+      },
+      {
+        "expenseId": "E-MGMT",
+        "name": "Management Fee",
+        "category": "management_fee",
+        "amount": 5,
+        "amountUnit": "percentOfEGR",
+        "recoverable": false
+      },
+      {
+        "expenseId": "E-RES",
+        "name": "Replacement Reserves",
+        "category": "reserves",
+        "amount": 3600,
+        "amountUnit": "totalPerYear",
+        "recoverable": false,
+        "belowTheLine": true,
+        "notes": "$300 per unit per year."
+      }
+    ]
+  },
+  "marketAssumptions": {
+    "asOfDate": "2026-06-01",
+    "growth": {
+      "marketRent": 3.0,
+      "expenses": 3.0
+    },
+    "generalVacancyPercent": 4.0,
+    "creditLossPercent": 1.0,
+    "leasingProfiles": {
+      "one_bed": {
+        "marketRent": {
+          "amount": 2.4231,
+          "unit": "perSFPerMonth"
+        },
+        "termMonths": 12,
+        "escalation": {
+          "type": "none"
+        },
+        "reimbursementStructure": "Gross",
+        "downtimeMonths": 1,
+        "renewalProbabilityPercent": 55,
+        "newTenant": {
+          "tiPerSF": 1.5,
+          "lcPercentOfRent": 0,
+          "freeRentMonths": 0
+        },
+        "renewal": {
+          "tiPerSF": 0,
+          "lcPercentOfRent": 0
+        },
+        "renewalRentPercentOfMarket": 97,
+        "notes": "Market rent $1,575 per unit per month. The format states market rent per square foot today, so the per-unit figure is divided by unit size."
+      },
+      "two_bed": {
+        "marketRent": {
+          "amount": 2.1944,
+          "unit": "perSFPerMonth"
+        },
+        "termMonths": 12,
+        "escalation": {
+          "type": "none"
+        },
+        "reimbursementStructure": "Gross",
+        "downtimeMonths": 1,
+        "renewalProbabilityPercent": 55,
+        "newTenant": {
+          "tiPerSF": 1.5,
+          "lcPercentOfRent": 0,
+          "freeRentMonths": 0
+        },
+        "renewal": {
+          "tiPerSF": 0,
+          "lcPercentOfRent": 0
+        },
+        "renewalRentPercentOfMarket": 97,
+        "notes": "Market rent $1,975 per unit per month."
+      },
+      "three_bed": {
+        "marketRent": {
+          "amount": 2.087,
+          "unit": "perSFPerMonth"
+        },
+        "termMonths": 12,
+        "escalation": {
+          "type": "none"
+        },
+        "reimbursementStructure": "Gross",
+        "downtimeMonths": 1,
+        "renewalProbabilityPercent": 55,
+        "newTenant": {
+          "tiPerSF": 1.5,
+          "lcPercentOfRent": 0,
+          "freeRentMonths": 0
+        },
+        "renewal": {
+          "tiPerSF": 0,
+          "lcPercentOfRent": 0
+        },
+        "renewalRentPercentOfMarket": 97,
+        "notes": "Market rent $2,400 per unit per month."
+      }
+    },
+    "notes": "Twelve-month leases, one month of downtime on a turn, turn cost of $1.50 per SF carried as tenant improvements. Renewals at 97% of market."
+  },
+  "valuation": {
+    "analysisStartDate": "2026-06-01",
+    "methods": [
+      "dcf",
+      "direct_cap"
+    ],
+    "interestAppraised": "leased_fee",
+    "valuePremise": "as_is",
+    "purpose": "acquisition",
+    "purchasePrice": 2450000,
+    "acquisitionCostsPercent": 1.0,
+    "dcf": {
+      "holdPeriodYears": 5,
+      "discountRatePercent": 8.0,
+      "discountTiming": "monthly",
+      "periodConvention": "end",
+      "terminalValue": {
+        "method": "direct_cap",
+        "capRatePercent": 6.5,
+        "noiBasis": "forwardYear",
+        "sellingCostsPercent": 3.0
+      }
+    },
+    "directCap": {
+      "capRatePercent": 6.25,
+      "noiBasis": "year1",
+      "applyGeneralVacancy": true
+    }
+  },
+  "debt": {
+    "ltvPercent": 70,
+    "interestRatePercent": 6.25,
+    "rateType": "fixed",
+    "termMonths": 60,
+    "amortizationMonths": 360,
+    "originationFeePercent": 1.0,
+    "fundingDate": "2026-06-01"
+  },
+  "provenance": {
+    "generatedAt": "2026-11-09T17:00:00Z",
+    "generatedBy": {
+      "name": "ORE Project Examples",
+      "organization": "ORE (Open Real Estate)",
+      "role": "other",
+      "email": "examples@oreformat.org"
+    },
+    "sourceDocuments": [
+      {
+        "name": "Synthetic Rent Roll June 2026",
+        "type": "rent_roll",
+        "date": "2026-06-01"
+      },
+      {
+        "name": "Synthetic Trailing-12 Operating Statement",
+        "type": "operating_statement",
+        "date": "2026-05-31"
+      }
+    ],
+    "confidentiality": "None — fully synthetic example data published with the ORE specification.",
+    "notes": "All parties, documents, and figures are fictional."
+  }
+}

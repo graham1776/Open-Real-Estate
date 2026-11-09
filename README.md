@@ -60,6 +60,12 @@ npm run cli -- compute examples/single-tenant-nnn.ore | jq .returns
 npm test           # builds the engine, validates examples, reproduces golden outputs
 ```
 
+**In Excel:** open [`excel/ORE-Workbook.xlsm`](excel/) and click *Import .ore
+file*, or run `npm run cli -- excel examples/multi-tenant-infill.ore`. You get a
+printable deal summary, rent roll, cash flow and valuation, computed by native
+Excel formulas that reproduce the reference engine, with a Check sheet showing
+the two side by side. See [`excel/README.md`](excel/README.md).
+
 ## What a `.ore` file carries
 
 One JSON document, seven modules — `property` and `rentRoll` required, the rest
@@ -67,7 +73,7 @@ optional so a file carries exactly what its producer knows:
 
 | Module | Holds |
 |---|---|
-| `property` | Identity, location, industrial physicals (SF, clear height, docks, power) |
+| `property` | Identity, location, type, physicals (SF, unit count, clear height, docks, power) |
 | `rentRoll` | Leases with stepped rent, escalations, NNN/NN/MG/Gross, free rent, TI/LC, options; vacant suites |
 | `expenses` | Operating expenses with recoverability flags and growth |
 | `marketAssumptions` | Market rent, growth curves, downtime, renewal probability, market TI/LC |
@@ -81,16 +87,17 @@ is published as a single ingestible document: [`llms.txt`](llms.txt).
 
 ## Status
 
-**v0.1 feature-complete; looking for collaborators.** Current scope: US industrial (single- and multi-tenant). See [ROADMAP.md](ROADMAP.md).
+**v0.1 feature-complete; looking for collaborators.** ORE is meant for every commercial property type. The format accepts any of them today; the engine is deepest on industrial, where the examples started, and names what it does not yet model for other types in each file's warnings. Coverage by type: [`spec/coverage.md`](spec/coverage.md). See [ROADMAP.md](ROADMAP.md).
 
 | Component | Where | State |
 |---|---|---|
 | Format spec & JSON Schema | [`spec/`](spec/) | All v0.1 modules drafted |
 | Reference engine (TypeScript) | [`engine/`](engine/) | Working: full cash model, valuation, debt, returns, sensitivity; goldens locked (`npm test`) |
-| Viewer / demo | [`demo/`](demo/) | Working: drag `.ore` files → deal view or multi-file portfolio roll-up; watches files for live refresh; edit and save in the browser (Edit JSON tab) (`npm run demo`) |
-| Example deal files | [`examples/`](examples/) | Six examples, all validating (`npm run validate`), one structured on a real underwrite and [benchmarked against an institutional model](docs/design/institutional-model-benchmark.md) |
+| Viewer / demo | [`demo/`](demo/) | Working: drag `.ore` files → deal view or multi-file portfolio roll-up; watches files for live refresh; click any value to change it, see outputs move, and save the file back (`npm run demo`) |
+| Example deal files | [`examples/`](examples/) | Seven examples, all validating (`npm run validate`), one structured on a real underwrite and [benchmarked against an institutional model](docs/design/institutional-model-benchmark.md) |
 | LLM ingestible spec | [`llms.txt`](llms.txt) | Published |
-| Validator CLI | [`validator/`](validator/) | Working: `validate` / `summarize` / `compute` (`npm run cli -- validate examples`) |
+| Validator CLI | [`validator/`](validator/) | Working: `validate` / `summarize` / `compute` / `tape` / `excel` (`npm run cli -- validate examples`) |
+| Excel workbook | [`excel/`](excel/) | Working: reader sheets + engine in native formulas; matches the engine on every example and stress fixture (`npm run excel:test`); Import button in the `.xlsm` |
 | Documentation site | [`docs/`](docs/) | Decision and design notes; site not started |
 
 ## Why the math is open too

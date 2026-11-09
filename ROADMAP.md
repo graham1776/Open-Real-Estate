@@ -28,6 +28,9 @@ perfect institutional DCF.
       in place through the file handle (Chrome/Edge) with Save As… / download
       everywhere else; unsaved edits pause the watcher; malformed files open
       straight into the editor for repair
+- [x] Viewer editing, second cut: click any value on any tab to change it;
+      outputs recompute and show their change from the saved file; add and
+      remove leases, rent steps, vacant suites, expenses; undo; New deal
 - [x] Multi-file portfolio roll-up: drop several `.ore` files → totals, per-deal
       comparison, blended returns, lease expiration schedule, top tenants,
       combined cash flows (`computePortfolio` in the engine, locked by a
@@ -58,13 +61,13 @@ perfect institutional DCF.
 
 ## v0.1 scope (deliberate constraints)
 
-US industrial only; NNN/NN/modified gross leases; simple debt sizing only. The
+US property; NNN/NN/modified gross/gross leases; simple debt sizing only. The format accepts every commercial property type (decided November 2026: ORE is not an industrial format). The engine is deepest on industrial and warns, per file, about what it does not yet model for other types; see "Property types" below. The
 valuation schema carries inputs for all four approaches — DCF (with terminal value
 method options), direct capitalization (with stabilized/mark-to-market bases and
 near-term cost deductions), sales comparison, and cost — while the v0.1 reference
 engine computes DCF and direct cap; sales comparison and cost travel as structured
-disclosure until engine support lands. Out of scope for v0.1: retail percentage
-rent, office complex reimbursement pools, hotel, multifamily unit-level,
+disclosure until engine support lands. Not yet modeled: retail percentage
+rent, office load factors and gross-up, hotel operations, a multifamily unit mix,
 international conventions, debt waterfalls.
 
 **Field-level coverage and the v0.2 gap backlog** — what the format represents and
@@ -78,6 +81,15 @@ expenditures, and reserving the property→building→suite→lease hierarchy fi
 
 ## After v0.1
 
+**Property types** (design: `docs/design/property-types.md`)
+- Unit mix: a second income shape for multifamily, student and senior housing,
+  self-storage and manufactured housing (issue 45). Until then, units are written
+  one per lease, which works for small properties (`examples/small-multifamily.ore`)
+- Office and retail lease mechanics: percentage rent, load factors, gross-up,
+  parking income (issue 49)
+- One synthetic example per major type, each with a locked golden
+- International files: country, currency, area units (issue 50)
+
 Strategy for the AI and Excel tracks: `docs/design/llm-and-excel.md`.
 
 **AI / agents**
@@ -89,26 +101,26 @@ Strategy for the AI and Excel tracks: `docs/design/llm-and-excel.md`.
   don't reproduce
 
 **Excel** ("your model, ORE's data")
-- `ore export-xlsx`: typed, named tables under a documented ORE Excel Layout
-  convention (retrofit the house model once, every deal file plugs in); published
-  Power Query snippet for zero-install ingestion
+- [x] ORE Workbook (`excel/`, decided 2026-11-06): printable reader sheets plus
+      the engine rebuilt in native formulas, a Check sheet against the engine,
+      Import / Save-as-.ore buttons (`.xlsm`), `ore excel` and `ore tape` CLI
+      routes; conformance enforced by `npm run excel:test` (all examples plus
+      stress fixtures)
+- [ ] First open in Microsoft Excel on Windows and Mac (recalc, Import button,
+      no repair prompt); so far verified by recalculation in LibreOffice
+- [ ] CI job for `npm run excel:test` (needs LibreOffice in the runner)
+- Power Query snippet that builds the tape from a `.ore` file with no macros
 - Excel add-in (`@ore-format/excel`) embedding the TypeScript engine via Office.js:
   open/validate/edit/save `.ore` in place, engine outputs as custom functions
-- Non-goal: a formula-based reference workbook (a second engine breaks conformance)
 
-**Writer track** (reader → writer; raw-JSON editing shipped in the viewer — the
-items below are the rest of what "ORE files get *authored*, not just exchanged"
-implies, roughly in build order)
-- Structured quick-edit: form controls for the high-leverage assumptions
-  (discount rate, exit cap, market rent, growth, renewal probability, purchase
-  price) with instant recompute — the what-if loop analysts actually run; raw
-  JSON stays the escape hatch for everything else
-- What-if delta view: after an edit, show outputs against the pre-edit baseline
-  (value / IRR / Year-1 NOI, side by side) so the price of an assumption is
-  visible the moment it changes
-- New deal in the browser: a "New deal" button that scaffolds a minimal valid
-  file from a template (single-tenant NNN first) — ORE as authoring tool, not
-  just interchange; pairs with `ore init` below
+**Writer track** (reader → writer). Shipped in the viewer: raw-JSON editing,
+then (November 2026) field-level editing on every tab, a results bar showing each
+change against the saved baseline, add/remove for leases, rent steps, vacant
+suites and expenses, undo, and a New deal template. What remains, roughly in
+build order:
+- Forms for the fields still only reachable in Edit JSON: lease options, free
+  rent periods, unfunded TI and commissions, sales comparables, adding and
+  renaming leasing profiles
 - Provenance on save: how does an edited file disclose who changed it? Candidate:
   the editor appends an entry (producer, date, tool) to a provenance history on
   save — needs a small schema decision, since v0.1 provenance describes a single
@@ -124,7 +136,6 @@ implies, roughly in build order)
 **Format & ecosystem**
 - Python port of the reference engine
 - Engine support for sales comparison and cost approach outputs
-- Additional asset classes, starting with the simplest lease structures first
 - Formal governance (technical steering committee), then consortium/foundation home
 
 **Distribution (later, not needed for v0.1)**

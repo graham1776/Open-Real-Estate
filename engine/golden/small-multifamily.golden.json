@@ -1,0 +1,255 @@
+{
+  "engineVersion": "0.1.0",
+  "property": {
+    "name": "Alder Street Apartments",
+    "cityState": "Nashua, NH",
+    "market": "Southern New Hampshire",
+    "submarket": "Nashua",
+    "buildingSF": 10300,
+    "yearBuilt": 1972,
+    "clearHeightFt": null
+  },
+  "occupancy": {
+    "buildingSF": 10300,
+    "occupiedSF": 9400,
+    "vacantSF": 900,
+    "occupancyPercent": 91.26
+  },
+  "leaseMetrics": {
+    "waltYearsByRent": 0.51,
+    "waltYearsBySF": 0.5,
+    "rollNext12ByRentPercent": 100,
+    "rollNext12BySFPercent": 100
+  },
+  "rent": {
+    "inPlaceAnnualBaseRent": 238200,
+    "inPlaceWARentPerSFPerMonth": 2.11,
+    "marketRentPerSFPerMonth": 2.23,
+    "inPlaceVsMarketPercent": -5.23
+  },
+  "expenses": {
+    "aboveLineAnnualExclMgmt": 76500,
+    "belowTheLineAnnual": 3600,
+    "managementFeePercentOfEGR": 5
+  },
+  "noi": {
+    "year1NOI": 163485,
+    "stabilizedAtMarketNOI": 171359
+  },
+  "noiBridgeYear1": {
+    "year": 1,
+    "months": 12,
+    "scheduledBaseRent": 256115,
+    "freeRent": 0,
+    "absorptionVacancy": -11414,
+    "expenseRecoveries": 0,
+    "generalVacancy": -771,
+    "creditLoss": -2553,
+    "effectiveGrossRevenue": 252790,
+    "operatingExpenses": -76500,
+    "managementFee": -12806,
+    "noi": 163485,
+    "belowTheLine": -3600,
+    "tiCosts": -7087,
+    "lcCosts": 0,
+    "cashFlow": 152797
+  },
+  "cashFlows": {
+    "annual": [
+      {
+        "year": 1,
+        "months": 12,
+        "scheduledBaseRent": 256115,
+        "freeRent": 0,
+        "absorptionVacancy": -11414,
+        "expenseRecoveries": 0,
+        "generalVacancy": -771,
+        "creditLoss": -2553,
+        "effectiveGrossRevenue": 252790,
+        "operatingExpenses": -76500,
+        "managementFee": -12806,
+        "noi": 163485,
+        "belowTheLine": -3600,
+        "tiCosts": -7087,
+        "lcCosts": 0,
+        "cashFlow": 152797
+      },
+      {
+        "year": 2,
+        "months": 12,
+        "scheduledBaseRent": 265204,
+        "freeRent": 0,
+        "absorptionVacancy": -10225,
+        "expenseRecoveries": 0,
+        "generalVacancy": -1330,
+        "creditLoss": -2639,
+        "effectiveGrossRevenue": 261236,
+        "operatingExpenses": -78795,
+        "managementFee": -13260,
+        "noi": 169180,
+        "belowTheLine": -3708,
+        "tiCosts": -6755,
+        "lcCosts": 0,
+        "cashFlow": 158717
+      },
+      {
+        "year": 3,
+        "months": 12,
+        "scheduledBaseRent": 273089,
+        "freeRent": 0,
+        "absorptionVacancy": -10571,
+        "expenseRecoveries": 0,
+        "generalVacancy": -1071,
+        "creditLoss": -2720,
+        "effectiveGrossRevenue": 269297,
+        "operatingExpenses": -81159,
+        "managementFee": -13654,
+        "noi": 174484,
+        "belowTheLine": -3819,
+        "tiCosts": -6721,
+        "lcCosts": 0,
+        "cashFlow": 163944
+      },
+      {
+        "year": 4,
+        "months": 12,
+        "scheduledBaseRent": 281266,
+        "freeRent": 0,
+        "absorptionVacancy": -10892,
+        "expenseRecoveries": 0,
+        "generalVacancy": -972,
+        "creditLoss": -2803,
+        "effectiveGrossRevenue": 277491,
+        "operatingExpenses": -83594,
+        "managementFee": -14063,
+        "noi": 179834,
+        "belowTheLine": -3934,
+        "tiCosts": -6702,
+        "lcCosts": 0,
+        "cashFlow": 169198
+      },
+      {
+        "year": 5,
+        "months": 12,
+        "scheduledBaseRent": 289706,
+        "freeRent": 0,
+        "absorptionVacancy": -11211,
+        "expenseRecoveries": 0,
+        "generalVacancy": -952,
+        "creditLoss": -2888,
+        "effectiveGrossRevenue": 285867,
+        "operatingExpenses": -86101,
+        "managementFee": -14485,
+        "noi": 185280,
+        "belowTheLine": -4052,
+        "tiCosts": -6685,
+        "lcCosts": 0,
+        "cashFlow": 174544
+      }
+    ]
+  },
+  "directCap": {
+    "basis": "year1",
+    "basisNOI": 163485,
+    "capRatePercent": 6.25,
+    "grossValue": 2615756,
+    "adjustmentsApplied": [],
+    "indicatedValue": 2615756,
+    "perSF": 253.96
+  },
+  "dcf": {
+    "holdMonths": 60,
+    "discountRatePercent": 8,
+    "reversionDiscountRatePercent": 8,
+    "pvOperating": 674156,
+    "terminalGross": 2937030,
+    "terminalNet": 2848919,
+    "pvTerminal": 1938926,
+    "indicatedValue": 2613082,
+    "perSF": 253.7,
+    "unfundedObligationsDeducted": null
+  },
+  "debt": {
+    "loanAmount": 1715000,
+    "netProceeds": 1697850,
+    "year1DebtService": 126715,
+    "dscrYear1": 1.29
+  },
+  "returns": {
+    "unlevered": {
+      "irrPercent": 9.37,
+      "npvAtDiscountRate": 138582,
+      "equityMultiple": 1.48,
+      "totalProfit": 1193619
+    },
+    "levered": {
+      "irrPercent": 14.05,
+      "equityMultiple": 1.85,
+      "initialEquity": 776650,
+      "totalProfit": 657163
+    }
+  },
+  "sensitivity": {
+    "discountRatesPercent": [
+      7,
+      7.5,
+      8,
+      8.5,
+      9
+    ],
+    "exitCapRatesPercent": [
+      6,
+      6.25,
+      6.5,
+      6.75,
+      7
+    ],
+    "values": [
+      [
+        2890283,
+        2802263,
+        2721013,
+        2645782,
+        2575925
+      ],
+      [
+        2831696,
+        2745703,
+        2666326,
+        2592828,
+        2524580
+      ],
+      [
+        2774660,
+        2690640,
+        2613082,
+        2541270,
+        2474588
+      ],
+      [
+        2719127,
+        2637025,
+        2561238,
+        2491066,
+        2425905
+      ],
+      [
+        2665050,
+        2584814,
+        2510750,
+        2442172,
+        2378492
+      ]
+    ]
+  },
+  "concluded": {
+    "value": 2613082,
+    "source": "computed (dcf, engine)"
+  },
+  "warnings": [
+    {
+      "code": "property_type_coverage",
+      "message": "propertyType \"multifamily\": units are computed one lease at a time; unit-mix conventions (loss to lease, concessions, other income, per-unit metrics) are not modeled yet. Every lease in the file is computed as written."
+    }
+  ]
+}

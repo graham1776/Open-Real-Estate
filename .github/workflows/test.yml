@@ -1,0 +1,27 @@
+name: test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # builds the engine, validates every example, reproduces every golden output
+      - run: npm test
+      # the built engine and llms.txt are committed (the viewer and LLMs read them
+      # straight from the repo), so a source change without a rebuild is a bug
+      - run: npm run llms
+      - name: Committed build outputs are current
+        run: git diff --exit-code -- engine/dist llms.txt

@@ -1,0 +1,247 @@
+{
+  "$schema": "https://oreformat.org/schema/0.1.0/ore.schema.json",
+  "formatVersion": "0.1.0",
+  "property": {
+    "name": "14250 Marigold Avenue",
+    "propertyType": "industrial",
+    "propertySubtype": "warehouse_distribution",
+    "tenancy": "single",
+    "description": "Synthetic example: single-tenant infill distribution building on a fenced 2.1-acre site. All data in this file is fictional.",
+    "address": {
+      "street1": "14250 Marigold Ave",
+      "city": "Santa Fe Springs",
+      "state": "CA",
+      "postalCode": "90670",
+      "county": "Los Angeles",
+      "country": "US"
+    },
+    "location": {
+      "latitude": 33.9325,
+      "longitude": -118.0631,
+      "market": "Los Angeles",
+      "submarket": "Mid-Counties"
+    },
+    "parcels": [
+      {
+        "apn": "8888-001-002",
+        "landAcres": 2.1,
+        "zoning": "M-2"
+      }
+    ],
+    "siteAreaAcres": 2.1,
+    "physical": {
+      "buildingSF": 45120,
+      "officeSF": 3800,
+      "clearHeightFt": 24,
+      "dockHighDoors": 6,
+      "gradeLevelDoors": 2,
+      "railServed": false,
+      "yearBuilt": 1988,
+      "yearRenovated": 2019,
+      "stories": 1,
+      "construction": "tilt_up",
+      "sprinkler": "wet",
+      "powerAmps": 1200,
+      "powerVolts": "277/480V 3-phase",
+      "truckCourtDepthFt": 110,
+      "autoParkingStalls": 42,
+      "coverageRatio": 0.49,
+      "fencedYard": true
+    }
+  },
+  "rentRoll": {
+    "asOfDate": "2026-06-01",
+    "leases": [
+      {
+        "leaseId": "L-001",
+        "tenant": {
+          "name": "Pacific Coast Fulfillment LLC",
+          "industry": "third-party logistics",
+          "creditNotes": "Private regional 3PL, in occupancy since 2021, no late payments per synthetic ledger."
+        },
+        "leasedSF": 45120,
+        "commencementDate": "2021-09-01",
+        "expirationDate": "2028-08-31",
+        "baseRent": {
+          "unit": "perSFPerMonth",
+          "schedule": [
+            {
+              "startDate": "2025-09-01",
+              "amount": 1.42
+            }
+          ]
+        },
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 3.5,
+          "frequencyMonths": 12
+        },
+        "reimbursement": {
+          "structure": "Gross"
+        },
+        "options": [
+          {
+            "type": "termination"
+          },
+          {
+            "type": "renewal",
+            "rentBasis": "fixed",
+            "fixedRent": 1.95,
+            "renewalTermMonths": 48,
+            "renewalCount": 2
+          }
+        ],
+        "securityDeposit": {
+          "amount": 64070,
+          "form": "cash"
+        },
+        "notes": "Steps prior to the as-of date omitted per spec convention; escalation rule generates 2026-2028 steps."
+      }
+    ],
+    "vacantSuites": [],
+    "notes": "Synthetic single-tenant NNN example for schema validation and engine golden files."
+  },
+  "expenses": {
+    "items": [
+      {
+        "expenseId": "E-TAX",
+        "name": "Real Estate Taxes",
+        "category": "real_estate_taxes",
+        "amount": 169200,
+        "amountUnit": "totalPerYear",
+        "recoverable": true,
+        "growthOverridePercent": 2.0,
+        "notes": "Synthetic; modeled at 1.2% of assumed price, statutory 2% annual growth."
+      },
+      {
+        "expenseId": "E-INS",
+        "name": "Insurance",
+        "category": "insurance",
+        "amount": 0.3,
+        "amountUnit": "perSFPerYear",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-CAM",
+        "name": "CAM / Repairs & Maintenance",
+        "category": "cam",
+        "amount": 0.5,
+        "amountUnit": "perSFPerYear",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-MGMT",
+        "name": "Management Fee",
+        "category": "management_fee",
+        "amount": 2.5,
+        "amountUnit": "percentOfEGR",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-RES",
+        "name": "Capital Reserves",
+        "category": "reserves",
+        "amount": 0.1,
+        "amountUnit": "perSFPerYear",
+        "recoverable": false,
+        "belowTheLine": true
+      }
+    ]
+  },
+  "marketAssumptions": {
+    "asOfDate": "2026-06-01",
+    "growth": {
+      "marketRent": [
+        {
+          "fromYear": 1,
+          "annualPercent": 4.0
+        },
+        {
+          "fromYear": 3,
+          "annualPercent": 3.0
+        }
+      ],
+      "expenses": 3.0,
+      "cpi": 2.5
+    },
+    "generalVacancyPercent": 0,
+    "creditLossPercent": 0.5,
+    "leasingProfiles": {
+      "warehouse": {
+        "marketRent": {
+          "amount": 1.55,
+          "unit": "perSFPerMonth"
+        },
+        "termMonths": 60,
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 3.5,
+          "frequencyMonths": 12
+        },
+        "reimbursementStructure": "NNN",
+        "downtimeMonths": 4,
+        "renewalProbabilityPercent": 70,
+        "newTenant": {
+          "tiPerSF": 3,
+          "lcPercentOfRent": 5,
+          "freeRentMonths": 1
+        },
+        "renewal": {
+          "tiPerSF": 0.5,
+          "lcPercentOfRent": 2.5
+        },
+        "renewalRentPercentOfMarket": 95
+      }
+    }
+  },
+  "valuation": {
+    "analysisStartDate": "2026-06-01",
+    "methods": [
+      "dcf",
+      "direct_cap"
+    ],
+    "interestAppraised": "leased_fee",
+    "valuePremise": "as_is",
+    "purpose": "acquisition",
+    "purchasePrice": 14100000,
+    "acquisitionCostsPercent": 0.5,
+    "dcf": {
+      "discountRatePercent": 6.75,
+      "discountTiming": "monthly",
+      "periodConvention": "mid",
+      "terminalValue": {
+        "method": "grown_purchase_price",
+        "annualAppreciationPercent": 2.75,
+        "sellingCostsPercent": 1
+      },
+      "holdPeriodMonths": 90
+    },
+    "directCap": {
+      "capRatePercent": 5.5,
+      "noiBasis": "custom",
+      "customNOI": 812000
+    },
+    "taxReassessment": {
+      "reassessAtReversion": false
+    }
+  },
+  "debt": {
+    "loanAmount": 9000000,
+    "interestRatePercent": 5.5,
+    "termMonths": 120,
+    "amortizationMonths": 360,
+    "fundingDate": "2026-06-01"
+  },
+  "provenance": {
+    "generatedAt": "2026-11-06T00:00:00Z",
+    "generatedBy": {
+      "name": "ORE workbook test fixtures",
+      "role": "other"
+    },
+    "software": {
+      "name": "excel/fixtures/make_fixtures.py",
+      "version": "0.1.0"
+    },
+    "notes": "Synthetic stress fixture for workbook conformance. Not an example deal."
+  }
+}

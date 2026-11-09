@@ -6,7 +6,7 @@ validated against the published JSON Schema in [`schema/`](schema/).
 
 - Current format version: **0.1.0** (pre-release, unstable until tagged)
 - Schema dialect: JSON Schema draft 2020-12
-- v0.1 scope: US industrial (single- and multi-tenant), DCF and direct capitalization
+- Scope: US commercial property of any type, DCF and direct capitalization. The reference engine is deepest on industrial; coverage for each property type is in [`coverage.md`](coverage.md)
 
 ## Module status
 

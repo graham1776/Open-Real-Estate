@@ -18,7 +18,7 @@ const preamble = `# ORE (Open Real Estate) — format reference for LLMs
 
 This is the complete definition of the ORE \`.ore\` file format, version ${FORMAT_VERSION},
 assembled as a single document you can read or author from. ORE is an open,
-JSON-based format for US-industrial commercial real estate underwriting data.
+JSON-based format for commercial real estate underwriting data, for any property type.
 
 ## How to use this document
 
@@ -56,11 +56,53 @@ an LLM needs a number from a \`.ore\` file, call the engine (or the forthcoming
 
 ## Scope (v0.1)
 
-US industrial (single- and multi-tenant); NNN/NN/modified-gross leases. The
-valuation module carries inputs for all four approaches (DCF, direct cap, sales
-comparison, cost); the v0.1 engine computes DCF and direct cap. Out of scope:
-retail percentage rent, office reimbursement pools, hotel, multifamily unit-level,
-international conventions, debt waterfalls.
+US property of any type: set \`property.propertyType\` to what the property is.
+NNN/NN/modified-gross/gross leases. The valuation module carries inputs for all
+four approaches (DCF, direct cap, sales comparison, cost); the v0.1 engine computes
+DCF and direct cap. The engine is deepest on industrial and names, in a
+\`property_type_coverage\` warning, what it has not modeled for other types. Not
+yet modeled: retail percentage rent, office load factors and gross-up, hotel
+operations, international conventions, debt waterfalls.
+
+## Property that is not industrial
+
+- **Office, retail, medical office:** write leases exactly as for industrial. Omit
+  physical fields that do not apply (clear height, dock doors). If the source has
+  percentage rent, parking income, or a load factor, put it in the lease or
+  property \`notes\`: there is no structured field yet, and you must not invent one.
+- **Multifamily, student housing, self-storage, manufactured housing:** there is no
+  unit mix in the format yet. Write ONE LEASE PER UNIT:
+  \`baseRent.unit: "totalPerMonth"\` with the unit's monthly rent,
+  \`reimbursement.structure: "Gross"\`, \`escalation.type: "none"\`, the unit number
+  in \`suite\`, and a \`spaceType\` naming the unit type (\`one_bed\`, \`two_bed\`).
+  Give each unit type a leasing profile with a 12-month term; market rent is stated
+  per square foot, so divide the monthly market rent by the unit size. Vacant units
+  go in \`vacantSuites\`. Set \`property.physical.unitCount\`. Identify residents by
+  unit ("Unit 2A resident"), NEVER by name. Put other income (parking, laundry,
+  fees) in \`rentRoll.notes\` until the format has a field for it. If the source
+  gives only a unit-mix summary and no unit-level rent roll, write one lease per
+  unit at the average rent for its type and say so in \`rentRoll.notes\`.
+- **Outside the US:** addresses must currently be US. Say so and stop; do not
+  force a foreign address into US fields.
+
+## After you write a file: check your own work
+
+A file can validate and still be wrong. Models extracting from an offering
+memorandum tend to drop the hard parts without saying so. Before you hand over a
+file you authored from a source document, do all four:
+
+1. **Reconcile against the source.** Show a table of file versus source for: suite
+   or unit count, total leased SF, annual base rent, total recoveries, total
+   operating expenses, and NOI. Give both numbers and the difference. For each
+   mismatch, say whether you misread the source or the source disagrees with itself.
+2. **Account for the commonly dropped items.** For each lease, state whether the
+   source mentions: free rent, renewal or termination options, expense stops or
+   base years, expense caps, a security deposit, unfunded tenant improvements or
+   commissions. "Not mentioned in the source" is an acceptable answer. Silence is not.
+3. **Disclose authorship.** Fill \`provenance\`: who or what generated the file,
+   when, and every source document with its date.
+4. **Do not invent assumptions.** If the source gives no discount rate, exit cap,
+   or market rent, leave that module out and say so. Do not supply your own.
 
 ---
 `;

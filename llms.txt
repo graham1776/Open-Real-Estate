@@ -2,7 +2,7 @@
 
 This is the complete definition of the ORE `.ore` file format, version 0.1.0,
 assembled as a single document you can read or author from. ORE is an open,
-JSON-based format for US-industrial commercial real estate underwriting data.
+JSON-based format for commercial real estate underwriting data, for any property type.
 
 ## How to use this document
 
@@ -40,11 +40,53 @@ an LLM needs a number from a `.ore` file, call the engine (or the forthcoming
 
 ## Scope (v0.1)
 
-US industrial (single- and multi-tenant); NNN/NN/modified-gross leases. The
-valuation module carries inputs for all four approaches (DCF, direct cap, sales
-comparison, cost); the v0.1 engine computes DCF and direct cap. Out of scope:
-retail percentage rent, office reimbursement pools, hotel, multifamily unit-level,
-international conventions, debt waterfalls.
+US property of any type: set `property.propertyType` to what the property is.
+NNN/NN/modified-gross/gross leases. The valuation module carries inputs for all
+four approaches (DCF, direct cap, sales comparison, cost); the v0.1 engine computes
+DCF and direct cap. The engine is deepest on industrial and names, in a
+`property_type_coverage` warning, what it has not modeled for other types. Not
+yet modeled: retail percentage rent, office load factors and gross-up, hotel
+operations, international conventions, debt waterfalls.
+
+## Property that is not industrial
+
+- **Office, retail, medical office:** write leases exactly as for industrial. Omit
+  physical fields that do not apply (clear height, dock doors). If the source has
+  percentage rent, parking income, or a load factor, put it in the lease or
+  property `notes`: there is no structured field yet, and you must not invent one.
+- **Multifamily, student housing, self-storage, manufactured housing:** there is no
+  unit mix in the format yet. Write ONE LEASE PER UNIT:
+  `baseRent.unit: "totalPerMonth"` with the unit's monthly rent,
+  `reimbursement.structure: "Gross"`, `escalation.type: "none"`, the unit number
+  in `suite`, and a `spaceType` naming the unit type (`one_bed`, `two_bed`).
+  Give each unit type a leasing profile with a 12-month term; market rent is stated
+  per square foot, so divide the monthly market rent by the unit size. Vacant units
+  go in `vacantSuites`. Set `property.physical.unitCount`. Identify residents by
+  unit ("Unit 2A resident"), NEVER by name. Put other income (parking, laundry,
+  fees) in `rentRoll.notes` until the format has a field for it. If the source
+  gives only a unit-mix summary and no unit-level rent roll, write one lease per
+  unit at the average rent for its type and say so in `rentRoll.notes`.
+- **Outside the US:** addresses must currently be US. Say so and stop; do not
+  force a foreign address into US fields.
+
+## After you write a file: check your own work
+
+A file can validate and still be wrong. Models extracting from an offering
+memorandum tend to drop the hard parts without saying so. Before you hand over a
+file you authored from a source document, do all four:
+
+1. **Reconcile against the source.** Show a table of file versus source for: suite
+   or unit count, total leased SF, annual base rent, total recoveries, total
+   operating expenses, and NOI. Give both numbers and the difference. For each
+   mismatch, say whether you misread the source or the source disagrees with itself.
+2. **Account for the commonly dropped items.** For each lease, state whether the
+   source mentions: free rent, renewal or termination options, expense stops or
+   base years, expense caps, a security deposit, unfunded tenant improvements or
+   commissions. "Not mentioned in the source" is an acceptable answer. Silence is not.
+3. **Disclose authorship.** Fill `provenance`: who or what generated the file,
+   when, and every source document with its date.
+4. **Do not invent assumptions.** If the source gives no discount rate, exit cap,
+   or market rent, leave that module out and say so. Do not supply your own.
 
 ---
 
@@ -61,7 +103,7 @@ validated against the published JSON Schema in [`schema/`](schema/).
 
 - Current format version: **0.1.0** (pre-release, unstable until tagged)
 - Schema dialect: JSON Schema draft 2020-12
-- v0.1 scope: US industrial (single- and multi-tenant), DCF and direct capitalization
+- Scope: US commercial property of any type, DCF and direct capitalization. The reference engine is deepest on industrial; coverage for each property type is in [`coverage.md`](coverage.md)
 
 ## Module status
 
@@ -140,8 +182,8 @@ are listed as JSON paths from the file root. **(R)** marks required fields.
 | Field | Type | Definition |
 |---|---|---|
 | `name` **(R)** | string | Display name of the property. |
-| `propertyType` **(R)** | `"industrial"` | Asset class. v0.1 is industrial-only. |
-| `propertySubtype` | enum | `warehouse_distribution`, `manufacturing`, `flex`, `cold_storage`, `truck_terminal`, `industrial_outdoor_storage`, `other`. |
+| `propertyType` **(R)** | enum | Asset class: `industrial`, `office`, `medical_office`, `life_science`, `retail`, `multifamily`, `student_housing`, `senior_housing`, `manufactured_housing`, `self_storage`, `data_center`, `hospitality`, `mixed_use`, `land`, `other`. The format carries all of them; what the engine models for each is in `coverage.md`, and the engine names the gap for a given file in a `property_type_coverage` warning. |
+| `propertySubtype` | string | Lowercase snake_case. For `industrial`, one of `warehouse_distribution`, `manufacturing`, `flex`, `cold_storage`, `truck_terminal`, `industrial_outdoor_storage`, `other`. Open text for other asset classes until their lists are settled (e.g. `garden`, `mid_rise`, `grocery_anchored`). |
 | `tenancy` | enum | `single` or `multi`, as currently operated. |
 | `description` | string | Free-text narrative. |
 | `notes` | string | Measurement conventions, entitlements, anything needed to interpret the module. |
@@ -182,6 +224,7 @@ are provided it should equal their sum.
 | Field | Type | Definition |
 |---|---|---|
 | `buildingSF` **(R)** | number | Total rentable building area, SF. Default denominator for per-SF metrics and pro-rata shares. |
+| `unitCount` | integer | Number of rentable units, for property counted in units (apartments, storage units, pads, beds). |
 | `officeSF` | number | Office build-out, SF, included within `buildingSF`. |
 | `mezzanineSF` | number | Mezzanine area, SF. |
 | `clearHeightFt` | number | Minimum clear height, feet, at the first interior column line. |
@@ -242,7 +285,7 @@ Steps are in ascending date order; steps before `asOfDate` may be omitted.
 | `unit` **(R)** | enum | `perSFPerMonth`, `perSFPerYear`, `totalPerMonth`, `totalPerYear`. Applies to every `amount` in the schedule. Per-SF units are multiplied by `leasedSF`; annual units divided by 12 for monthly cash flows. |
 | `schedule[]` **(R)** | array | Steps of `{ startDate, amount }`, min 1. |
 
-> **Why an explicit unit?** Industrial rents are quoted per-SF-per-month in some
+> **Why an explicit unit?** Rents are quoted per unit per month for apartments, and industrial rents are quoted per-SF-per-month in some
 > markets and per-SF-per-year in others. ORE never infers the convention — the file
 > states it, so every engine computes the same cash flow.
 
@@ -424,7 +467,7 @@ inputs travel as structured, auditable disclosure until engine support lands.
 
 | Field | Type | Definition |
 |---|---|---|
-| `unitBasis` **(R)** | enum | `building_sf` (improved industrial), `land_sf` / `land_acre` (land-driven product, e.g. IOS). |
+| `unitBasis` **(R)** | enum | `building_sf` (improved property), `land_sf` / `land_acre` (land-driven product, e.g. IOS). |
 | `comparables[]` **(R)** | array | Min 1 — see below. |
 | `concludedValuePerUnit` **(R)** | number | Concluded value per unit after reconciling the adjusted comps. |
 | `indicatedValue` | number | Concluded × subject units; stated so files are self-checking. |
@@ -509,7 +552,7 @@ These are authoritative; prose above is explanatory.
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://oreformat.org/schema/0.1.0/ore.schema.json",
   "title": "ORE Deal File",
-  "description": "Root schema for an ORE (Open Real Estate) deal file. A .ore file is a single, self-contained JSON document conforming to this schema — all deal data and calculation assumptions travel together in one file. v0.1 scope: US industrial, DCF and direct capitalization.",
+  "description": "Root schema for an ORE (Open Real Estate) deal file. A .ore file is a single, self-contained JSON document conforming to this schema — all deal data and calculation assumptions travel together in one file. v0.1 scope: US property of any type (deepest engine coverage is industrial), DCF and direct capitalization.",
   "type": "object",
   "required": ["formatVersion", "property", "rentRoll"],
   "additionalProperties": false,
@@ -833,10 +876,30 @@ These are authoritative; prose above is explanatory.
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://oreformat.org/schema/0.1.0/property.schema.json",
   "title": "ORE Property Module",
-  "description": "Identity, location, and physical characteristics of the property. ORE v0.1 scope is US industrial (single-tenant and multi-tenant).",
+  "description": "Identity, location, and physical characteristics of the property. Any commercial property type; the examples and the reference engine's deepest coverage are industrial (see spec/coverage.md for coverage by type).",
   "type": "object",
   "required": ["name", "propertyType", "address", "physical"],
   "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "propertyType": { "const": "industrial" } }, "required": ["propertyType"] },
+      "then": {
+        "properties": {
+          "propertySubtype": {
+            "enum": [
+              "warehouse_distribution",
+              "manufacturing",
+              "flex",
+              "cold_storage",
+              "truck_terminal",
+              "industrial_outdoor_storage",
+              "other"
+            ]
+          }
+        }
+      }
+    }
+  ],
   "properties": {
     "name": {
       "type": "string",
@@ -844,21 +907,30 @@ These are authoritative; prose above is explanatory.
       "description": "Display name of the property, e.g. \"4250 Valley Blvd\" or \"Gateway Logistics Center\"."
     },
     "propertyType": {
-      "const": "industrial",
-      "description": "Asset class. ORE v0.1 supports industrial only; future versions will widen this enum."
+      "type": "string",
+      "enum": [
+        "industrial",
+        "office",
+        "medical_office",
+        "life_science",
+        "retail",
+        "multifamily",
+        "student_housing",
+        "senior_housing",
+        "manufactured_housing",
+        "self_storage",
+        "data_center",
+        "hospitality",
+        "mixed_use",
+        "land",
+        "other"
+      ],
+      "description": "Asset class. The format carries any of these; how much of each the reference engine models is listed by type in spec/coverage.md, and the engine names any gap for a given file in a `property_type_coverage` warning. Use \"mixed_use\" when no single use dominates, and \"other\" with a note in `description` if none fit."
     },
     "propertySubtype": {
       "type": "string",
-      "enum": [
-        "warehouse_distribution",
-        "manufacturing",
-        "flex",
-        "cold_storage",
-        "truck_terminal",
-        "industrial_outdoor_storage",
-        "other"
-      ],
-      "description": "Industrial subtype. Use \"other\" with a note in `description` if none fit."
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "Subtype within the asset class, lowercase snake_case. Industrial files use one of: warehouse_distribution, manufacturing, flex, cold_storage, truck_terminal, industrial_outdoor_storage, other. Other asset classes are open text until their lists are settled, e.g. \"garden\", \"mid_rise\", \"grocery_anchored\", \"suburban\"."
     },
     "tenancy": {
       "type": "string",
@@ -873,7 +945,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["street1", "city", "state", "postalCode"],
       "additionalProperties": false,
-      "description": "Situs address. ORE v0.1 scope is US properties only.",
+      "description": "Situs address. US addresses only for now (see the international issue in the tracker).",
       "properties": {
         "street1": { "type": "string", "minLength": 1, "description": "Primary street address line." },
         "street2": { "type": "string", "description": "Secondary address line (suite, building, etc.)." },
@@ -937,6 +1009,11 @@ These are authoritative; prose above is explanatory.
           "type": "number",
           "exclusiveMinimum": 0,
           "description": "Total rentable building area in square feet. The denominator for per-SF metrics and pro-rata shares unless a lease overrides it."
+        },
+        "unitCount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of rentable units, for property counted in units (apartments, storage units, pads, beds). The denominator for per-unit metrics."
         },
         "officeSF": {
           "type": "number",
@@ -1096,7 +1173,7 @@ These are authoritative; prose above is explanatory.
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://oreformat.org/schema/0.1.0/rentRoll.schema.json",
   "title": "ORE Rent Roll Module",
-  "description": "The in-place rent roll: every lease encumbering the property as of `asOfDate`, plus vacant suites available for lease-up. ORE v0.1 covers NNN, NN, and modified gross structures typical of US industrial.",
+  "description": "The in-place rent roll: every lease encumbering the property as of `asOfDate`, plus vacant suites available for lease-up. Covers NNN, NN, modified gross, and gross structures. Unit-based property (apartments, storage) can be written one unit per lease today; a compact unit mix is proposed.",
   "type": "object",
   "required": ["asOfDate", "leases"],
   "additionalProperties": false,
@@ -1740,7 +1817,7 @@ These are authoritative; prose above is explanatory.
         "unitBasis": {
           "type": "string",
           "enum": ["building_sf", "land_sf", "land_acre"],
-          "description": "Unit of comparison. building_sf for improved industrial; land_sf or land_acre for land-driven product (e.g. industrial outdoor storage)."
+          "description": "Unit of comparison. building_sf for improved property; land_sf or land_acre for land-driven product (e.g. industrial outdoor storage)."
         },
         "comparables": {
           "type": "array",

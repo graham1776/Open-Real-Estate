@@ -23,8 +23,8 @@ are listed as JSON paths from the file root. **(R)** marks required fields.
 | Field | Type | Definition |
 |---|---|---|
 | `name` **(R)** | string | Display name of the property. |
-| `propertyType` **(R)** | `"industrial"` | Asset class. v0.1 is industrial-only. |
-| `propertySubtype` | enum | `warehouse_distribution`, `manufacturing`, `flex`, `cold_storage`, `truck_terminal`, `industrial_outdoor_storage`, `other`. |
+| `propertyType` **(R)** | enum | Asset class: `industrial`, `office`, `medical_office`, `life_science`, `retail`, `multifamily`, `student_housing`, `senior_housing`, `manufactured_housing`, `self_storage`, `data_center`, `hospitality`, `mixed_use`, `land`, `other`. The format carries all of them; what the engine models for each is in `coverage.md`, and the engine names the gap for a given file in a `property_type_coverage` warning. |
+| `propertySubtype` | string | Lowercase snake_case. For `industrial`, one of `warehouse_distribution`, `manufacturing`, `flex`, `cold_storage`, `truck_terminal`, `industrial_outdoor_storage`, `other`. Open text for other asset classes until their lists are settled (e.g. `garden`, `mid_rise`, `grocery_anchored`). |
 | `tenancy` | enum | `single` or `multi`, as currently operated. |
 | `description` | string | Free-text narrative. |
 | `notes` | string | Measurement conventions, entitlements, anything needed to interpret the module. |
@@ -65,6 +65,7 @@ are provided it should equal their sum.
 | Field | Type | Definition |
 |---|---|---|
 | `buildingSF` **(R)** | number | Total rentable building area, SF. Default denominator for per-SF metrics and pro-rata shares. |
+| `unitCount` | integer | Number of rentable units, for property counted in units (apartments, storage units, pads, beds). |
 | `officeSF` | number | Office build-out, SF, included within `buildingSF`. |
 | `mezzanineSF` | number | Mezzanine area, SF. |
 | `clearHeightFt` | number | Minimum clear height, feet, at the first interior column line. |
@@ -125,7 +126,7 @@ Steps are in ascending date order; steps before `asOfDate` may be omitted.
 | `unit` **(R)** | enum | `perSFPerMonth`, `perSFPerYear`, `totalPerMonth`, `totalPerYear`. Applies to every `amount` in the schedule. Per-SF units are multiplied by `leasedSF`; annual units divided by 12 for monthly cash flows. |
 | `schedule[]` **(R)** | array | Steps of `{ startDate, amount }`, min 1. |
 
-> **Why an explicit unit?** Industrial rents are quoted per-SF-per-month in some
+> **Why an explicit unit?** Rents are quoted per unit per month for apartments, and industrial rents are quoted per-SF-per-month in some
 > markets and per-SF-per-year in others. ORE never infers the convention — the file
 > states it, so every engine computes the same cash flow.
 
@@ -307,7 +308,7 @@ inputs travel as structured, auditable disclosure until engine support lands.
 
 | Field | Type | Definition |
 |---|---|---|
-| `unitBasis` **(R)** | enum | `building_sf` (improved industrial), `land_sf` / `land_acre` (land-driven product, e.g. IOS). |
+| `unitBasis` **(R)** | enum | `building_sf` (improved property), `land_sf` / `land_acre` (land-driven product, e.g. IOS). |
 | `comparables[]` **(R)** | array | Min 1 — see below. |
 | `concludedValuePerUnit` **(R)** | number | Concluded value per unit after reconciling the adjusted comps. |
 | `indicatedValue` | number | Concluded × subject units; stated so files are self-checking. |

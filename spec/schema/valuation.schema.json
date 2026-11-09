@@ -322,7 +322,7 @@
         "unitBasis": {
           "type": "string",
           "enum": ["building_sf", "land_sf", "land_acre"],
-          "description": "Unit of comparison. building_sf for improved industrial; land_sf or land_acre for land-driven product (e.g. industrial outdoor storage)."
+          "description": "Unit of comparison. building_sf for improved property; land_sf or land_acre for land-driven product (e.g. industrial outdoor storage)."
         },
         "comparables": {
           "type": "array",

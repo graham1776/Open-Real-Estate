@@ -118,12 +118,16 @@ model** (the IFC/buildingSMART path) once there is a working v1 and momentum.
 ## 6. Build specification — v0.1
 
 ### Scope (deliberate constraints)
-- **Asset class:** US industrial only — single-tenant and multi-tenant. Simplest
-  lease structures (NN/NNN, modified gross), founder's domain expertise, expand later.
+- **Asset class:** all commercial property types (decided November 2026, after
+  launch feedback: a format that cannot carry multifamily is not a CRE format).
+  Industrial is where the examples and engine depth started, not a boundary. The
+  schema accepts every type; the engine warns per file about conventions it does
+  not yet model (`property_type_coverage`). Never describe ORE as an industrial
+  format. Design: `docs/design/property-types.md`.
 - **Valuation methods:** DCF and direct capitalization. Sales comparison later.
-- **Out of scope for v0.1:** retail percentage rent, office complex reimbursement
-  pools, hotel, multifamily unit-level, international conventions, debt waterfalls
-  (simple debt sizing only). Also out of scope permanently: import from or export to
+- **Not yet modeled:** retail percentage rent, office load factors and gross-up,
+  hotel operations, a multifamily unit mix, international conventions, debt
+  waterfalls (simple debt sizing only). Each is tracked as an issue. Also out of scope permanently: import from or export to
   any proprietary file format (see §0).
 
 ### Format design principles
@@ -191,9 +195,13 @@ re-keying, not a missing DCF. Two tiers:
   the TypeScript reference engine runs inside Excel unmodified
   (`@ore-format/excel`): open/validate/edit/save `.ore` in place, engine outputs as
   custom functions (`=ORE.NOI(1)`, `=ORE.IRR()`).
-- **Explicit non-goal:** no formula-based reference workbook re-implementing engine
-  logic — a second engine breaks the conformance story and is a permanent parity
-  tax. Third parties may build one (golden files make it testable); we don't.
+- **ORE Workbook (decided Nov 2026, reversing the June non-goal):** a generated
+  workbook in `excel/` reads any `.ore` file via a path/value tape into printable
+  reader sheets and recomputes the deal in native formulas that mirror the engine,
+  with a Check sheet comparing the two. Parity is enforced, not hoped for:
+  `npm run excel:test` must pass, and an engine methodology change updates
+  `excel/build_workbook.py` in the same PR. The TypeScript engine stays the
+  reference. See `docs/decisions/2026-11-06-excel-workbook.md`.
 
 ### Repo structure
 ```
@@ -202,6 +210,7 @@ re-keying, not a missing DCF. Two tiers:
 /examples    — 3+ anonymized industrial deal files (single-tenant NNN,
                multi-tenant infill, value-add with rollover)
 /validator   — CLI + browser validation tool
+/excel       — ORE Workbook (reader + formula engine), generator, conformance tests
 /demo        — browser drag-and-drop DCF demo
 /docs        — documentation site source
 CLAUDE.md, LICENSE, CONTRIBUTING.md, GOVERNANCE.md, ROADMAP.md

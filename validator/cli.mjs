@@ -11,10 +11,12 @@
 
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { computeAll, lint, ENGINE_VERSION } from "../engine/dist/index.js";
+import { dealTape, tapeToTSV } from "./tape.mjs";
+import { workbookWithTape } from "./xlsx.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..");
@@ -185,6 +187,40 @@ function cmdCompute(paths) {
   console.log(JSON.stringify(computeAll(r.deal), null, 2));
 }
 
+// ---------- tape ----------
+
+function loadValid(path) {
+  const validateSchema = buildSchemaValidator();
+  const r = checkFile(path, validateSchema);
+  if (isBlocked(r)) {
+    console.error(`error: ${basename(path)} fails validation — run \`validate\` for detail.`);
+    process.exit(1);
+  }
+  return r.deal;
+}
+
+function cmdTape(paths, asJson, withEngine) {
+  if (paths.length !== 1) fail("tape takes exactly one .ore file.");
+  const deal = loadValid(paths[0]);
+  const rows = dealTape(deal, withEngine ? computeAll(deal) : null);
+  process.stdout.write(asJson ? JSON.stringify(rows, null, 1) + "\n" : tapeToTSV(rows));
+}
+
+// ---------- excel ----------
+
+function cmdExcel(paths, out, withEngine) {
+  if (paths.length !== 1) fail("excel takes exactly one .ore file.");
+  const target = out ?? basename(paths[0]).replace(/\.ore$/i, "") + ".xlsx";
+  const macro = /\.xlsm$/i.test(target);
+  if (!macro && !/\.xlsx$/i.test(target)) fail("output file must end in .xlsx (or .xlsm for the macro-enabled workbook).");
+  const template = join(root, "excel", macro ? "ORE-Workbook.xlsm" : "ORE-Workbook.xlsx");
+  if (!existsSync(template)) fail(`workbook template not found at ${template}`);
+  const deal = loadValid(paths[0]);
+  const rows = dealTape(deal, withEngine ? computeAll(deal) : null);
+  writeFileSync(target, workbookWithTape(readFileSync(template), rows));
+  console.log(`wrote ${target} (${rows.length} tape rows${withEngine ? ", engine outputs included for the Check sheet" : ""})`);
+}
+
 // ---------- entry ----------
 
 const USAGE = `ORE validator CLI v${CLI_VERSION} (engine v${ENGINE_VERSION})
@@ -197,6 +233,17 @@ Usage:
                                         rents, NOI, value, returns.
   ore compute <file.ore>                Full reference-engine output as JSON
                                         (pipe to jq).
+  ore tape <file.ore> [--engine] [--json]
+                                        The file as a two-column data tape
+                                        (path, value), tab-separated; --engine
+                                        appends reference-engine outputs under
+                                        $engine.*
+  ore excel <file.ore> [-o out.xlsx|out.xlsm] [--no-engine]
+                                        A copy of the ORE Excel workbook with
+                                        the deal loaded: printable reader
+                                        sheets, the engine rebuilt in native
+                                        formulas, and a Check sheet comparing
+                                        it to this engine's outputs.
   ore --version                         Print version.
 
 A .ore file is standard JSON; the schema lives in /spec/schema and the engine
@@ -207,7 +254,13 @@ if (argv.includes("--version") || argv.includes("-v")) {
   console.log(`@ore-format/cli ${CLI_VERSION} (engine ${ENGINE_VERSION})`);
   process.exit(0);
 }
-const [command, ...rest] = argv;
+const [command, ...rest0] = argv;
+let outPath = null;
+const rest = [];
+for (let i = 0; i < rest0.length; i++) {
+  if (rest0[i] === "-o" || rest0[i] === "--out") outPath = rest0[++i] ?? fail("-o needs a file name.");
+  else rest.push(rest0[i]);
+}
 const asJson = rest.includes("--json");
 const paths = rest.filter((a) => !a.startsWith("--"));
 
@@ -215,7 +268,7 @@ if (!command || command === "help" || command === "--help" || command === "-h") 
   console.log(USAGE);
   process.exit(command ? 0 : 2);
 }
-if (!["validate", "summarize", "compute"].includes(command)) {
+if (!["validate", "summarize", "compute", "tape", "excel"].includes(command)) {
   fail(`Unknown command: ${command}. Run \`ore help\` for usage.`);
 }
 if (paths.length === 0) fail(`${command} needs at least one .ore file. Run \`ore help\` for usage.`);
@@ -229,5 +282,11 @@ switch (command) {
     break;
   case "compute":
     cmdCompute(paths);
+    break;
+  case "tape":
+    cmdTape(paths, asJson, rest.includes("--engine"));
+    break;
+  case "excel":
+    cmdExcel(paths, outPath, !rest.includes("--no-engine"));
     break;
 }

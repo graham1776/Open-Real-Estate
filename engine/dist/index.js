@@ -59,6 +59,26 @@ function sum(a, from, to) {
         s += a[i];
     return s;
 }
+// What the engine does not yet model for each property type beyond industrial.
+// A type with no entry is fully covered. The format carries all of these; this
+// table is how a file is told, in its own warnings, what was left out.
+const UNIT_BASED_GAP = "units are computed one lease at a time; unit-mix conventions (loss to lease, concessions, other income, per-unit metrics) are not modeled yet.";
+const OFFICE_GAP = "load factors (rentable vs usable area), expense gross-up to occupancy, and parking income are not modeled yet.";
+const PROPERTY_TYPE_GAPS = {
+    office: OFFICE_GAP,
+    medical_office: OFFICE_GAP,
+    life_science: OFFICE_GAP,
+    retail: "percentage rent and recovery pools with anchor exclusions are not modeled yet.",
+    multifamily: UNIT_BASED_GAP,
+    student_housing: UNIT_BASED_GAP,
+    senior_housing: UNIT_BASED_GAP,
+    manufactured_housing: UNIT_BASED_GAP,
+    self_storage: UNIT_BASED_GAP,
+    data_center: "power-based rent (per kW) and utility pass-throughs are not modeled yet.",
+    hospitality: "operating revenue (room rate and occupancy) is not modeled; only leases are computed.",
+    mixed_use: "conventions specific to each component (unit mix, percentage rent, load factors) are not modeled yet.",
+    other: "this property type has no engine conventions of its own.",
+};
 class Warnings {
     list = [];
     seen = new Set();
@@ -1074,6 +1094,10 @@ export function computeAll(deal) {
     const H = dcfIn ? (dcfIn.holdPeriodMonths ?? dcfIn.holdPeriodYears * 12) : 12;
     if (dcfIn?.discountTiming === "annual") {
         warnings.add("annual_timing", "discountTiming \"annual\": cash flows aggregated by year and discounted annually, per the file.");
+    }
+    const coverageGap = PROPERTY_TYPE_GAPS[deal.property.propertyType];
+    if (coverageGap) {
+        warnings.add("property_type_coverage", `propertyType "${deal.property.propertyType}": ${coverageGap} Every lease in the file is computed as written.`);
     }
     const horizon = Math.max(H + 36, 48);
     const model = buildModel(deal, horizon, warnings);
