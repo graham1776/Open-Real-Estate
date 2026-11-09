@@ -195,9 +195,13 @@ re-keying, not a missing DCF. Two tiers:
   the TypeScript reference engine runs inside Excel unmodified
   (`@ore-format/excel`): open/validate/edit/save `.ore` in place, engine outputs as
   custom functions (`=ORE.NOI(1)`, `=ORE.IRR()`).
-- **Explicit non-goal:** no formula-based reference workbook re-implementing engine
-  logic — a second engine breaks the conformance story and is a permanent parity
-  tax. Third parties may build one (golden files make it testable); we don't.
+- **ORE Workbook (decided Nov 2026, reversing the June non-goal):** a generated
+  workbook in `excel/` reads any `.ore` file via a path/value tape into printable
+  reader sheets and recomputes the deal in native formulas that mirror the engine,
+  with a Check sheet comparing the two. Parity is enforced, not hoped for:
+  `npm run excel:test` must pass, and an engine methodology change updates
+  `excel/build_workbook.py` in the same PR. The TypeScript engine stays the
+  reference. See `docs/decisions/2026-11-06-excel-workbook.md`.
 
 ### Repo structure
 ```
@@ -206,6 +210,7 @@ re-keying, not a missing DCF. Two tiers:
 /examples    — 3+ anonymized industrial deal files (single-tenant NNN,
                multi-tenant infill, value-add with rollover)
 /validator   — CLI + browser validation tool
+/excel       — ORE Workbook (reader + formula engine), generator, conformance tests
 /demo        — browser drag-and-drop DCF demo
 /docs        — documentation site source
 CLAUDE.md, LICENSE, CONTRIBUTING.md, GOVERNANCE.md, ROADMAP.md

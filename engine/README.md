@@ -40,6 +40,8 @@ npm run golden:update   # consciously re-lock after a methodology change
 ```
 
 A conforming third-party implementation reproduces the golden outputs exactly.
+The [ORE Workbook](../excel/) is one: native Excel formulas, held to these outputs
+by `npm run excel:test`.
 Methodology changes must re-lock goldens with justification in the commit.
 
 Planned package: `@ore-format/engine`. Layout: `src/` TypeScript sources,

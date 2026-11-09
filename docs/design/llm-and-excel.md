@@ -96,21 +96,27 @@ This delivers "the logic natively in Excel" with exactly one engine in existence
 the same auditable code running in the browser demo, Node, agents (via MCP), and
 Excel. No formula re-implementation, no divergence, no parity tax.
 
-### Explicit non-goal
+### Tier 1b — the ORE Workbook (adopted 2026-11-06)
 
-The project does not build or maintain a **formula-based reference workbook** that
-re-implements engine logic in native Excel formulas. A second engine breaks the
-conformance story the moment a rounding mode differs, and maintaining formula
-parity across schema versions is a permanent tax. Third parties are free to build
-one — conformance is defined by the golden-file suite, so such a workbook is even
-objectively testable — but it is not a project deliverable.
+*This replaces the original "explicit non-goal" of a formula workbook; see
+`docs/decisions/2026-11-06-excel-workbook.md`.*
+
+A generated workbook (`excel/ORE-Workbook.xlsx` / `.xlsm`) reads any `.ore` file
+through a path/value **tape** into printable reader sheets, and computes the deal
+with native formulas that mirror the reference engine. A Check sheet places every
+workbook output beside the engine's. The parity risk the original note raised is
+handled by enforcement rather than avoidance: `npm run excel:test` recalculates the
+workbook for every example and stress fixture and fails on any difference, and a
+methodology change to the engine must update the workbook generator in the same
+pull request. The engine remains the reference; the workbook conforms to it.
 
 ## Sequencing
 
 1. **v0.1 (with the spec):** root `$schema` field; LLM-legibility rules enforced in
    schema review; `llms.txt` published with the docs.
-2. **Engine ships:** MCP server (`@ore-format/mcp`) and Excel export
-   (`ore export-xlsx` + ORE Excel Layout doc + Power Query snippet) are the first
-   two consumers after the browser demo.
+2. **Engine ships:** MCP server (`@ore-format/mcp`) and Excel export are the first
+   two consumers after the browser demo. Excel export shipped as the ORE Workbook
+   (`ore excel`, `ore tape`, and an Import button) in November 2026; a Power Query
+   snippet remains open.
 3. **Later:** Excel add-in with embedded engine; optional producer-stated summary
    block once the engine can verify it.
