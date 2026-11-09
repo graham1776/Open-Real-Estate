@@ -24,7 +24,7 @@
   #drop { margin: 22px; padding: 46px 20px; border: 2px dashed var(--line); border-radius: 10px; background: var(--card); text-align: center; color: var(--muted); cursor: pointer; }
   #drop.hover { border-color: var(--accent); color: var(--accent); }
   #drop strong { color: var(--ink); }
-  main { display: none; padding: 0 22px 40px; max-width: 1100px; }
+  main { display: none; padding: 0 22px 40px; max-width: 1200px; }
   nav { display: flex; gap: 4px; margin: 16px 0 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
   nav button { border: none; background: none; padding: 9px 14px; font: inherit; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; }
   nav button.on { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
@@ -67,13 +67,39 @@
   .muted { color: var(--muted); }
   .gap-neg { color: var(--bad); } .gap-pos { color: var(--good); }
   footer { padding: 18px 22px; color: var(--muted); font-size: 12px; }
+  input.ed, select.ed { font: inherit; color: inherit; background: transparent; border: none; border-bottom: 1px dotted #9aa8b8; border-radius: 0; padding: 0 2px; margin: 0; max-width: 100%; }
+  input.ed.num { text-align: right; font-variant-numeric: tabular-nums; }
+  input.ed:hover, select.ed:hover { border-bottom-color: var(--accent); background: #f3f7ff; }
+  input.ed:focus, select.ed:focus { outline: 2px solid var(--accent); outline-offset: 1px; background: #fff; border-bottom-color: transparent; }
+  input.ed::placeholder { color: #b3bdc9; }
+  input.ed[type=date] { width: 13ch; }
+  select.ed { cursor: pointer; padding-right: 0; }
+  .edbox { accent-color: var(--accent); cursor: pointer; }
+  .btn.mini { font-size: 12px; padding: 1px 7px; color: var(--muted); }
+  .btn.go { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .btn.go:hover:not(:disabled) { background: #0047cc; color: #fff; }
+  table.form td:first-child { color: var(--muted); width: 210px; white-space: nowrap; }
+  table.form table.form td:first-child { width: 120px; }
+  tr.detail > td { background: #fbfcfd; }
+  tr.detail table { margin: 0; border: none; background: transparent; }
+  tr.detail table td { border-bottom: none; padding: 4px 10px; }
+  .card .v input.ed { font-weight: 650; }
+  #results { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 14px 0 0; padding: 10px 14px; background: var(--card); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 2px 6px rgba(26,36,51,.06); }
+  #results .resrow { display: flex; gap: 22px; flex-wrap: wrap; }
+  #results .res .k { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  #results .res .v { font-size: 16px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  #results .res .d { font-size: 12px; color: var(--muted); min-height: 1.3em; }
+  #results .resact { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; }
+  .card input.ed.num, h2 input.ed { text-align: left; }
+  main section { overflow-x: auto; }
+  @media (max-width: 700px) { #results { position: static; } table.form td:first-child { width: auto; white-space: normal; } }
   #refreshflash { display: none; position: fixed; right: 18px; bottom: 18px; background: var(--ink); color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 12px; opacity: .92; }
 </style>
 </head>
 <body>
 <header>
   <h1>ORE Viewer</h1>
-  <span class="tag">Open Real Estate format — see the deal in 30 seconds, edit it, save it. Runs entirely in your browser; nothing is uploaded.</span>
+  <span class="tag">Open Real Estate format — open a deal, change any number, see what it does, save the file. Runs entirely in your browser; nothing is uploaded.</span>
   <span class="links"><a href="../">About ORE</a><a href="https://github.com/graham1776/Open-Real-Estate">GitHub</a></span>
 </header>
 
@@ -85,13 +111,14 @@
   <input type="file" id="file" accept=".ore,.json" multiple hidden>
   <div id="examples">
     <div><strong>No file yet?</strong> Open a sample deal and see how it works.</div>
-    <div class="row"><button class="btn primary" data-x="multi-tenant-infill">Try an example deal</button></div>
+    <div class="row"><button class="btn primary" data-x="multi-tenant-infill">Try an example deal</button> <button class="btn" id="newdeal" style="padding:9px 18px;font-size:14px">Start a new deal</button></div>
     <div class="row" id="example-chips"></div>
     <div id="examples-msg" class="muted"></div>
   </div>
 </div>
 
 <main id="single">
+  <div id="results"></div>
   <nav id="tabs"></nav>
   <section id="tab-summary"></section>
   <section id="tab-rentroll"></section>
@@ -127,14 +154,22 @@ const state = { files: [], active: null, tab: "summary", watch: true };
 let nextId = 1;
 
 function makeEntry(name, text, source) {
-  const entry = { id: nextId++, name, source, text: null, draft: null, deal: null, out: null, problems: [], error: null };
+  const entry = { id: nextId++, name, source, text: null, draft: null, deal: null, out: null, problems: [], error: null,
+    savedText: null, baseOut: null, undo: [], open: new Set() };
   applyText(entry, text);
+  markSaved(entry);
   return entry;
 }
 
 // draft = text in the editor not yet applied; applied text is the state everything
 // else (chips, tabs, portfolio, save) reads.
 const isDirty = (entry) => entry.draft != null && entry.draft !== entry.text;
+
+// savedText = the file as opened or last saved. Applied edits (from the forms or
+// the JSON tab) move entry.text away from it; baseOut is what the results bar
+// measures changes against.
+const hasUnsaved = (entry) => isDirty(entry) || entry.text !== entry.savedText;
+function markSaved(entry) { entry.savedText = entry.text; entry.baseOut = entry.out; }
 
 function applyText(entry, text) {
   entry.text = text;
@@ -183,6 +218,7 @@ async function loadFile(file) {
 
 async function reread(entry) {
   const s = entry.source;
+  if (s.kind === "memory") return entry.text; // started or saved here; nothing on disk to re-read
   if (s.kind === "fetch") return fetch(s.url, { cache: "no-store" }).then((r) => r.text());
   if (s.kind === "handle") {
     const file = await s.handle.getFile();
@@ -199,11 +235,11 @@ async function refreshAll(manual = false) {
   refreshing = true;
   let changed = 0;
   for (const entry of state.files) {
-    if (isDirty(entry)) continue; // unsaved in-app edits win over the disk copy
+    if (hasUnsaved(entry)) continue; // unsaved in-app edits win over the disk copy
     if (!manual && entry.source.kind === "static") continue; // not watchable
     try {
       const text = await reread(entry);
-      if (text !== entry.text) { applyText(entry, text); changed++; }
+      if (text !== entry.text) { applyText(entry, text); markSaved(entry); entry.undo = []; changed++; }
     } catch { /* file mid-save or snapshot invalidated; try again next tick */ }
   }
   refreshing = false;
@@ -254,9 +290,10 @@ function renderChips() {
   }
   for (const f of state.files) {
     const bad = f.error || f.problems.some((p) => p.code !== "advice");
-    bits.push(`<span class="chip ${state.active === f.id ? "on" : ""}" data-act="file" data-id="${f.id}">${bad ? "⚠ " : ""}${isDirty(f) ? `<span class="dirtydot" title="Unsaved edits">●</span> ` : ""}${esc(f.name)}<span class="x" data-act="remove" data-id="${f.id}" title="Remove">×</span></span>`);
+    bits.push(`<span class="chip ${state.active === f.id ? "on" : ""}" data-act="file" data-id="${f.id}">${bad ? "⚠ " : ""}${hasUnsaved(f) ? `<span class="dirtydot" title="Unsaved changes">●</span> ` : ""}${esc(f.name)}<span class="x" data-act="remove" data-id="${f.id}" title="Remove">×</span></span>`);
   }
   bits.push(`<span class="chip action" data-act="add">+ Add files</span>`);
+  bits.push(`<span class="chip action" data-act="new">+ New deal</span>`);
   bits.push(`<span class="chip action" data-act="refresh" title="Re-read all files from source">↻ Refresh</span>`);
   bits.push(`<span id="watchwrap"><label><input type="checkbox" id="watchbox" ${state.watch ? "checked" : ""}> watch files for changes</label></span>`);
   $("filebar").innerHTML = bits.join("");
@@ -268,10 +305,11 @@ function renderChips() {
       else if (act === "remove") {
         e.stopPropagation();
         const f = state.files.find((x) => x.id === Number(el.dataset.id));
-        if (f && isDirty(f) && !confirm(`${f.name} has unsaved edits — remove it anyway?`)) return;
+        if (f && hasUnsaved(f) && !confirm(`${f.name} has unsaved changes — remove it anyway?`)) return;
         removeEntry(Number(el.dataset.id));
       }
       else if (act === "add") pickFiles();
+      else if (act === "new") newDeal();
       else if (act === "refresh") refreshAll(true);
     };
   });
@@ -295,6 +333,8 @@ function renderSingle(entry) {
     $("tab-summary").innerHTML = `<div class="errbox">${esc(entry.error)}</div>
       <p class="muted">Fix the file in the Edit JSON tab, then Apply.</p>`;
     renderEditor(entry);
+    $("results").innerHTML = "";
+    $("results").style.display = "none";
     $("tabs").querySelectorAll("button").forEach((b) => b.onclick = () => { state.tab = b.dataset.t; activate(state.tab); });
     activate(state.tab === "json" ? "json" : "summary");
     return;
@@ -312,8 +352,10 @@ function renderSingle(entry) {
       $("tab-" + id).innerHTML = `<div class="errbox">Could not render this tab — the file is missing fields (<span class="code">${esc(e.message)}</span>). See Warnings; fix in Edit JSON.</div>`;
     }
   };
+  $("results").style.display = "flex";
+  renderResults(entry);
   safe("summary", () => renderSummary(deal, out));
-  safe("rentroll", () => renderRentRoll(deal));
+  safe("rentroll", () => renderRentRoll(deal, entry));
   safe("expenses", () => renderExpenses(deal));
   safe("market", () => renderMarket(deal));
   safe("valuation", () => renderValuation(deal));
@@ -331,116 +373,449 @@ function activate(t) {
 
 function card(k, v, s) { return `<div class="card"><div class="k">${k}</div><div class="v">${v}</div>${s ? `<div class="s">${s}</div>` : ""}</div>`; }
 
+// ------------------------------------------------------- editable fields
+// Every value a person would want to change is an input that reads as plain text
+// (dotted underline) until focused. A change edits the parsed deal at the field's
+// path, re-serializes the file, re-validates and recomputes. Nothing touches disk
+// until Save. Fields the forms don't cover stay reachable in the Edit JSON tab.
+
+const ENUMS = {
+  rentUnit: ["perSFPerMonth", "perSFPerYear", "totalPerMonth", "totalPerYear"],
+  marketRentUnit: ["perSFPerMonth", "perSFPerYear"],
+  escalation: ["none", "fixed_percent", "fixed_amount", "cpi"],
+  structure: ["NNN", "NN", "MG", "Gross"],
+  amountUnit: ["totalPerYear", "perSFPerYear", "percentOfEGR"],
+  category: ["real_estate_taxes", "insurance", "cam", "repairs_maintenance", "utilities", "management_fee", "administrative", "reserves", "other"],
+  directCapBasis: ["year1", "inPlace", "stabilizedAtMarket"],
+  terminalBasis: ["forwardYear", "trailingYear", "stabilizedAtMarket"],
+  propertyType: ["industrial", "office", "medical_office", "life_science", "retail", "multifamily", "student_housing", "senior_housing", "manufactured_housing", "self_storage", "data_center", "hospitality", "mixed_use", "land", "other"],
+  tenancy: ["single", "multi"],
+};
+
+const pathAttr = (path) => esc(JSON.stringify(path));
+const fmtNum = (n, d) => n == null || n === "" ? "" : Number(n).toLocaleString("en-US", { maximumFractionDigits: d ?? 6 });
+
+// A number. opts: d (display decimals), w (width in ch), req (cannot be blank), pre/post (unit text)
+function edNum(path, value, opts = {}) {
+  const shown = opts.plain ? String(value ?? "") : fmtNum(value, opts.d);
+  const w = opts.w ?? Math.max(4, shown.length + 2);
+  return `${opts.pre ?? ""}<input class="ed num" data-kind="num" data-path="${pathAttr(path)}" data-raw="${value ?? ""}" data-shown="${esc(shown)}" ${opts.req ? "data-req=1" : ""} value="${esc(shown)}" placeholder="—" style="width:${w}ch" title="${esc(opts.title ?? "Click to change")}">${opts.post ?? ""}`;
+}
+function edText(path, value, opts = {}) {
+  const v = value ?? "";
+  const w = opts.w ?? Math.min(40, Math.max(6, String(v).length + 2));
+  return `<input class="ed" data-kind="text" data-path="${pathAttr(path)}" ${opts.req ? "data-req=1" : ""} value="${esc(v)}" placeholder="${esc(opts.ph ?? "—")}" style="width:${w}ch" title="Click to change">`;
+}
+function edDate(path, value, opts = {}) {
+  return `<input class="ed" type="date" data-kind="date" data-path="${pathAttr(path)}" ${opts.req ? "data-req=1" : ""} value="${esc(value ?? "")}">`;
+}
+function edSel(path, value, options, opts = {}) {
+  const list = options.includes(value) || value == null ? options : [value, ...options];
+  return `<select class="ed" data-kind="enum" data-path="${pathAttr(path)}" ${opts.req ? "data-req=1" : ""}>${opts.req ? "" : `<option value=""${value == null ? " selected" : ""}>—</option>`}${list.map((o) => `<option value="${esc(o)}"${o === value ? " selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
+}
+function edBool(path, value) {
+  return `<input type="checkbox" class="edbox" data-kind="bool" data-path="${pathAttr(path)}" ${value ? "checked" : ""}>`;
+}
+const opBtn = (op, label, args = {}, title = "") =>
+  `<button class="btn mini" data-op="${op}" data-args="${esc(JSON.stringify(args))}" title="${esc(title)}">${label}</button>`;
+
+function getPath(obj, path) { return path.reduce((o, k) => (o == null ? undefined : o[k]), obj); }
+function setPath(obj, path, value) {
+  let o = obj;
+  for (let i = 0; i < path.length - 1; i++) {
+    if (o[path[i]] == null || typeof o[path[i]] !== "object") o[path[i]] = {};
+    o = o[path[i]];
+  }
+  const last = path[path.length - 1];
+  if (value === undefined) delete o[last]; else o[last] = value;
+}
+
+// Re-serialize with the file's own indentation so an edited file still diffs cleanly.
+function serialize(deal, likeText) {
+  const m = /\n([ \t]+)"/.exec(likeText ?? "");
+  return JSON.stringify(deal, null, m ? m[1] : 2) + "\n";
+}
+
+// The one way a structured edit lands: mutate a copy, re-serialize, apply.
+function commit(entry, mutate) {
+  if (!entry.deal) return false;
+  const next = JSON.parse(JSON.stringify(entry.deal));
+  mutate(next);
+  const text = serialize(next, entry.text);
+  if (text === entry.text) return false;
+  entry.undo.push(entry.text);
+  if (entry.undo.length > 200) entry.undo.shift();
+  applyText(entry, text);
+  return true;
+}
+
+function undo(entry) {
+  if (!entry.undo.length) return;
+  applyText(entry, entry.undo.pop());
+  render();
+  flash("Undone");
+}
+
+function revertToSaved(entry) {
+  if (!hasUnsaved(entry) || entry.savedText === "") return;
+  if (!confirm(`Discard all changes to ${entry.name} since it was opened or last saved?`)) return;
+  applyText(entry, entry.savedText);
+  entry.undo = [];
+  render();
+  flash("Reverted");
+}
+
+// Read an input back into a typed value. Returns { ok, value } — value undefined = remove the field.
+function readField(el) {
+  const kind = el.dataset.kind, req = el.dataset.req === "1";
+  if (kind === "bool") return { ok: true, value: el.checked };
+  const raw = el.value.trim();
+  if (raw === "") return req ? { ok: false, why: "This field is required." } : { ok: true, value: undefined };
+  if (kind === "num") {
+    const n = Number(raw.replace(/[$,%\s]/g, ""));
+    return Number.isFinite(n) ? { ok: true, value: n } : { ok: false, why: `"${raw}" is not a number.` };
+  }
+  if (kind === "date") return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? { ok: true, value: raw } : { ok: false, why: "Dates are YYYY-MM-DD." };
+  return { ok: true, value: raw };
+}
+
+// A change that needs a companion field to stay computable gets a sensible default.
+function tidy(d, path, value) {
+  if (path[path.length - 1] === "type" && path[path.length - 2] === "escalation") {
+    const e = getPath(d, path.slice(0, -1));
+    if (value === undefined) { setPath(d, path.slice(0, -1), undefined); return; }
+    if (value === "fixed_percent") { e.rate ??= 3; e.frequencyMonths ??= 12; delete e.amount; }
+    else if (value === "fixed_amount") { e.amount ??= 0; e.frequencyMonths ??= 12; delete e.rate; }
+    else if (value === "cpi") { e.frequencyMonths ??= 12; delete e.rate; delete e.amount; }
+    else if (value === "none") { for (const k of Object.keys(e)) if (k !== "type") delete e[k]; }
+  }
+}
+
+function activeEntry() { return state.files.find((f) => f.id === state.active); }
+
+function wireEditing() {
+  const root = $("single");
+  // show the raw number while editing, the formatted one otherwise
+  root.addEventListener("focusin", (e) => {
+    const el = e.target;
+    if (el.matches?.("input.ed[data-kind=num]")) { el.value = el.dataset.raw; el.select(); }
+    else if (el.matches?.("input.ed[data-kind=text]")) el.select();
+  });
+  root.addEventListener("focusout", (e) => {
+    const el = e.target;
+    if (el.matches?.("input.ed[data-kind=num]") && el.value.trim() === String(el.dataset.raw)) el.value = el.dataset.shown;
+  });
+  root.addEventListener("keydown", (e) => {
+    const el = e.target;
+    if (!el.matches?.("input.ed")) return;
+    if (e.key === "Enter") { e.preventDefault(); el.blur(); }
+    else if (e.key === "Escape") { el.value = el.dataset.kind === "num" ? el.dataset.shown : el.defaultValue; el.blur(); }
+  });
+  root.addEventListener("change", (e) => {
+    const el = e.target;
+    if (!el.dataset?.path) return;
+    const entry = activeEntry();
+    if (!entry) return;
+    const path = JSON.parse(el.dataset.path);
+    const r = readField(el);
+    if (!r.ok) {
+      flash(r.why);
+      el.value = el.dataset.kind === "num" ? el.dataset.shown : el.defaultValue;
+      return;
+    }
+    // let focus land on the next field (Tab) before the tabs are redrawn, then put it back
+    setTimeout(() => {
+      const next = document.activeElement?.dataset?.path;
+      if (commit(entry, (d) => { setPath(d, path, r.value); tidy(d, path, r.value); })) {
+        render();
+        if (next) {
+          const again = [...root.querySelectorAll("[data-path]")].find((x) => x.dataset.path === next && x.offsetParent);
+          again?.focus();
+        }
+      }
+    }, 0);
+  });
+  root.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-op]");
+    if (!b) return;
+    const entry = activeEntry();
+    if (!entry) return;
+    runOp(entry, b.dataset.op, JSON.parse(b.dataset.args || "{}"));
+  });
+}
+
+const addYears = (iso, y) => { const d = new Date(iso + "T00:00:00Z"); d.setUTCFullYear(d.getUTCFullYear() + y); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10); };
+const uniqueId = (taken, stem) => { let n = taken.length + 1; while (taken.includes(`${stem}${n}`)) n++; return `${stem}${n}`; };
+
+function runOp(entry, op, a) {
+  if (op === "toggleLease") {
+    entry.open.has(a.id) ? entry.open.delete(a.id) : entry.open.add(a.id);
+    render();
+    return;
+  }
+  if (op === "undo") return undo(entry);
+  if (op === "revert") return revertToSaved(entry);
+  if (op === "save") return void saveEntry(entry);
+  if (op === "saveAs") return void saveAsEntry(entry);
+  if (op === "rmLease" && !confirm("Remove this lease from the file?")) return;
+  if (op === "rmExpense" && !confirm("Remove this expense item from the file?")) return;
+  const changed = commit(entry, (d) => {
+    const rr = d.rentRoll, asOf = rr.asOfDate ?? new Date().toISOString().slice(0, 10);
+    if (op === "addLease") {
+      const like = rr.leases[rr.leases.length - 1];
+      const id = uniqueId(rr.leases.map((l) => l.leaseId), "L-");
+      rr.leases.push({
+        leaseId: id,
+        tenant: { name: "New tenant" },
+        suite: "",
+        ...(like?.spaceType ? { spaceType: like.spaceType } : {}),
+        leasedSF: 1000,
+        commencementDate: asOf,
+        expirationDate: addYears(asOf, like?.baseRent?.unit?.startsWith("total") ? 1 : 5),
+        baseRent: { unit: like?.baseRent?.unit ?? "perSFPerMonth", schedule: [{ startDate: asOf, amount: like?.baseRent?.unit?.startsWith("total") ? 1000 : 1 }] },
+        escalation: like?.escalation ? JSON.parse(JSON.stringify(like.escalation)) : { type: "fixed_percent", rate: 3, frequencyMonths: 12 },
+        reimbursement: { structure: like?.reimbursement?.structure ?? "NNN" },
+      });
+      entry.open.add(id);
+    } else if (op === "rmLease") {
+      rr.leases.splice(a.i, 1);
+    } else if (op === "vacateLease") {
+      const [l] = rr.leases.splice(a.i, 1);
+      (rr.vacantSuites ??= []).push({ ...(l.suite ? { suite: l.suite } : {}), sf: l.leasedSF, ...(l.spaceType ? { spaceType: l.spaceType } : {}) });
+    } else if (op === "addStep") {
+      const s = rr.leases[a.i].baseRent.schedule, last = s[s.length - 1];
+      s.push({ startDate: last ? addYears(last.startDate, 1).replace(/-\d\d$/, last.startDate.slice(7)) : asOf, amount: last?.amount ?? 1 });
+    } else if (op === "rmStep") {
+      const s = rr.leases[a.i].baseRent.schedule;
+      if (s.length > 1) s.splice(a.j, 1);
+    } else if (op === "addVacant") {
+      (rr.vacantSuites ??= []).push({ suite: "", sf: 1000 });
+    } else if (op === "rmVacant") {
+      rr.vacantSuites.splice(a.i, 1);
+      if (!rr.vacantSuites.length) delete rr.vacantSuites;
+    } else if (op === "addExpense") {
+      const items = (d.expenses ??= { items: [] }).items;
+      items.push({ expenseId: uniqueId(items.map((x) => x.expenseId), "E-"), name: "New expense", category: "other", amount: 0, amountUnit: "totalPerYear", recoverable: true });
+    } else if (op === "rmExpense") {
+      d.expenses.items.splice(a.i, 1);
+    } else if (op === "growthFlat") {
+      // a stepped curve becomes a single rate (its first step)
+      const g = d.marketAssumptions.growth[a.k];
+      if (Array.isArray(g)) d.marketAssumptions.growth[a.k] = g[0]?.annualPercent ?? 0;
+    }
+  });
+  if (changed) render();
+}
+
+// ------------------------------------------------------------ results bar
+// Always on screen: the numbers a change is supposed to move, against where they
+// stood when the file was opened or last saved.
+
+const KEYS = [
+  ["Year-1 NOI", (o) => o?.noi?.year1NOI, "usd"],
+  ["Direct cap value", (o) => o?.directCap?.indicatedValue, "usd"],
+  ["DCF value", (o) => o?.dcf?.indicatedValue, "usd"],
+  ["Unlevered IRR", (o) => o?.returns?.unlevered?.irrPercent, "pct"],
+  ["Levered IRR", (o) => o?.returns?.levered?.irrPercent, "pct"],
+];
+
+function renderResults(entry) {
+  const unsaved = hasUnsaved(entry);
+  const cells = KEYS.map(([label, get, kind]) => {
+    const now = get(entry.out), was = get(entry.baseOut);
+    if (now == null && was == null) return "";
+    let delta = "";
+    if (now != null && was != null && now !== was) {
+      const diff = now - was;
+      const txt = kind === "usd" ? `${diff > 0 ? "+" : "−"}${usd(Math.abs(diff))}` : `${diff > 0 ? "+" : "−"}${num(Math.abs(diff) * 100, 0)} bp`;
+      delta = `<span class="${diff > 0 ? "gap-pos" : "gap-neg"}">${txt}</span>`;
+    }
+    return `<div class="res"><div class="k">${label}</div><div class="v">${now == null ? "—" : kind === "usd" ? usd(now) : pct(now)}</div><div class="d">${delta || (unsaved ? "no change" : "&nbsp;")}</div></div>`;
+  }).join("");
+  $("results").innerHTML = `
+    <div class="resrow">${cells || `<div class="res"><div class="k">Outputs</div><div class="v muted">not computed</div><div class="d">see Warnings</div></div>`}</div>
+    <div class="resact">
+      <span class="muted" id="res-status">${unsaved ? `<span class="dirtydot">●</span> Unsaved changes` : "Click any underlined value to change it"}</span>
+      ${opBtn("undo", "Undo", {}, "Undo the last change (Ctrl/⌘-Z)").replace("<button", `<button ${entry.undo.length ? "" : "disabled"}`)}
+      ${opBtn("revert", "Revert", {}, "Discard all changes since open or last save").replace("<button", `<button ${unsaved ? "" : "disabled"}`)}
+      <button class="btn ${unsaved ? "go" : ""}" data-op="save" data-args="{}">${canWriteInPlace(entry) ? "Save" : "Save As…"}</button>
+    </div>`;
+}
+
+// ------------------------------------------------------------ deal tabs
+
 function renderSummary(deal, out) {
   const p = deal.property, ph = p.physical;
   const o = out?.occupancy, r = out?.rent;
+  const units = ph.unitCount;
+  const value = out?.dcf?.indicatedValue ?? out?.directCap?.indicatedValue;
   $("tab-summary").innerHTML = `
-    <h2>${esc(p.name)} — ${esc(p.address.city)}, ${esc(p.address.state)} <span class="muted">(${esc(p.propertySubtype ?? p.propertyType)}, ${esc(p.tenancy ?? "—")}-tenant)</span></h2>
+    <h2>${edText(["property", "name"], p.name, { req: true, w: Math.max(18, p.name.length + 2) })} <span class="muted">— ${esc(p.address.city)}, ${esc(p.address.state)}</span></h2>
     <div class="cards">
-      ${card("Building SF", num(ph.buildingSF))}
+      ${card("Building SF", edNum(["property", "physical", "buildingSF"], ph.buildingSF, { req: true, d: 0 }))}
+      ${units ? card("Units", edNum(["property", "physical", "unitCount"], units, { d: 0 }), value ? `${usd(value / units)} per unit` : "") : ""}
       ${card("Occupancy", o ? pct(o.occupancyPercent) : "—", o ? `${num(o.vacantSF)} SF vacant` : "")}
-      ${card("In-place rent", r ? usd(r.inPlaceAnnualBaseRent) : "—", r?.inPlaceWARentPerSFPerMonth != null ? `$${num(r.inPlaceWARentPerSFPerMonth, 2)}/SF/mo` : "")}
+      ${card("In-place rent", r ? usd(r.inPlaceAnnualBaseRent) : "—", r?.inPlaceWARentPerSFPerMonth != null ? `$${num(r.inPlaceWARentPerSFPerMonth, 2)}/SF/mo${units && r ? ` · ${usd(r.inPlaceAnnualBaseRent / 12 / Math.max(1, deal.rentRoll.leases.length))}/unit/mo` : ""}` : "")}
       ${card("Vs market", r ? gapSpan(r.inPlaceVsMarketPercent) : "—", r?.marketRentPerSFPerMonth != null ? `market $${num(r.marketRentPerSFPerMonth, 2)}/SF/mo` : "")}
       ${out?.leaseMetrics ? card("WALT", out.leaseMetrics.waltYearsByRent != null ? `${num(out.leaseMetrics.waltYearsByRent, 1)} yrs` : "—", `${num(out.leaseMetrics.rollNext12ByRentPercent, 1)}% rolls &lt;12 mo`) : ""}
       ${card("Year built", ph.yearBuilt ?? "—", ph.yearRenovated ? `renovated ${ph.yearRenovated}` : "")}
-      ${card("Clear height", ph.clearHeightFt ? `${ph.clearHeightFt} ft` : "—")}
-      ${card("Loading", `${num(ph.dockHighDoors)} DH / ${num(ph.gradeLevelDoors)} GL`)}
+      ${ph.clearHeightFt ? card("Clear height", `${ph.clearHeightFt} ft`) : ""}
+      ${ph.dockHighDoors != null || ph.gradeLevelDoors != null ? card("Loading", `${num(ph.dockHighDoors)} DH / ${num(ph.gradeLevelDoors)} GL`) : ""}
       ${card("Site", deal.property.siteAreaAcres ? `${num(deal.property.siteAreaAcres, 2)} ac` : "—", ph.coverageRatio ? `${num(ph.coverageRatio * 100)}% coverage` : "")}
     </div>
-    ${p.location ? `<p class="muted">${esc(p.location.market ?? "")}${p.location.submarket ? " / " + esc(p.location.submarket) : ""}</p>` : ""}
+    <table class="form"><tbody>
+      <tr><td>Property type</td><td>${edSel(["property", "propertyType"], p.propertyType, ENUMS.propertyType, { req: true })} ${edText(["property", "propertySubtype"], p.propertySubtype, { ph: "subtype" })} ${edSel(["property", "tenancy"], p.tenancy, ENUMS.tenancy)}-tenant</td></tr>
+      <tr><td>Address</td><td>${edText(["property", "address", "street1"], p.address.street1, { req: true })}, ${edText(["property", "address", "city"], p.address.city, { req: true })}, ${edText(["property", "address", "state"], p.address.state, { req: true, w: 4 })} ${edText(["property", "address", "postalCode"], p.address.postalCode, { req: true, w: 8 })}</td></tr>
+      <tr><td>Market / submarket</td><td>${edText(["property", "location", "market"], p.location?.market, { ph: "market" })} / ${edText(["property", "location", "submarket"], p.location?.submarket, { ph: "submarket" })}</td></tr>
+      <tr><td>Year built / renovated</td><td>${edNum(["property", "physical", "yearBuilt"], ph.yearBuilt, { w: 6, plain: true })} / ${edNum(["property", "physical", "yearRenovated"], ph.yearRenovated, { w: 6, plain: true })}</td></tr>
+      <tr><td>Site area</td><td>${edNum(["property", "siteAreaAcres"], p.siteAreaAcres, { post: " acres" })}</td></tr>
+    </tbody></table>
     ${p.description ? `<p>${esc(p.description)}</p>` : ""}
     ${p.notes ? `<p class="muted">${esc(p.notes)}</p>` : ""}`;
 }
 
-function renderRentRoll(deal) {
-  const rr = deal.rentRoll;
-  const rows = rr.leases.map((l) => {
-    const step = l.baseRent.schedule[l.baseRent.schedule.length - 1];
-    return `<tr>
-      <td>${esc(l.suite ?? "—")}</td><td>${esc(l.tenant.name)}<div class="muted">${esc(l.tenant.industry ?? "")}</div></td>
-      <td class="num">${num(l.leasedSF)}</td>
-      <td>${esc(l.commencementDate)} → ${esc(l.expirationDate)}</td>
-      <td class="num">${num(step.amount, 2)} <span class="muted">${esc(l.baseRent.unit)}</span></td>
-      <td>${esc(l.escalation?.type ?? "none")}${l.escalation?.rate != null ? ` ${l.escalation.rate}%` : ""}</td>
-      <td>${esc(l.reimbursement.structure)}</td>
-      <td>${(l.options ?? []).map((o) => esc(o.type) + (o.type === "renewal" && o.rentBasis ? ` @ ${esc(o.rentBasis)}${o.rentBasis === "fixed" && o.fixedRent != null ? " " + o.fixedRent : o.rentBasis === "percent_of_market" && o.percentOfMarket != null ? " " + o.percentOfMarket + "%" : ""}` : "")).join(", ") || "—"}</td>
+// the rent step in effect on the as-of date (else the first one)
+function currentStep(lease, asOf) {
+  const s = lease.baseRent.schedule;
+  let j = 0;
+  for (let k = 0; k < s.length; k++) if (s[k].startDate <= asOf) j = k;
+  return j;
+}
+
+function renderRentRoll(deal, entry) {
+  const rr = deal.rentRoll, L = ["rentRoll", "leases"];
+  const profiles = Object.keys(deal.marketAssumptions?.leasingProfiles ?? {});
+  const rows = rr.leases.map((l, i) => {
+    const j = currentStep(l, rr.asOfDate), step = l.baseRent.schedule[j], open = entry.open.has(l.leaseId);
+    const esc2 = l.escalation;
+    const main = `<tr>
+      <td>${opBtn("toggleLease", open ? "▾" : "▸", { id: l.leaseId }, "More fields for this lease")}</td>
+      <td>${edText([...L, i, "suite"], l.suite, { w: 7 })}</td>
+      <td>${edText([...L, i, "tenant", "name"], l.tenant.name, { req: true, w: Math.min(34, Math.max(12, l.tenant.name.length + 2)) })}<div class="muted">${esc(l.tenant.industry ?? "")}</div></td>
+      <td class="num">${edNum([...L, i, "leasedSF"], l.leasedSF, { req: true, d: 0 })}</td>
+      <td>${edDate([...L, i, "commencementDate"], l.commencementDate, { req: true })} → ${edDate([...L, i, "expirationDate"], l.expirationDate, { req: true })}</td>
+      <td class="num">${edNum([...L, i, "baseRent", "schedule", j, "amount"], step.amount, { req: true })}<div class="muted">${esc(l.baseRent.unit)}${l.baseRent.schedule.length > 1 ? ` · step ${j + 1} of ${l.baseRent.schedule.length}` : ""}</div></td>
+      <td>${edSel([...L, i, "escalation", "type"], esc2?.type ?? "none", ENUMS.escalation, { req: true })}${esc2?.type === "fixed_percent" ? ` ${edNum([...L, i, "escalation", "rate"], esc2.rate, { w: 5, post: "%" })}` : esc2?.type === "fixed_amount" ? ` ${edNum([...L, i, "escalation", "amount"], esc2.amount, { w: 6 })}` : ""}</td>
+      <td>${edSel([...L, i, "reimbursement", "structure"], l.reimbursement.structure, ENUMS.structure, { req: true })}</td>
     </tr>`;
+    if (!open) return main;
+    const steps = l.baseRent.schedule.map((s, k) => `<div>${edDate([...L, i, "baseRent", "schedule", k, "startDate"], s.startDate, { req: true })} ${edNum([...L, i, "baseRent", "schedule", k, "amount"], s.amount, { req: true })} ${l.baseRent.schedule.length > 1 ? opBtn("rmStep", "×", { i, j: k }, "Remove this rent step") : ""}</div>`).join("");
+    const opts = (l.options ?? []).map((o) => esc(o.type) + (o.type === "renewal" && o.rentBasis ? ` @ ${esc(o.rentBasis)}${o.rentBasis === "fixed" && o.fixedRent != null ? " " + o.fixedRent : o.rentBasis === "percent_of_market" && o.percentOfMarket != null ? " " + o.percentOfMarket + "%" : ""}` : "")).join(", ");
+    const free = (l.freeRent ?? []).map((f) => `${esc(f.startDate)} → ${esc(f.endDate)}${f.percentAbated != null && f.percentAbated !== 100 ? ` (${f.percentAbated}%)` : ""}`).join("; ");
+    return main + `<tr class="detail"><td></td><td colspan="7">
+      <table class="form"><tbody>
+        <tr><td>Lease ID</td><td class="code">${esc(l.leaseId)}</td><td>Industry</td><td>${edText([...L, i, "tenant", "industry"], l.tenant.industry, { w: 26 })}</td></tr>
+        <tr><td>Rent unit</td><td>${edSel([...L, i, "baseRent", "unit"], l.baseRent.unit, ENUMS.rentUnit, { req: true })}</td><td>Space type</td><td>${profiles.length ? edSel([...L, i, "spaceType"], l.spaceType, profiles) : edText([...L, i, "spaceType"], l.spaceType)} <span class="muted">prices the space at rollover</span></td></tr>
+        <tr><td>Rent schedule</td><td>${steps}${opBtn("addStep", "+ rent step", { i })}</td><td>Escalation every</td><td>${edNum([...L, i, "escalation", "frequencyMonths"], esc2?.frequencyMonths, { w: 5, d: 0, post: " months" })}${esc2?.type === "cpi" ? ` · floor ${edNum([...L, i, "escalation", "cpiFloorPercent"], esc2.cpiFloorPercent, { w: 5, post: "%" })} cap ${edNum([...L, i, "escalation", "cpiCapPercent"], esc2.cpiCapPercent, { w: 5, post: "%" })}` : ""}</td></tr>
+        <tr><td>Recoveries</td><td colspan="3">admin fee ${edNum([...L, i, "reimbursement", "adminFeePercent"], l.reimbursement.adminFeePercent, { w: 5, post: "%" })} · pro-rata share ${edNum([...L, i, "reimbursement", "proRataSharePercent"], l.reimbursement.proRataSharePercent, { w: 6, post: "%" })}${l.reimbursement.structure === "MG" ? ` · base year ${edNum([...L, i, "reimbursement", "baseYear"], l.reimbursement.baseYear, { w: 6, plain: true })} · expense stop ${edNum([...L, i, "reimbursement", "expenseStopPerSF"], l.reimbursement.expenseStopPerSF, { w: 6, pre: "$", post: "/SF" })}` : ""}</td></tr>
+        ${opts || free ? `<tr><td>Options / free rent</td><td colspan="3" class="muted">${opts || "no options"}${free ? ` · free rent ${free}` : ""} <span>(change these in Edit JSON)</span></td></tr>` : ""}
+        <tr><td>Notes</td><td colspan="3">${edText([...L, i, "notes"], l.notes, { w: 70, ph: "notes" })}</td></tr>
+        <tr><td></td><td colspan="3">${opBtn("vacateLease", "Mark suite vacant", { i }, "Remove the lease and list the space as vacant")} ${opBtn("rmLease", "Remove lease", { i })}</td></tr>
+      </tbody></table></td></tr>`;
   }).join("");
-  const vac = (rr.vacantSuites ?? []).map((v) =>
-    `<tr><td>${esc(v.suite ?? "—")}</td><td class="muted">VACANT${v.spaceType ? ` (${esc(v.spaceType)})` : ""}</td><td class="num">${num(v.sf)}</td><td colspan="5" class="muted">${esc(v.notes ?? "")}</td></tr>`).join("");
+  const vac = (rr.vacantSuites ?? []).map((v, i) =>
+    `<tr><td></td><td>${edText(["rentRoll", "vacantSuites", i, "suite"], v.suite, { w: 7 })}</td><td class="muted">VACANT ${profiles.length ? edSel(["rentRoll", "vacantSuites", i, "spaceType"], v.spaceType, profiles) : ""}</td><td class="num">${edNum(["rentRoll", "vacantSuites", i, "sf"], v.sf, { req: true, d: 0 })}</td><td colspan="3" class="muted">${edText(["rentRoll", "vacantSuites", i, "notes"], v.notes, { w: 50, ph: "notes" })}</td><td>${opBtn("rmVacant", "×", { i }, "Remove this vacant suite")}</td></tr>`).join("");
   $("tab-rentroll").innerHTML = `
-    <h2>Rent roll as of ${esc(rr.asOfDate)}</h2>
-    <table><thead><tr><th>Suite</th><th>Tenant</th><th class="num">SF</th><th>Term</th><th class="num">Base rent</th><th>Escalation</th><th>Structure</th><th>Options</th></tr></thead>
+    <h2>Rent roll as of ${edDate(["rentRoll", "asOfDate"], rr.asOfDate, { req: true })}</h2>
+    <table><thead><tr><th></th><th>Suite</th><th>Tenant</th><th class="num">SF</th><th>Term</th><th class="num">Base rent</th><th>Escalation</th><th>Structure</th></tr></thead>
     <tbody>${rows}${vac}</tbody></table>
+    <p>${opBtn("addLease", "+ Add lease")} ${opBtn("addVacant", "+ Add vacant suite")}</p>
     ${rr.notes ? `<p class="muted">${esc(rr.notes)}</p>` : ""}`;
 }
 
 function renderExpenses(deal) {
   const items = deal.expenses?.items;
-  if (!items) { $("tab-expenses").innerHTML = `<p class="muted">No expenses module in this file.</p>`; return; }
-  const sf = deal.property.physical.buildingSF;
-  const rows = items.map((i) => {
-    const annual = i.amountUnit === "perSFPerYear" ? i.amount * sf : i.amountUnit === "totalPerYear" ? i.amount : null;
-    return `<tr><td>${esc(i.name)}<div class="muted code">${esc(i.expenseId)}</div></td><td>${esc(i.category ?? "—")}</td>
-      <td class="num">${annual != null ? usd(annual) : `${i.amount}% of EGR`}</td>
+  if (!items) { $("tab-expenses").innerHTML = `<p class="muted">No expenses module in this file.</p><p>${opBtn("addExpense", "+ Add expense item")}</p>`; return; }
+  const sf = deal.property.physical.buildingSF, X = ["expenses", "items"];
+  const rows = items.map((it, i) => {
+    const annual = it.amountUnit === "perSFPerYear" ? it.amount * sf : it.amountUnit === "totalPerYear" ? it.amount : null;
+    return `<tr><td>${edText([...X, i, "name"], it.name, { req: true, w: Math.min(34, Math.max(14, it.name.length + 2)) })}<div class="muted code">${esc(it.expenseId)}</div></td>
+      <td>${edSel([...X, i, "category"], it.category, ENUMS.category)}</td>
+      <td class="num">${edNum([...X, i, "amount"], it.amount, { req: true })}</td>
+      <td>${edSel([...X, i, "amountUnit"], it.amountUnit, ENUMS.amountUnit, { req: true })}</td>
+      <td class="num">${annual != null ? usd(annual) : "—"}</td>
       <td class="num">${annual != null ? "$" + num(annual / sf, 2) : "—"}</td>
-      <td>${i.recoverable ? "yes" : "no"}</td><td>${i.belowTheLine ? "below NOI" : ""}</td>
-      <td class="muted">${esc(i.notes ?? "")}</td></tr>`;
+      <td>${edBool([...X, i, "recoverable"], it.recoverable)}</td>
+      <td>${edBool([...X, i, "belowTheLine"], it.belowTheLine)}</td>
+      <td>${edNum([...X, i, "growthOverridePercent"], it.growthOverridePercent, { w: 5, post: "%" })}</td>
+      <td>${opBtn("rmExpense", "×", { i }, "Remove this expense item")}</td></tr>`;
   }).join("");
   $("tab-expenses").innerHTML = `<h2>Operating expenses (annualized as of ${esc(deal.rentRoll.asOfDate)})</h2>
-    <table><thead><tr><th>Item</th><th>Category</th><th class="num">Annual</th><th class="num">$/SF/yr</th><th>Recoverable</th><th></th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table>`;
+    <table><thead><tr><th>Item</th><th>Category</th><th class="num">Amount</th><th>Unit</th><th class="num">Annual</th><th class="num">$/SF/yr</th><th title="Recoverable from tenants">Recov.</th><th title="Below the line: excluded from NOI">Below NOI</th><th title="Growth rate for this item, if different from the general expense growth">Own growth</th><th></th></tr></thead><tbody>${rows}</tbody></table>
+    <p>${opBtn("addExpense", "+ Add expense item")}</p>
+    ${deal.expenses.notes ? `<p class="muted">${esc(deal.expenses.notes)}</p>` : ""}`;
 }
 
 function renderMarket(deal) {
   const ma = deal.marketAssumptions;
   if (!ma) { $("tab-market").innerHTML = `<p class="muted">No marketAssumptions module in this file.</p>`; return; }
-  const growthStr = (g) => g == null ? "—" : typeof g === "number" ? `${g}%/yr` : g.map((s) => `yr ${s.fromYear}+: ${s.annualPercent}%`).join(", ");
-  const profs = Object.entries(ma.leasingProfiles ?? {}).map(([k, p]) => `
-    <table><thead><tr><th colspan="2">Profile: ${esc(k)}</th></tr></thead><tbody>
-      <tr><td>Market rent</td><td>${p.marketRent.amount} ${esc(p.marketRent.unit)}</td></tr>
-      <tr><td>Term / downtime</td><td>${p.termMonths} mo / ${p.downtimeMonths} mo</td></tr>
-      <tr><td>Renewal probability</td><td>${p.renewalProbabilityPercent}%${p.renewalRentPercentOfMarket != null ? ` @ ${p.renewalRentPercentOfMarket}% of market` : ""}</td></tr>
-      <tr><td>New tenant TI / LC / free</td><td>$${p.newTenant?.tiPerSF ?? 0}/SF · ${p.newTenant?.lcPercentOfRent ?? 0}% · ${p.newTenant?.freeRentMonths ?? 0} mo</td></tr>
-      <tr><td>Renewal TI / LC / free</td><td>$${p.renewal?.tiPerSF ?? 0}/SF · ${p.renewal?.lcPercentOfRent ?? 0}% · ${p.renewal?.freeRentMonths ?? 0} mo</td></tr>
-      <tr><td>Structure / escalation</td><td>${esc(p.reimbursementStructure ?? "NNN")} / ${esc(p.escalation?.type ?? "none")}${p.escalation?.rate != null ? ` ${p.escalation.rate}%` : ""}</td></tr>
+  const M = ["marketAssumptions"];
+  const growthEd = (k) => {
+    const g = ma.growth?.[k];
+    if (Array.isArray(g)) return g.map((s, i) => `<div class="s">yr ${s.fromYear}+ ${edNum([...M, "growth", k, i, "annualPercent"], s.annualPercent, { w: 5, req: true, post: "%" })}</div>`).join("") + opBtn("growthFlat", "use one rate", { k }, "Replace the stepped curve with a single annual rate");
+    return edNum([...M, "growth", k], g, { w: 5, req: k !== "cpi", post: "%/yr" });
+  };
+  const profs = Object.entries(ma.leasingProfiles ?? {}).map(([k, p]) => {
+    const P = [...M, "leasingProfiles", k];
+    return `
+    <table class="form"><thead><tr><th colspan="2">Profile: ${esc(k)}</th></tr></thead><tbody>
+      <tr><td>Market rent</td><td>${edNum([...P, "marketRent", "amount"], p.marketRent.amount, { req: true })} ${edSel([...P, "marketRent", "unit"], p.marketRent.unit, ENUMS.marketRentUnit, { req: true })}</td></tr>
+      <tr><td>Term / downtime</td><td>${edNum([...P, "termMonths"], p.termMonths, { req: true, w: 5, d: 0, post: " mo" })} / ${edNum([...P, "downtimeMonths"], p.downtimeMonths, { req: true, w: 5, post: " mo" })}</td></tr>
+      <tr><td>Renewal probability</td><td>${edNum([...P, "renewalProbabilityPercent"], p.renewalProbabilityPercent, { req: true, w: 5, post: "%" })} at ${edNum([...P, "renewalRentPercentOfMarket"], p.renewalRentPercentOfMarket, { w: 5, post: "% of market" })}</td></tr>
+      <tr><td>New tenant TI / LC / free</td><td>${edNum([...P, "newTenant", "tiPerSF"], p.newTenant?.tiPerSF, { w: 6, pre: "$", post: "/SF" })} · ${edNum([...P, "newTenant", "lcPercentOfRent"], p.newTenant?.lcPercentOfRent, { w: 5, post: "%" })} · ${edNum([...P, "newTenant", "freeRentMonths"], p.newTenant?.freeRentMonths, { w: 4, post: " mo" })}</td></tr>
+      <tr><td>Renewal TI / LC / free</td><td>${edNum([...P, "renewal", "tiPerSF"], p.renewal?.tiPerSF, { w: 6, pre: "$", post: "/SF" })} · ${edNum([...P, "renewal", "lcPercentOfRent"], p.renewal?.lcPercentOfRent, { w: 5, post: "%" })} · ${edNum([...P, "renewal", "freeRentMonths"], p.renewal?.freeRentMonths, { w: 4, post: " mo" })}</td></tr>
+      <tr><td>Structure / escalation</td><td>${edSel([...P, "reimbursementStructure"], p.reimbursementStructure, ENUMS.structure)} / ${edSel([...P, "escalation", "type"], p.escalation?.type, ENUMS.escalation)}${p.escalation?.type === "fixed_percent" ? ` ${edNum([...P, "escalation", "rate"], p.escalation.rate, { w: 5, post: "%" })}` : ""}</td></tr>
       ${p.notes ? `<tr><td>Notes</td><td class="muted">${esc(p.notes)}</td></tr>` : ""}
-    </tbody></table>`).join("");
+    </tbody></table>`;
+  }).join("");
   $("tab-market").innerHTML = `
     <h2>Growth</h2>
     <div class="cards">
-      ${card("Market rent", growthStr(ma.growth?.marketRent))}
-      ${card("Expenses", growthStr(ma.growth?.expenses))}
-      ${card("CPI", growthStr(ma.growth?.cpi))}
-      ${card("Gen. vacancy / credit loss", `${ma.generalVacancyPercent ?? 0}% / ${ma.creditLossPercent ?? 0}%`)}
+      ${card("Market rent", growthEd("marketRent"))}
+      ${card("Expenses", growthEd("expenses"))}
+      ${card("CPI", growthEd("cpi"))}
+      ${card("General vacancy", edNum([...M, "generalVacancyPercent"], ma.generalVacancyPercent, { w: 5, post: "%" }))}
+      ${card("Credit loss", edNum([...M, "creditLossPercent"], ma.creditLossPercent, { w: 5, post: "%" }))}
     </div>
-    <h2>Leasing profiles</h2>${profs}`;
+    <h2>Leasing profiles <span class="muted">(what happens to a space when its lease ends)</span></h2>${profs}
+    ${ma.notes ? `<p class="muted">${esc(ma.notes)}</p>` : ""}`;
 }
 
 function renderValuation(deal) {
   const v = deal.valuation;
   if (!v) { $("tab-valuation").innerHTML = `<p class="muted">No valuation module in this file.</p>`; return; }
+  const V = ["valuation"];
   let html = `<div class="cards">
     ${card("Methods", v.methods.join(", "))}
     ${card("Interest / premise", `${esc(v.interestAppraised ?? "leased_fee")} / ${esc(v.valuePremise ?? "as_is")}`)}
-    ${card("Purchase price", usd(v.purchasePrice), v.acquisitionCostsPercent ? `+ ${v.acquisitionCostsPercent}% costs` : "")}
-    ${card("Analysis start", esc(v.analysisStartDate))}
+    ${card("Purchase price", edNum([...V, "purchasePrice"], v.purchasePrice, { pre: "$", d: 0 }), `+ ${edNum([...V, "acquisitionCostsPercent"], v.acquisitionCostsPercent, { w: 5 })}% costs`)}
+    ${card("Analysis start", edDate([...V, "analysisStartDate"], v.analysisStartDate, { req: true }))}
   </div>`;
   if (v.dcf) {
-    const tv = v.dcf.terminalValue;
-    html += `<h2>DCF</h2><table><tbody>
-      <tr><td>Hold</td><td>${v.dcf.holdPeriodYears ? v.dcf.holdPeriodYears + " yrs" : v.dcf.holdPeriodMonths + " mo"}</td></tr>
-      <tr><td>Discount rate</td><td>${v.dcf.discountRatePercent}%${v.dcf.reversionDiscountRatePercent ? ` (reversion ${v.dcf.reversionDiscountRatePercent}%)` : ""} · ${esc(v.dcf.discountTiming ?? "monthly")}, ${esc(v.dcf.periodConvention ?? "end")}-period</td></tr>
-      <tr><td>Terminal value</td><td>${esc(tv.method)}${tv.capRatePercent ? ` @ ${tv.capRatePercent}% on ${esc(tv.noiBasis ?? "forwardYear")} NOI` : ""}${tv.exitPricePerSF ? ` $${tv.exitPricePerSF}/SF` : ""}${tv.sellingCostsPercent ? `, less ${tv.sellingCostsPercent}% selling costs` : ""}${tv.deductUnfundedObligations ? ", less unfunded obligations" : ""}</td></tr>
+    const tv = v.dcf.terminalValue, D = [...V, "dcf"], T = [...D, "terminalValue"];
+    html += `<h2>DCF</h2><table class="form"><tbody>
+      <tr><td>Hold</td><td>${v.dcf.holdPeriodYears != null ? edNum([...D, "holdPeriodYears"], v.dcf.holdPeriodYears, { req: true, w: 5, d: 0, post: " yrs" }) : edNum([...D, "holdPeriodMonths"], v.dcf.holdPeriodMonths, { req: true, w: 5, d: 0, post: " mo" })}</td></tr>
+      <tr><td>Discount rate</td><td>${edNum([...D, "discountRatePercent"], v.dcf.discountRatePercent, { req: true, w: 6, post: "%" })} · reversion ${edNum([...D, "reversionDiscountRatePercent"], v.dcf.reversionDiscountRatePercent, { w: 6, post: "%" })} <span class="muted">(blank = same) · ${esc(v.dcf.discountTiming ?? "monthly")}, ${esc(v.dcf.periodConvention ?? "end")}-period</span></td></tr>
+      <tr><td>Terminal value</td><td>${esc(tv.method)}${tv.method === "direct_cap" ? ` at ${edNum([...T, "capRatePercent"], tv.capRatePercent, { req: true, w: 6, post: "%" })} on ${edSel([...T, "noiBasis"], tv.noiBasis ?? "forwardYear", ENUMS.terminalBasis, { req: true })} NOI` : ""}${tv.method === "exit_price_psf" ? ` ${edNum([...T, "exitPricePerSF"], tv.exitPricePerSF, { req: true, pre: "$", post: "/SF" })}` : ""}${tv.method === "fixed_value" ? ` ${edNum([...T, "fixedValue"], tv.fixedValue, { req: true, pre: "$", d: 0 })}` : ""}${tv.method === "grown_purchase_price" ? ` growing ${edNum([...T, "annualAppreciationPercent"], tv.annualAppreciationPercent, { req: true, w: 5, post: "%/yr" })}` : ""}, less ${edNum([...T, "sellingCostsPercent"], tv.sellingCostsPercent, { w: 5, post: "%" })} selling costs${tv.deductUnfundedObligations ? ", less unfunded obligations" : ""}</td></tr>
       ${tv.notes ? `<tr><td>Notes</td><td class="muted">${esc(tv.notes)}</td></tr>` : ""}
     </tbody></table>`;
   }
   if (v.directCap) {
-    const d = v.directCap;
-    html += `<h2>Direct capitalization</h2><table><tbody>
-      <tr><td>Cap rate / basis</td><td>${d.capRatePercent}% on ${esc(d.noiBasis)} NOI</td></tr>
-      ${d.nearTermAdjustments ? `<tr><td>Near-term deductions</td><td>${d.nearTermAdjustments.periodMonths} months${d.nearTermAdjustments.discountRatePercent ? `, PV @ ${d.nearTermAdjustments.discountRatePercent}%` : ", face value"}</td></tr>` : ""}
-      ${d.markToMarket ? `<tr><td>Mark-to-market</td><td>PV @ ${d.markToMarket.discountRatePercent}%</td></tr>` : ""}
-      ${(d.adjustments ?? []).map((a) => `<tr><td>${esc(a.name)}</td><td>${a.type === "deduction" ? "−" : "+"}${usd(a.amount)} <span class="muted">${esc(a.category ?? "")}</span></td></tr>`).join("")}
+    const d = v.directCap, C = [...V, "directCap"];
+    html += `<h2>Direct capitalization</h2><table class="form"><tbody>
+      <tr><td>Cap rate / basis</td><td>${edNum([...C, "capRatePercent"], d.capRatePercent, { req: true, w: 6, post: "%" })} on ${ENUMS.directCapBasis.includes(d.noiBasis) ? edSel([...C, "noiBasis"], d.noiBasis, ENUMS.directCapBasis, { req: true }) : esc(d.noiBasis)} NOI</td></tr>
+      ${d.nearTermAdjustments ? `<tr><td>Near-term deductions</td><td>${edNum([...C, "nearTermAdjustments", "periodMonths"], d.nearTermAdjustments.periodMonths, { req: true, w: 5, d: 0 })} months${d.nearTermAdjustments.discountRatePercent ? `, PV @ ${d.nearTermAdjustments.discountRatePercent}%` : ", face value"}</td></tr>` : ""}
+      ${d.markToMarket ? `<tr><td>Mark-to-market</td><td>PV @ ${edNum([...C, "markToMarket", "discountRatePercent"], d.markToMarket.discountRatePercent, { req: true, w: 6, post: "%" })}</td></tr>` : ""}
+      ${(d.adjustments ?? []).map((a, i) => `<tr><td>${esc(a.name)}</td><td>${a.type === "deduction" ? "−" : "+"}${edNum([...C, "adjustments", i, "amount"], a.amount, { req: true, pre: "$", d: 0 })} <span class="muted">${esc(a.category ?? "")}</span></td></tr>`).join("")}
+    </tbody></table>`;
+  }
+  if (deal.debt) {
+    const b = deal.debt, B = ["debt"];
+    html += `<h2>Debt</h2><table class="form"><tbody>
+      <tr><td>Loan</td><td>${b.loanAmount != null ? edNum([...B, "loanAmount"], b.loanAmount, { req: true, pre: "$", d: 0 }) : edNum([...B, "ltvPercent"], b.ltvPercent, { req: true, w: 5, post: "% of price" })}</td></tr>
+      <tr><td>Rate</td><td>${edNum([...B, "interestRatePercent"], b.interestRatePercent, { req: true, w: 6, post: "%" })} <span class="muted">${esc(b.rateType ?? "")}</span></td></tr>
+      <tr><td>Term / amortization / interest-only</td><td>${edNum([...B, "termMonths"], b.termMonths, { req: true, w: 5, d: 0, post: " mo" })} / ${edNum([...B, "amortizationMonths"], b.amortizationMonths, { w: 5, d: 0, post: " mo" })} / ${edNum([...B, "interestOnlyMonths"], b.interestOnlyMonths, { w: 5, d: 0, post: " mo" })}</td></tr>
+      <tr><td>Origination fee</td><td>${edNum([...B, "originationFeePercent"], b.originationFeePercent, { w: 5, post: "%" })}</td></tr>
     </tbody></table>`;
   }
   if (v.salesComparison) {
@@ -461,9 +836,73 @@ function renderValuation(deal) {
     </tbody></table>`;
   }
   if (v.reconciliation) {
-    html += `<h2>Reconciliation</h2><div class="okbox">Concluded value (producer-stated): <strong>${usd(v.reconciliation.concludedValue)}</strong>${v.reconciliation.primaryMethod ? ` — primary method: ${esc(v.reconciliation.primaryMethod)}` : ""}${v.reconciliation.notes ? `<div class="muted">${esc(v.reconciliation.notes)}</div>` : ""}</div>`;
+    html += `<h2>Reconciliation</h2><div class="okbox">Concluded value (producer-stated): <strong>${edNum([...V, "reconciliation", "concludedValue"], v.reconciliation.concludedValue, { pre: "$", d: 0 })}</strong>${v.reconciliation.primaryMethod ? ` — primary method: ${esc(v.reconciliation.primaryMethod)}` : ""}<div class="muted">Stated by whoever produced the file. It does not move when you change an assumption; the computed values above and in Outputs do.</div>${v.reconciliation.notes ? `<div class="muted">${esc(v.reconciliation.notes)}</div>` : ""}</div>`;
   }
   $("tab-valuation").innerHTML = html;
+}
+
+// ---------------------------------------------------------------- new deal
+// A minimal valid file to start from, so a deal can be authored here and not
+// only opened here.
+
+function newDealText() {
+  const today = new Date().toISOString().slice(0, 10);
+  const first = today.slice(0, 8) + "01";
+  return serialize({
+    $schema: "https://oreformat.org/schema/0.1.0/ore.schema.json",
+    formatVersion: "0.1.0",
+    property: {
+      name: "New property", propertyType: "industrial", tenancy: "single",
+      address: { street1: "1 Main St", city: "City", state: "CA", postalCode: "90001", country: "US" },
+      physical: { buildingSF: 50000 },
+    },
+    rentRoll: {
+      asOfDate: first,
+      leases: [{
+        leaseId: "L-1", tenant: { name: "Tenant name" }, leasedSF: 50000,
+        commencementDate: first, expirationDate: addYears(first, 5),
+        baseRent: { unit: "perSFPerMonth", schedule: [{ startDate: first, amount: 1.25 }] },
+        escalation: { type: "fixed_percent", rate: 3, frequencyMonths: 12 },
+        reimbursement: { structure: "NNN" },
+      }],
+    },
+    expenses: {
+      items: [
+        { expenseId: "E-TAX", name: "Real Estate Taxes", category: "real_estate_taxes", amount: 2.0, amountUnit: "perSFPerYear", recoverable: true },
+        { expenseId: "E-INS", name: "Insurance", category: "insurance", amount: 0.3, amountUnit: "perSFPerYear", recoverable: true },
+        { expenseId: "E-CAM", name: "Common Area Maintenance", category: "cam", amount: 0.5, amountUnit: "perSFPerYear", recoverable: true },
+        { expenseId: "E-MGMT", name: "Management Fee", category: "management_fee", amount: 2.5, amountUnit: "percentOfEGR", recoverable: true },
+      ],
+    },
+    marketAssumptions: {
+      growth: { marketRent: 3, expenses: 3 },
+      generalVacancyPercent: 3,
+      leasingProfiles: {
+        default: {
+          marketRent: { amount: 1.3, unit: "perSFPerMonth" }, termMonths: 60,
+          escalation: { type: "fixed_percent", rate: 3, frequencyMonths: 12 }, reimbursementStructure: "NNN",
+          downtimeMonths: 6, renewalProbabilityPercent: 65,
+          newTenant: { tiPerSF: 5, lcPercentOfRent: 6, freeRentMonths: 2 },
+          renewal: { tiPerSF: 1, lcPercentOfRent: 3, freeRentMonths: 0 },
+        },
+      },
+    },
+    valuation: {
+      analysisStartDate: first, methods: ["dcf", "direct_cap"], purchasePrice: 12000000,
+      dcf: { holdPeriodYears: 10, discountRatePercent: 7.5, terminalValue: { method: "direct_cap", capRatePercent: 6, noiBasis: "forwardYear", sellingCostsPercent: 1.5 } },
+      directCap: { capRatePercent: 5.75, noiBasis: "year1" },
+    },
+    provenance: { generatedAt: new Date().toISOString().slice(0, 19) + "Z", generatedBy: { name: "Your name", role: "other" }, notes: "Started from the viewer's blank template. Every figure is a placeholder until replaced." },
+  });
+}
+
+function newDeal() {
+  const entry = makeEntry("new-deal.ore", newDealText(), { kind: "memory" });
+  entry.savedText = ""; // never saved: counts as unsaved until it is
+  addEntry(entry);
+  state.active = entry.id; // open the new deal itself, not the portfolio it just joined
+  render();
+  flash("New deal — replace the placeholder figures, then Save As");
 }
 
 function renderOutputs(deal, out, err) {
@@ -570,6 +1009,7 @@ function applyDraft(entry) {
     $("ed-msg").innerHTML = `<div class="errbox">Not valid JSON: ${esc(e.message)} — fix and Apply again.</div>`;
     return false;
   }
+  if (text !== entry.text) entry.undo.push(entry.text);
   applyText(entry, text); // schema/structural issues land in the Warnings tab, not here
   render();
   return true;
@@ -584,6 +1024,8 @@ async function saveEntry(entry) {
       await w.close();
       const f = await entry.source.handle.getFile();
       entry.source.lastModified = f.lastModified; // don't re-import our own save via the watcher
+      markSaved(entry);
+      render();
       flash(`Saved ${entry.name}`);
       return;
     } catch (e) {
@@ -595,6 +1037,7 @@ async function saveEntry(entry) {
 }
 
 async function saveAsEntry(entry) {
+  if (isDirty(entry) && !applyDraft(entry)) return;
   if (window.showSaveFilePicker) {
     try {
       const handle = await window.showSaveFilePicker({
@@ -607,6 +1050,7 @@ async function saveAsEntry(entry) {
       const f = await handle.getFile();
       entry.name = f.name;
       entry.source = { kind: "handle", handle, lastModified: f.lastModified }; // now watchable and savable in place
+      markSaved(entry);
       render();
       flash(`Saved ${entry.name}`);
       return;
@@ -614,7 +1058,12 @@ async function saveAsEntry(entry) {
       if (e.name === "AbortError") return;
     }
   }
+  // No file-system access in this browser: the download is the save. The copy in
+  // the browser stops tracking its old source so a refresh can't undo the edits.
   downloadEntry(entry);
+  if (entry.source.kind !== "handle") entry.source = { kind: "memory" };
+  markSaved(entry);
+  render();
 }
 
 function downloadEntry(entry) {
@@ -632,6 +1081,16 @@ document.addEventListener("keydown", (e) => {
     const entry = state.files.find((f) => f.id === state.active);
     if (entry) { e.preventDefault(); saveEntry(entry); }
   }
+  // Ctrl/⌘-Z undoes the last applied change, unless the cursor is in a field
+  // (where the browser's own undo applies to the text being typed)
+  if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key === "z" && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) {
+    const entry = activeEntry();
+    if (entry?.undo.length) { e.preventDefault(); undo(entry); }
+  }
+});
+
+window.addEventListener("beforeunload", (e) => {
+  if (state.files.some(hasUnsaved)) { e.preventDefault(); e.returnValue = ""; }
 });
 
 // -------------------------------------------------------------- portfolio
@@ -716,6 +1175,8 @@ async function pickFiles() {
 }
 
 $("drop").onclick = () => pickFiles();
+$("newdeal").onclick = (e) => { e.stopPropagation(); newDeal(); };
+wireEditing();
 $("file").onchange = async (e) => { for (const f of e.target.files) await loadFile(f); e.target.value = ""; };
 
 async function handleDrop(e) {
@@ -739,7 +1200,7 @@ for (const target of [$("drop"), document.body]) {
 // sample deals: same-origin when served from the repo (GitHub Pages, npm run demo),
 // falling back to the copies on GitHub when the page is opened some other way
 const EXAMPLES = ["single-tenant-nnn", "multi-tenant-infill", "value-add-rollover",
-  "corporate-net-lease", "covered-land-play", "estate-mark-to-market"];
+  "corporate-net-lease", "covered-land-play", "estate-mark-to-market", "small-multifamily"];
 const EXAMPLE_REMOTE = "https://raw.githubusercontent.com/graham1776/Open-Real-Estate/main/examples/";
 
 async function loadExample(n) {
@@ -763,7 +1224,7 @@ async function loadExamples(names) {
 }
 
 $("example-chips").innerHTML = EXAMPLES.map((n) => `<button class="chip" data-x="${n}">${n}</button>`).join("") +
-  `<button class="chip" data-x="__all">all six as a portfolio</button>`;
+  `<button class="chip" data-x="__all">all as a portfolio</button>`;
 $("examples").onclick = (e) => {
   e.stopPropagation();
   const b = e.target.closest("button[data-x]");
