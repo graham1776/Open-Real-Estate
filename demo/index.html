@@ -20,6 +20,7 @@
   .chip .x { color: var(--muted); font-weight: 700; padding: 0 2px; }
   .chip .x:hover { color: var(--bad); }
   .chip.action { border-style: dashed; color: var(--muted); }
+  select.chip { font: inherit; font-size: 12px; appearance: auto; }
   #watchwrap { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
   #drop { margin: 22px; padding: 46px 20px; border: 2px dashed var(--line); border-radius: 10px; background: var(--card); text-align: center; color: var(--muted); cursor: pointer; }
   #drop.hover { border-color: var(--accent); color: var(--accent); }
@@ -259,7 +260,7 @@ function flash(msg) {
   el.textContent = msg;
   el.style.display = "block";
   clearTimeout(flashTimer);
-  flashTimer = setTimeout(() => { el.style.display = "none"; }, 1800);
+  flashTimer = setTimeout(() => { el.style.display = "none"; }, Math.max(1800, msg.length * 60));
 }
 
 // ---------------------------------------------------------------- render
@@ -294,6 +295,8 @@ function renderChips() {
   }
   bits.push(`<span class="chip action" data-act="add">+ Add files</span>`);
   bits.push(`<span class="chip action" data-act="new">+ New deal</span>`);
+  const loaded = new Set(state.files.filter((f) => f.source.kind === "fetch").map((f) => f.name.replace(/\.ore$/, "")));
+  bits.push(`<select class="chip action" id="expick" title="Open one of the sample deals"><option value="">+ Open an example…</option>${EXAMPLES.filter((n) => !loaded.has(n)).map((n) => `<option value="${n}">${EXAMPLE_LABELS[n]}</option>`).join("")}</select>`);
   bits.push(`<span class="chip action" data-act="refresh" title="Re-read all files from source">↻ Refresh</span>`);
   bits.push(`<span id="watchwrap"><label><input type="checkbox" id="watchbox" ${state.watch ? "checked" : ""}> watch files for changes</label></span>`);
   $("filebar").innerHTML = bits.join("");
@@ -313,6 +316,13 @@ function renderChips() {
       else if (act === "refresh") refreshAll(true);
     };
   });
+  const ex = $("expick");
+  if (ex) ex.onchange = async () => {
+    const n = ex.value;
+    if (!n) return;
+    if (await loadExample(n)) { state.active = state.files[state.files.length - 1].id; render(); }
+    else flash("Couldn't load that example");
+  };
   const wb = $("watchbox");
   if (wb) { wb.onclick = (e) => e.stopPropagation(); wb.onchange = () => { state.watch = wb.checked; }; }
 }
@@ -557,6 +567,7 @@ function runOp(entry, op, a) {
   if (op === "revert") return revertToSaved(entry);
   if (op === "save") return void saveEntry(entry);
   if (op === "saveAs") return void saveAsEntry(entry);
+  if (op === "excel") return void downloadExcel(entry);
   if (op === "rmLease" && !confirm("Remove this lease from the file?")) return;
   if (op === "rmExpense" && !confirm("Remove this expense item from the file?")) return;
   const changed = commit(entry, (d) => {
@@ -638,6 +649,7 @@ function renderResults(entry) {
       <span class="muted" id="res-status">${unsaved ? `<span class="dirtydot">●</span> Unsaved changes` : "Click any underlined value to change it"}</span>
       ${opBtn("undo", "Undo", {}, "Undo the last change (Ctrl/⌘-Z)").replace("<button", `<button ${entry.undo.length ? "" : "disabled"}`)}
       ${opBtn("revert", "Revert", {}, "Discard all changes since open or last save").replace("<button", `<button ${unsaved ? "" : "disabled"}`)}
+      <button class="btn" data-op="excel" data-args="{}" title="Download this deal as an Excel workbook, computed in native formulas. No macros." ${entry.deal ? "" : "disabled"}>Excel</button>
       <button class="btn ${unsaved ? "go" : ""}" data-op="save" data-args="{}">${canWriteInPlace(entry) ? "Save" : "Save As…"}</button>
     </div>`;
 }
@@ -1066,6 +1078,25 @@ async function saveAsEntry(entry) {
   render();
 }
 
+// The deal as it stands on screen (applied edits included), loaded into the ORE
+// Workbook. Plain .xlsx: nothing to enable, so it opens where macros are blocked.
+async function downloadExcel(entry) {
+  if (!entry.deal) return;
+  flash("Building the workbook…");
+  try {
+    const { workbookFor } = await import("./excel.js");
+    const blob = await workbookFor(entry.deal, entry.out);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = entry.name.replace(/\.(ore|json)$/i, "") + ".xlsx";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    flash(`Downloaded ${a.download}. In Excel, click Enable Editing to see values`);
+  } catch (e) {
+    flash(`Excel export failed: ${e.message}`);
+  }
+}
+
 function downloadEntry(entry) {
   const blob = new Blob([entry.draft ?? entry.text], { type: "application/json" });
   const a = document.createElement("a");
@@ -1199,8 +1230,16 @@ for (const target of [$("drop"), document.body]) {
 
 // sample deals: same-origin when served from the repo (GitHub Pages, npm run demo),
 // falling back to the copies on GitHub when the page is opened some other way
-const EXAMPLES = ["single-tenant-nnn", "multi-tenant-infill", "value-add-rollover",
-  "corporate-net-lease", "covered-land-play", "estate-mark-to-market", "small-multifamily"];
+const EXAMPLE_LABELS = {
+  "single-tenant-nnn": "Single-tenant NNN warehouse",
+  "multi-tenant-infill": "Multi-tenant industrial park",
+  "value-add-rollover": "Value-add with rollover",
+  "corporate-net-lease": "Corporate net lease",
+  "covered-land-play": "Covered land play",
+  "estate-mark-to-market": "Seven-building estate",
+  "small-multifamily": "12-unit apartment building",
+};
+const EXAMPLES = Object.keys(EXAMPLE_LABELS);
 const EXAMPLE_REMOTE = "https://raw.githubusercontent.com/graham1776/Open-Real-Estate/main/examples/";
 
 async function loadExample(n) {
@@ -1223,7 +1262,7 @@ async function loadExamples(names) {
     ? `Couldn't load ${failed.join(", ")}. The examples live in the repo's examples/ folder on GitHub.` : "";
 }
 
-$("example-chips").innerHTML = EXAMPLES.map((n) => `<button class="chip" data-x="${n}">${n}</button>`).join("") +
+$("example-chips").innerHTML = EXAMPLES.map((n) => `<button class="chip" data-x="${n}" title="${n}.ore">${EXAMPLE_LABELS[n]}</button>`).join("") +
   `<button class="chip" data-x="__all">all as a portfolio</button>`;
 $("examples").onclick = (e) => {
   e.stopPropagation();

@@ -60,8 +60,10 @@ npm run cli -- compute examples/single-tenant-nnn.ore | jq .returns
 npm test           # builds the engine, validates examples, reproduces golden outputs
 ```
 
-**In Excel:** open [`excel/ORE-Workbook.xlsm`](excel/) and click *Import .ore
-file*, or run `npm run cli -- excel examples/multi-tenant-infill.ore`. You get a
+**In Excel:** open a deal in the viewer and click **Excel**: you get a workbook
+with that deal loaded, no macros and nothing to install. Or open
+[`excel/ORE-Workbook.xlsm`](excel/) and click *Import .ore file*, or run
+`npm run cli -- excel examples/multi-tenant-infill.ore`. You get a
 printable deal summary, rent roll, cash flow and valuation, computed by native
 Excel formulas that reproduce the reference engine, with a Check sheet showing
 the two side by side. See [`excel/README.md`](excel/README.md).

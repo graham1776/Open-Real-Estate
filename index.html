@@ -58,6 +58,10 @@
   tr:last-child td { border-bottom: none; }
   code { font: 14px ui-monospace, SFMono-Regular, Menlo, monospace; background: #eef2f7; padding: 1px 5px; border-radius: 4px; }
 
+  a.card { display: block; text-decoration: none; color: inherit; }
+  a.card:hover { border-color: var(--accent); }
+  a.card:hover h3 { color: var(--accent); }
+  .fine2 { font-size: 14px; color: var(--muted); margin-top: 16px; }
   .join { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 28px; margin: 40px 0; }
   .join h2 { margin-top: 0; }
   footer { padding: 24px 0 40px; color: var(--muted); font-size: 14px; }
@@ -85,7 +89,8 @@
     <nav>
       <a href="demo/">Viewer</a>
       <a class="opt" href="https://github.com/graham1776/Open-Real-Estate/blob/main/spec/README.md">Spec</a>
-      <a class="opt" href="https://github.com/graham1776/Open-Real-Estate/tree/main/examples">Examples</a>
+      <a class="opt" href="#examples">Examples</a>
+      <a class="opt" href="#excel">Excel</a>
       <a href="https://github.com/graham1776/Open-Real-Estate">GitHub</a>
     </nav>
   </div>
@@ -98,9 +103,10 @@
     <div class="cta">
       <a class="btn primary" href="demo/?example=multi-tenant-infill">Try an example deal</a>
       <a class="btn" href="demo/">Open the viewer</a>
+      <a class="btn" href="#excel">Get it in Excel</a>
       <a class="btn" href="https://github.com/graham1776/Open-Real-Estate">View on GitHub</a>
     </div>
-    <div class="fine">The viewer runs entirely in your browser. Nothing is uploaded, nothing to install.</div>
+    <div class="fine">The viewer runs entirely in your browser. Open a deal, change any number, see what it does, save the file. Nothing is uploaded, nothing to install.</div>
   </div>
 </div>
 
@@ -120,6 +126,37 @@
       <p>Drop a <code>.ore</code> file and the reference engine computes NOI, cash flows, DCF and direct cap values, levered and unlevered returns, and a sensitivity grid. Anything it estimated is listed in a Warnings tab.</p>
     </div>
   </div>
+
+  <section class="block" id="examples">
+    <h2>Example deals</h2>
+    <p>Seven synthetic deals, each a single <code>.ore</code> file. Open one in the viewer, change a rent or a cap rate, and watch the value move.</p>
+    <div class="grid3 exlist">
+      <a class="card" href="demo/?example=multi-tenant-infill"><h3>Multi-tenant industrial park</h3><p>Four suites, one vacant. NNN, modified gross and CPI leases side by side.</p></a>
+      <a class="card" href="demo/?example=single-tenant-nnn"><h3>Single-tenant NNN warehouse</h3><p>One lease, fixed escalations, a renewal option and amortizing debt.</p></a>
+      <a class="card" href="demo/?example=small-multifamily"><h3>12-unit apartment building</h3><p>Multifamily: one unit per lease, gross rents, twelve-month terms.</p></a>
+      <a class="card" href="demo/?example=value-add-rollover"><h3>Value-add with rollover</h3><p>A below-market tenant near expiry, marked to market on a bridge loan.</p></a>
+      <a class="card" href="demo/?example=corporate-net-lease"><h3>Corporate net lease</h3><p>Long lease with a fully stated rent schedule, including a step down.</p></a>
+      <a class="card" href="demo/?example=covered-land-play"><h3>Covered land play</h3><p>Above-market rent on credit, with an exit to land value.</p></a>
+      <a class="card" href="demo/?example=estate-mark-to-market"><h3>Seven-building estate</h3><p>Twenty-five leases across three rent tiers, patterned on an institutional buyer's model.</p></a>
+      <a class="card" href="demo/?example=all"><h3>All seven as a portfolio</h3><p>Drop several files and they roll up: totals, expirations, top tenants, blended returns.</p></a>
+    </div>
+  </section>
+
+  <section class="block" id="excel">
+    <h2>In Excel</h2>
+    <p>Most underwriting still lives in Excel, so ORE meets it there. The ORE Workbook reads any <code>.ore</code> file and recomputes the whole deal in native Excel formulas: rent roll, annual cash flow, direct cap, DCF, debt and returns. No add-in, no network connection. Every formula can be traced, and a Check sheet shows the workbook's numbers beside the reference engine's.</p>
+    <div class="grid3">
+      <div class="card"><h3>From the viewer</h3><p>Open any deal and click <strong>Excel</strong>. You get a workbook with that deal already loaded. No macros, so it opens on a locked-down work computer.</p></div>
+      <div class="card"><h3>Blank workbook</h3><p>Download the workbook once and load deals into it: paste a deal's data tape, or use the Import button in the macro version.</p></div>
+      <div class="card"><h3>Your own model</h3><p>Keep the model you trust. Link it to the workbook's fixed layout once, and every deal after that loads without re-keying.</p></div>
+    </div>
+    <div class="cta" style="margin-top:20px">
+      <a class="btn primary" href="demo/?example=multi-tenant-infill">Open a deal, then click Excel</a>
+      <a class="btn" href="excel/ORE-Workbook.xlsx" download>Download the workbook (.xlsx)</a>
+      <a class="btn" href="excel/ORE-Workbook.xlsm" download>With Import button (.xlsm)</a>
+    </div>
+    <p class="fine2">The workbook is tested against the engine on every example: 1,966 outputs, all matching. The macro version needs macros allowed on your machine; the plain version does not. <a href="https://github.com/graham1776/Open-Real-Estate/blob/main/excel/README.md">How it works</a>.</p>
+  </section>
 
   <section class="block">
     <h2>Why</h2>
