@@ -37,6 +37,11 @@ and see the portfolio.
     rent periods, comparables) and for repairing a file that is not valid JSON.
   The first form edit re-serializes the file with its own indentation; key order
   is kept, number formatting is normalized (`4.0` becomes `4`).
+- **Excel:** the Excel button in the results bar downloads the deal on screen,
+  edits included, as a loaded ORE Workbook (`.xlsx`, no macros). See
+  [`excel/README.md`](../excel/README.md).
+- **Examples from anywhere:** "+ Open an example…" in the file bar loads any
+  bundled deal beside the ones already open.
 - Static page, no backend, no build step: nothing is uploaded anywhere.
 - Imports the reference engine (`../engine/dist/`) directly, so display and math
   share one implementation.

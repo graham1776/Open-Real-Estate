@@ -14,6 +14,13 @@ needs an add-in, a reference library, or a network connection.
 
 ## Loading a deal
 
+**From the viewer.** Open a deal in the [viewer](../demo/) and click **Excel** in
+the results bar. The browser downloads `deal.xlsx`: the plain workbook with that
+deal on the Tape and the engine's outputs alongside, including any edits made in
+the viewer. No macro, no command line, nothing uploaded. This is the route to use
+where macros are blocked. In Protected View, click *Enable Editing* to see values.
+(`demo/excel.js` does in the browser what `validator/xlsx.mjs` does in Node.)
+
 **Import button (.xlsm).** Open the workbook, enable macros, click *Import .ore
 file* on Start Here, pick a file. The Tape is replaced and every sheet
 recalculates. *Save Tape as .ore* writes the Tape back out as a `.ore` file, so a
