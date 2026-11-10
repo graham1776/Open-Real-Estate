@@ -17,6 +17,23 @@ arrangements, and underwriting conventions the schema cannot yet express cleanly
   workbook generator (`excel/build_workbook.py`) so `npm run excel:test` passes;
   the workbook is a second conforming implementation and is held to the goldens.
 
+## How issues are organized
+
+The [roadmap issue](https://github.com/graham1776/Open-Real-Estate/issues/56) shows
+what is planned now, next and later.
+
+| Label | Meaning |
+|---|---|
+| `v0.2` | Planned for the next release. No release label means not scheduled, which is not a no. |
+| `decision` | A choice about the format that the maintainer has to make. Argue the case in the issue; building waits on the call. |
+| `good first issue` | Small and self-contained. |
+| `help wanted` | Scoped and open to anyone. Comment first so two people do not build the same thing. |
+| `spec` `engine` `viewer` `excel` `tooling` `ai` `docs` `ecosystem` | Which part of the project. |
+
+A change to the schema starts as a **format proposal** issue, not a pull request:
+agree the shape first, then build it. Bug fixes, docs and anything labelled
+`help wanted` can go straight to a pull request.
+
 ## Ground rules
 
 1. **Positioning discipline.** No contribution — code, docs, comments, examples —
