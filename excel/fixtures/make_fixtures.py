@@ -6,13 +6,15 @@ synthetic variants built to reach every branch the workbook mirrors: fee-simple
 basis, expense stops and estimated base years, exclusions, admin fees,
 non-cumulative and simple-cumulative caps, partial and reimbursement-abating
 free rent, signed-not-yet-commenced leases, fixed-amount and CPI escalations,
-CPI and MG market profiles, unmapped space types, percent-of-rent commissions,
+CPI and MG market profiles, percent-of-rent commissions,
 annual and mid-period discounting, every terminal-value method, trailing and
 in-place NOI bases, custom NOI, direct-cap exclusions and lump-sum adjustments,
 derived-rate tax reassessment, LTV debt with amortization, and growth curves.
 
 They are test inputs, not examples: values are arbitrary and unrealistic in
-places on purpose. Regenerate with:  python3 excel/fixtures/make_fixtures.py
+places on purpose, but every fixture must pass `ore validate`: there is no
+unmapped-spaceType case, because a spaceType with no leasing profile is a lint
+error (space_type_unknown), not an engine fallback. Regenerate with:  python3 excel/fixtures/make_fixtures.py
 """
 
 import copy
@@ -60,7 +62,7 @@ L200["reimbursement"] = {"structure": "MG", "expenseStopPerSF": 5.0}
 L200["expirationDate"] = "2027-12-31"
 L300["reimbursement"] = {"structure": "NNN", "proRataSharePercent": 27,
                          "expenseCap": {"capPercent": 4, "basis": "cumulative"}}
-L300["spaceType"] = "flex"           # unmapped -> first profile
+L300["spaceType"] = "small_bay"
 L300["options"] = [{"type": "renewal", "rentBasis": "percent_of_market", "percentOfMarket": 90, "renewalTermMonths": 30}]
 d["rentRoll"]["leases"].append({
     "leaseId": "L-450", "tenant": {"name": "Forward Commit Tenant"}, "suite": "450", "leasedSF": 6000,
@@ -71,7 +73,7 @@ d["rentRoll"]["leases"].append({
     "freeRent": [{"startDate": "2026-10-01", "endDate": "2026-12-31"}],
 })
 d["rentRoll"]["vacantSuites"][0]["sf"] = 8200
-d["rentRoll"]["vacantSuites"].append({"suite": "500", "sf": 2400, "spaceType": "creative"})  # unmapped space type
+d["rentRoll"]["vacantSuites"].append({"suite": "500", "sf": 2400, "spaceType": "small_bay"})
 d["property"]["physical"]["buildingSF"] = 78400 + 6000 - 6000 + 2400 - 6000 + 6000  # SF mismatch on purpose
 d["expenses"]["items"].append({"expenseId": "E-LAND", "name": "Landscaping", "category": "cam", "amount": 9000,
                                "amountUnit": "totalPerYear", "recoverable": True, "controllable": False})

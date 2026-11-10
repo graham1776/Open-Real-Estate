@@ -1495,6 +1495,8 @@ export type PortfolioOutput = ReturnType<typeof computePortfolio>;
 
 const RENEWAL_ONLY_FIELDS = ["renewalTermMonths", "renewalCount", "rentBasis", "fixedRent", "percentOfMarket"] as const;
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
 function jsonPointer(segments: (string | number)[]): string {
   const enc = (s: string) => s.replace(/~/g, "~0").replace(/\//g, "~1");
   return "/" + segments.map((s) => enc(String(s))).join("/");
@@ -1556,10 +1558,8 @@ export function lint(deal: unknown): LintProblem[] {
         }
       }
       if (typeof l.spaceType === "string") {
-        const path = jsonPointer(["rentRoll", "leases", i, "spaceType"]);
-        if (profiles == null || !Object.hasOwn(profiles, l.spaceType)) {
-          problems.push(lintIssue("error", "space_type_unknown", spaceTypeMessage(l.spaceType, profiles), path));
-        }
+        const issue = spaceTypeIssue(l.spaceType, profiles, jsonPointer(["rentRoll", "leases", i, "spaceType"]));
+        if (issue) problems.push(issue);
       }
       const excluded = l.reimbursement?.excludedExpenses;
       if (Array.isArray(excluded)) {
@@ -1617,18 +1617,32 @@ export function lint(deal: unknown): LintProblem[] {
           }
         });
       }
+      // contractRate() takes the last step whose startDate has passed, in array
+      // order, so an out-of-order schedule silently prices the wrong rent.
+      const schedule = l.baseRent?.schedule;
+      if (Array.isArray(schedule)) {
+        let prev: string | null = null;
+        schedule.forEach((step, j) => {
+          const start = step?.startDate;
+          if (typeof start !== "string" || !ISO_DATE.test(start)) return;
+          if (prev !== null && start <= prev) {
+            problems.push(lintIssue(
+              "error",
+              "rent_steps_unordered",
+              `Rent step startDate ${start} is not after an earlier step's ${prev}; steps must be in strictly ascending startDate order.`,
+              jsonPointer(["rentRoll", "leases", i, "baseRent", "schedule", j, "startDate"]),
+            ));
+          }
+          if (prev === null || start > prev) prev = start;
+        });
+      }
     });
     const vacant = d.rentRoll.vacantSuites;
     if (Array.isArray(vacant)) {
       vacant.forEach((suite, i) => {
         if (suite == null || typeof suite !== "object" || typeof suite.spaceType !== "string") return;
-        if (profiles != null && Object.hasOwn(profiles, suite.spaceType)) return;
-        problems.push(lintIssue(
-          "error",
-          "space_type_unknown",
-          spaceTypeMessage(suite.spaceType, profiles),
-          jsonPointer(["rentRoll", "vacantSuites", i, "spaceType"]),
-        ));
+        const issue = spaceTypeIssue(suite.spaceType, profiles, jsonPointer(["rentRoll", "vacantSuites", i, "spaceType"]));
+        if (issue) problems.push(issue);
       });
     }
   }
@@ -1675,7 +1689,12 @@ export function lint(deal: unknown): LintProblem[] {
   return problems;
 }
 
-function spaceTypeMessage(spaceType: string, profiles: Record<string, unknown> | null): string {
-  const known = profiles == null ? "The file has no leasing profiles." : `Profiles in this file: ${Object.keys(profiles).join(", ") || "(none)"}.`;
-  return `Space type "${spaceType}" is not a key of marketAssumptions.leasingProfiles. ${known}`;
+// With no leasing profiles a spaceType prices nothing (the engine already warns
+// no_market_profile / vacant_no_profile), so it is descriptive: warning, not error.
+function spaceTypeIssue(spaceType: string, profiles: Record<string, unknown> | null, path: string): LintProblem | null {
+  if (profiles == null) {
+    return lintIssue("warning", "space_type_without_profiles", `Space type "${spaceType}" cannot be matched: the file has no marketAssumptions.leasingProfiles, so it is descriptive only.`, path);
+  }
+  if (Object.hasOwn(profiles, spaceType)) return null;
+  return lintIssue("error", "space_type_unknown", `Space type "${spaceType}" is not a key of marketAssumptions.leasingProfiles. Profiles in this file: ${Object.keys(profiles).join(", ") || "(none)"}.`, path);
 }

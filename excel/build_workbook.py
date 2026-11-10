@@ -737,7 +737,8 @@ def build_space_params(B):
             put_("label", f'=IF({P("exists")}=1,"Vacant "&{V("suite")},"")')
             put_("sf", f'=IF({P("exists")}=1,{V("sf")},0)')
             put_("spaceType", f'={V("spaceType")}')
-        # profileFor(): exact spaceType key, else the first profile
+        # profileFor(): exact spaceType key; no spaceType -> the first profile. An
+        # unmatched key is a lint error, so the IFERROR fallback only serves invalid files.
         put_("prof", f'=IF(OR({P("exists")}=0,{B["nProf"]}=0),0,IF({P("spaceType")}="",1,IFERROR(MATCH({P("spaceType")},{B["profKeys"]},0),1)))')
         put_("hasProf", f'=IF({P("prof")}>0,1,0)')
         PF = lambda f: f'INDEX({B["P_" + f]},{P("prof")})'
