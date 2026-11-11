@@ -123,7 +123,7 @@ Steps are in ascending date order; steps before `asOfDate` may be omitted.
 
 | Field | Type | Definition |
 |---|---|---|
-| `unit` **(R)** | enum | `perSFPerMonth`, `perSFPerYear`, `totalPerMonth`, `totalPerYear`. Applies to every `amount` in the schedule. Per-SF units are multiplied by `leasedSF`; annual units divided by 12 for monthly cash flows. |
+| `unit` **(R)** | enum | `per_sf_per_month`, `per_sf_per_year`, `total_per_month`, `total_per_year`. Applies to every `amount` in the schedule. Per-SF units are multiplied by `leasedSF`; annual units divided by 12 for monthly cash flows. |
 | `schedule[]` **(R)** | array | Steps of `{ startDate, amount }`, min 1. |
 
 > **Why an explicit unit?** Rents are quoted per unit per month for apartments, and industrial rents are quoted per-SF-per-month in some
@@ -159,7 +159,7 @@ authoritative over generated ones.
 
 | Field | Type | Definition |
 |---|---|---|
-| `structure` **(R)** | enum | `NNN` — tenant reimburses pro-rata share of all recoverable expenses. `NN` — as NNN, except landlord retains roof/structure. `MG` — tenant reimburses increases over a base year or expense stop. `Gross` — no reimbursement. |
+| `structure` **(R)** | enum | `nnn` — tenant reimburses pro-rata share of all recoverable expenses. `nn` — as `nnn`, except landlord retains roof/structure. `mg` — tenant reimburses increases over a base year or expense stop. `gross` — no reimbursement. |
 | `proRataSharePercent` | number | Tenant's share, percent. Defaults to `leasedSF / property.physical.buildingSF × 100`. |
 | `baseYear` | integer | MG base year (provide this **or** `expenseStopPerSF`, not both). |
 | `baseYearExpenseAmount` | number | Actual building-level annual recoverable expenses in the base year. Optional companion to `baseYear`; when present the engine uses it as the MG base instead of deflating current expenses (removes the estimate warning). |
@@ -210,11 +210,11 @@ per `marketAssumptions.growth.expenses` unless an item carries its own override.
 | `name` **(R)** | string | Display name, e.g. "Real Estate Taxes". |
 | `category` | enum | `real_estate_taxes`, `insurance`, `cam`, `repairs_maintenance`, `utilities`, `management_fee`, `administrative`, `reserves`, `other`. For cross-file comparability and standards mapping. |
 | `amount` **(R)** | number | Annual amount in `amountUnit`, as of `rentRoll.asOfDate`. |
-| `amountUnit` **(R)** | enum | `totalPerYear` (USD/yr), `perSFPerYear` (USD per `buildingSF` per yr), `percentOfEGR` (percent of effective gross revenue — the conventional management fee basis; `amount` is the percent value, e.g. `2.5`). |
+| `amountUnit` **(R)** | enum | `total_per_year` (USD/yr), `per_sf_per_year` (USD per `buildingSF` per yr), `percent_of_egr` (percent of effective gross revenue — the conventional management fee basis; `amount` is the percent value, e.g. `2.5`). |
 | `recoverable` **(R)** | boolean | Recoverable from tenants, subject to each lease's reimbursement structure and exclusions. |
 | `controllable` | boolean | Whether the item is a controllable expense (cap-eligible). Default by category when omitted: taxes/insurance/utilities non-controllable, all else controllable. Only matters with a lease `expenseCap`. |
 | `belowTheLine` | boolean | Excluded from NOI but included in cash flow (conventionally capital reserves). Default false. |
-| `growthOverridePercent` | number | Item-specific annual growth, percent. No effect on `percentOfEGR` items, which float with revenue. |
+| `growthOverridePercent` | number | Item-specific annual growth, percent. No effect on `percent_of_egr` items, which float with revenue. |
 
 ## `marketAssumptions`
 
@@ -238,10 +238,10 @@ At each lease expiration, engines blend the renewal and new-tenant outcomes by
 
 | Field | Type | Definition |
 |---|---|---|
-| `marketRent` **(R)** | object | `amount` **(R)** + `unit` **(R)** (`perSFPerMonth` or `perSFPerYear`). As of `asOfDate`, grown by `growth.marketRent` thereafter. |
+| `marketRent` **(R)** | object | `amount` **(R)** + `unit` **(R)** (`per_sf_per_month` or `per_sf_per_year`). As of `asOfDate`, grown by `growth.marketRent` thereafter. |
 | `termMonths` **(R)** | integer | Market lease term. |
 | `escalation` | object | Same shape as `lease.escalation`. Defaults to none. |
-| `reimbursementStructure` | enum | `NNN` (default), `NN`, `MG`, `Gross`. MG market leases use the first calendar year of the new lease as base year. |
+| `reimbursementStructure` | enum | `nnn` (default), `nn`, `mg`, `gross`. MG market leases use the first calendar year of the new lease as base year. |
 | `downtimeMonths` **(R)** | number | Vacant months before a new-tenant lease commences. Not applied to renewals. |
 | `renewalProbabilityPercent` **(R)** | number | 0–100. 100 disables new-tenant outcomes; 0 disables renewals. |
 | `newTenant` / `renewal` | object | Leasing costs per outcome: `tiPerSF`, `lcPercentOfRent`, `freeRentMonths` — all default 0. |
@@ -284,7 +284,7 @@ inputs travel as structured, auditable disclosure until engine support lands.
 |---|---|---|
 | `method` **(R)** | enum | `direct_cap`: capitalize terminal NOI. `exit_price_psf`: `exitPricePerSF` × building SF. `fixed_value`: stated value. `grown_purchase_price`: purchase price compounded at `annualAppreciationPercent`. Each method's parameter is conditionally required. |
 | `capRatePercent` | number | Terminal cap rate (required for `direct_cap`). |
-| `noiBasis` | enum | `forwardYear` (default): the 12 months after sale. `trailingYear`: the 12 months before. `stabilizedAtMarket`: all space at market rent/structure at exit — strips residual below-market leases from terminal NOI (the lease-to-market exit). |
+| `noiBasis` | enum | `forward_year` (default): the 12 months after sale. `trailing_year`: the 12 months before. `stabilized_at_market`: all space at market rent/structure at exit — strips residual below-market leases from terminal NOI (the lease-to-market exit). |
 | `deductBelowTheLineItems` | boolean | Capitalize NOI net of reserves. Default false; declared so engines agree. |
 | `exitPricePerSF` / `fixedValue` / `annualAppreciationPercent` | number | Parameter for the respective method. |
 | `sellingCostsPercent` | number | Percent of gross reversion, default 0. |
@@ -295,7 +295,7 @@ inputs travel as structured, auditable disclosure until engine support lands.
 | Field | Type | Definition |
 |---|---|---|
 | `capRatePercent` **(R)** | number | Overall capitalization rate. |
-| `noiBasis` **(R)** | enum | `year1`: forward 12 months per the full assumption set. `inPlace`: annualized contractual rent less annualized expenses, no rollover or lease-up. `stabilizedAtMarket`: all space at market — the fee-simple / lease-to-market basis, typically paired with `markToMarket` and `nearTermAdjustments` to walk back to as-is leased-fee value. `trailing12` / `custom`: the stated `customNOI` (required for both). |
+| `noiBasis` **(R)** | enum | `year1`: forward 12 months per the full assumption set. `in_place`: annualized contractual rent less annualized expenses, no rollover or lease-up. `stabilized_at_market`: all space at market — the fee-simple / lease-to-market basis, typically paired with `markToMarket` and `nearTermAdjustments` to walk back to as-is leased-fee value. `trailing12` / `custom`: the stated `customNOI` (required for both). |
 | `customNOI` | number | Stated annual NOI for `custom`/`trailing12` bases. |
 | `applyGeneralVacancy` | boolean | Apply general vacancy / credit loss in the basis NOI. Default true. |
 | `deductBelowTheLineItems` | boolean | Capitalize NOI net of reserves. Default false. |

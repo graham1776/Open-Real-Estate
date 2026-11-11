@@ -46,7 +46,7 @@
         "commencementDate": "2025-09-01",
         "expirationDate": "2026-08-31",
         "baseRent": {
-          "unit": "totalPerMonth",
+          "unit": "total_per_month",
           "schedule": [
             {
               "startDate": "2025-09-01",
@@ -58,7 +58,7 @@
           "type": "none"
         },
         "reimbursement": {
-          "structure": "Gross"
+          "structure": "gross"
         }
       },
       {
@@ -72,7 +72,7 @@
         "commencementDate": "2025-07-01",
         "expirationDate": "2026-06-30",
         "baseRent": {
-          "unit": "totalPerMonth",
+          "unit": "total_per_month",
           "schedule": [
             {
               "startDate": "2025-07-01",
@@ -84,7 +84,7 @@
           "type": "none"
         },
         "reimbursement": {
-          "structure": "Gross"
+          "structure": "gross"
         }
       },
       {
@@ -98,7 +98,7 @@
         "commencementDate": "2026-02-01",
         "expirationDate": "2027-01-31",
         "baseRent": {
-          "unit": "totalPerMonth",
+          "unit": "total_per_month",
           "schedule": [
             {
               "startDate": "2026-02-01",
@@ -110,7 +110,7 @@
           "type": "none"
         },
         "reimbursement": {
-          "structure": "Gross"
+          "structure": "gross"
         }
       },
       {
@@ -124,7 +124,7 @@
         "commencementDate": "2025-10-01",
         "expirationDate": "2026-09-30",
         "baseRent": {
-          "unit": "totalPerMonth",
+          "unit": "total_per_month",
           "schedule": [
             {
               "startDate": "2025-10-01",
@@ -136,7 +136,7 @@
           "type": "none"
         },
         "reimbursement": {
-          "structure": "Gross"
+          "structure": "gross"
         }
       },
       {
@@ -150,7 +150,7 @@
         "commencementDate": "2026-04-01",
         "expirationDate": "2027-03-31",
         "baseRent": {
-          "unit": "totalPerMonth",
+          "unit": "total_per_month",
           "schedule": [
             {
               "startDate": "2026-04-01",
@@ -162,7 +162,7 @@
           "type": "none"
         },
         "reimbursement": {
-          "structure": "Gross"
+          "structure": "gross"
         }
       },
       {
@@ -176,7 +176,7 @@
         "commencementDate": "2025-12-01",
         "expirationDate": "2026-11-30",
         "baseRent": {
-          "unit": "totalPerMonth",
+          "unit": "total_per_month",
           "schedule": [
             {
               "startDate": "2025-12-01",
@@ -188,7 +188,7 @@
           "type": "none"
         },
         "reimbursement": {
-          "structure": "Gross"
+          "structure": "gross"
         }
       },
       {
@@ -202,7 +202,7 @@
         "commencementDate": "2026-05-01",
         "expirationDate": "2027-04-30",
         "baseRent": {
-          "unit": "totalPerMonth",
+          "unit": "total_per_month",
           "schedule": [
             {
               "startDate": "2026-05-01",
@@ -214,7 +214,7 @@
           "type": "none"
         },
         "reimbursement": {
-          "structure": "Gross"
+          "structure": "gross"
         }
       },
       {
@@ -228,7 +228,7 @@
         "commencementDate": "2025-11-01",
         "expirationDate": "2026-10-31",
         "baseRent": {
-          "unit": "totalPerMonth",
+          "unit": "total_per_month",
           "schedule": [
             {
               "startDate": "2025-11-01",
@@ -240,7 +240,7 @@
           "type": "none"
         },
         "reimbursement": {
-          "structure": "Gross"
+          "structure": "gross"
         }
       },
       {
@@ -254,7 +254,7 @@
         "commencementDate": "2026-03-01",
         "expirationDate": "2027-02-28",
         "baseRent": {
-          "unit": "totalPerMonth",
+          "unit": "total_per_month",
           "schedule": [
             {
               "startDate": "2026-03-01",
@@ -266,7 +266,7 @@
           "type": "none"
         },
         "reimbursement": {
-          "structure": "Gross"
+          "structure": "gross"
         }
       },
       {
@@ -280,7 +280,7 @@
         "commencementDate": "2026-01-01",
         "expirationDate": "2026-12-31",
         "baseRent": {
-          "unit": "totalPerMonth",
+          "unit": "total_per_month",
           "schedule": [
             {
               "startDate": "2026-01-01",
@@ -292,7 +292,7 @@
           "type": "none"
         },
         "reimbursement": {
-          "structure": "Gross"
+          "structure": "gross"
         }
       },
       {
@@ -306,7 +306,7 @@
         "commencementDate": "2025-08-01",
         "expirationDate": "2026-07-31",
         "baseRent": {
-          "unit": "totalPerMonth",
+          "unit": "total_per_month",
           "schedule": [
             {
               "startDate": "2025-08-01",
@@ -318,7 +318,7 @@
           "type": "none"
         },
         "reimbursement": {
-          "structure": "Gross"
+          "structure": "gross"
         }
       }
     ],
@@ -330,7 +330,7 @@
         "notes": "Vacated May 2026; turn in progress."
       }
     ],
-    "notes": "Rents are total dollars per unit per month (baseRent.unit: totalPerMonth). All leases are gross: the owner pays operating expenses and there are no recoveries."
+    "notes": "Rents are total dollars per unit per month (baseRent.unit: total_per_month). All leases are gross: the owner pays operating expenses and there are no recoveries."
   },
   "expenses": {
     "items": [
@@ -339,7 +339,7 @@
         "name": "Real Estate Taxes",
         "category": "real_estate_taxes",
         "amount": 31000,
-        "amountUnit": "totalPerYear",
+        "amountUnit": "total_per_year",
         "recoverable": false
       },
       {
@@ -347,7 +347,7 @@
         "name": "Insurance",
         "category": "insurance",
         "amount": 9600,
-        "amountUnit": "totalPerYear",
+        "amountUnit": "total_per_year",
         "recoverable": false
       },
       {
@@ -355,7 +355,7 @@
         "name": "Utilities (water, sewer, common electric)",
         "category": "utilities",
         "amount": 14400,
-        "amountUnit": "totalPerYear",
+        "amountUnit": "total_per_year",
         "recoverable": false
       },
       {
@@ -363,7 +363,7 @@
         "name": "Repairs and Maintenance",
         "category": "repairs_maintenance",
         "amount": 12000,
-        "amountUnit": "totalPerYear",
+        "amountUnit": "total_per_year",
         "recoverable": false,
         "controllable": true
       },
@@ -372,7 +372,7 @@
         "name": "Landscaping and Snow Removal",
         "category": "cam",
         "amount": 6500,
-        "amountUnit": "totalPerYear",
+        "amountUnit": "total_per_year",
         "recoverable": false,
         "controllable": true
       },
@@ -381,7 +381,7 @@
         "name": "Administrative",
         "category": "administrative",
         "amount": 3000,
-        "amountUnit": "totalPerYear",
+        "amountUnit": "total_per_year",
         "recoverable": false,
         "controllable": true
       },
@@ -390,7 +390,7 @@
         "name": "Management Fee",
         "category": "management_fee",
         "amount": 5,
-        "amountUnit": "percentOfEGR",
+        "amountUnit": "percent_of_egr",
         "recoverable": false
       },
       {
@@ -398,7 +398,7 @@
         "name": "Replacement Reserves",
         "category": "reserves",
         "amount": 3600,
-        "amountUnit": "totalPerYear",
+        "amountUnit": "total_per_year",
         "recoverable": false,
         "belowTheLine": true,
         "notes": "$300 per unit per year."
@@ -417,13 +417,13 @@
       "one_bed": {
         "marketRent": {
           "amount": 2.4231,
-          "unit": "perSFPerMonth"
+          "unit": "per_sf_per_month"
         },
         "termMonths": 12,
         "escalation": {
           "type": "none"
         },
-        "reimbursementStructure": "Gross",
+        "reimbursementStructure": "gross",
         "downtimeMonths": 1,
         "renewalProbabilityPercent": 55,
         "newTenant": {
@@ -441,13 +441,13 @@
       "two_bed": {
         "marketRent": {
           "amount": 2.1944,
-          "unit": "perSFPerMonth"
+          "unit": "per_sf_per_month"
         },
         "termMonths": 12,
         "escalation": {
           "type": "none"
         },
-        "reimbursementStructure": "Gross",
+        "reimbursementStructure": "gross",
         "downtimeMonths": 1,
         "renewalProbabilityPercent": 55,
         "newTenant": {
@@ -465,13 +465,13 @@
       "three_bed": {
         "marketRent": {
           "amount": 2.087,
-          "unit": "perSFPerMonth"
+          "unit": "per_sf_per_month"
         },
         "termMonths": 12,
         "escalation": {
           "type": "none"
         },
-        "reimbursementStructure": "Gross",
+        "reimbursementStructure": "gross",
         "downtimeMonths": 1,
         "renewalProbabilityPercent": 55,
         "newTenant": {
@@ -508,7 +508,7 @@
       "terminalValue": {
         "method": "direct_cap",
         "capRatePercent": 6.5,
-        "noiBasis": "forwardYear",
+        "noiBasis": "forward_year",
         "sellingCostsPercent": 3.0
       }
     },

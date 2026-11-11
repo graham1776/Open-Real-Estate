@@ -536,8 +536,8 @@ def build_data(B):
         e = lambda f: f"${ecol[f]}{r}"
         bsf = B["bsf"]
         ws[f"{ecol['exists']}{r}"] = f'=IF({e("id")}<>"",1,0)'
-        ws[f"{ecol['isPct']}{r}"] = f'=IF({e("unit")}="percentOfEGR",1,0)'
-        ws[f"{ecol['annualCur']}{r}"] = f'=IF({e("exists")}=0,0,IF({e("unit")}="perSFPerYear",{e("amt")}*{bsf},IF({e("isPct")}=1,0,{e("amt")})))'
+        ws[f"{ecol['isPct']}{r}"] = f'=IF({e("unit")}="percent_of_egr",1,0)'
+        ws[f"{ecol['annualCur']}{r}"] = f'=IF({e("exists")}=0,0,IF({e("unit")}="per_sf_per_year",{e("amt")}*{bsf},IF({e("isPct")}=1,0,{e("amt")})))'
         ws[f"{ecol['isTax']}{r}"] = "=0"  # filled after table bounds known
         ws[f"{ecol['annualModel']}{r}"] = f'=IF(AND({e("isTax")}=1,TR_ACQ=1),TR_BASE,{e("annualCur")})'
         ws[f"{ecol['fixed']}{r}"] = f'=IF(AND({e("exists")}=1,{e("isPct")}=0),1,0)'
@@ -575,7 +575,7 @@ def build_data(B):
     setc("TR_IDX", tr[0][1])
     price = B["price"]
     setc("TR_OK", f'=IF(AND({B["TR_IDX"]}>0,{price}<>""),1,0)')
-    setc("TR_CUR", f'=IF({B["TR_OK"]}=0,0,IF(INDEX({B["E_unit"]},{B["TR_IDX"]})="perSFPerYear",INDEX({B["E_amt"]},{B["TR_IDX"]})*{B["bsf"]},INDEX({B["E_amt"]},{B["TR_IDX"]})))')
+    setc("TR_CUR", f'=IF({B["TR_OK"]}=0,0,IF(INDEX({B["E_unit"]},{B["TR_IDX"]})="per_sf_per_year",INDEX({B["E_amt"]},{B["TR_IDX"]})*{B["bsf"]},INDEX({B["E_amt"]},{B["TR_IDX"]})))')
     setc("TR_RATE", f'=IF({B["TR_OK"]}=0,0,IF({B["trRate"]}<>"",{B["trRate"]},{B["TR_CUR"]}/{price}*100))')
     setc("TR_BASE", f'=IF({B["TR_OK"]}=0,0,{price}*{B["TR_RATE"]}/100)')
     setc("TR_ACQ", f'=IF(AND({B["TR_OK"]}=1,{B["trAcq"]}<>FALSE),1,0)')
@@ -742,7 +742,7 @@ def build_space_params(B):
         put_("hasProf", f'=IF({P("prof")}>0,1,0)')
         PF = lambda f: f'INDEX({B["P_" + f]},{P("prof")})'
         PFn = lambda f, d: f'IF({P("hasProf")}=0,{d},IF({PF(f)}="",{d},{PF(f)}))'
-        put_("mkt0", f'=IF({P("hasProf")}=0,0,IF({PF("unit")}="perSFPerMonth",{PF("amt")}*{P("sf")},{PF("amt")}*{P("sf")}/12))')
+        put_("mkt0", f'=IF({P("hasProf")}=0,0,IF({PF("unit")}="per_sf_per_month",{PF("amt")}*{P("sf")},{PF("amt")}*{P("sf")}/12))')
         put_("T", f'=MAX(1,{PFn("term", 1)})')
         put_("D", f'={PFn("down", 0)}')
         put_("p", f'={PFn("renProb", 0)}/100')
@@ -756,11 +756,11 @@ def build_space_params(B):
         cpi_p = f'MIN(IF({PF("cpiCap")}="",1E+300,{PF("cpiCap")}),MAX(IF({PF("cpiFloor")}="",-1E+300,{PF("cpiFloor")}),{B["cpiModel"]}))'
         put_("escR", f'=IF({P("hasProf")}=0,0,IF({PF("escType")}="fixed_percent",IF({PF("escRate")}="",0,{PF("escRate")})/100,IF({PF("escType")}="cpi",{cpi_p}/100,0)))')
         put_("freq", f'=MAX(1,{PFn("escFreq", 12)})')
-        put_("mktNNN", f'=IF({P("hasProf")}=0,0,IF(OR({PF("struct")}="",{PF("struct")}="NNN",{PF("struct")}="NN"),1,0))')
+        put_("mktNNN", f'=IF({P("hasProf")}=0,0,IF(OR({PF("struct")}="",{PF("struct")}="nnn",{PF("struct")}="nn"),1,0))')
         put_("A", "=" + ANNUITY(P("T"), P("escR"), P("freq")))
         put_("feeS" if False else "isIP", f'=IF(AND({P("isLease")}=1,{P("exists")}=1,{B["feeSimple"]}=0),1,0)')
         if isL:
-            put_("mult", f'=IF({L("unit")}="perSFPerMonth",{P("sf")},IF({L("unit")}="perSFPerYear",{P("sf")}/12,IF({L("unit")}="totalPerMonth",1,1/12)))')
+            put_("mult", f'=IF({L("unit")}="per_sf_per_month",{P("sf")},IF({L("unit")}="per_sf_per_year",{P("sf")}/12,IF({L("unit")}="total_per_month",1,1/12)))')
             put_("commIdx", f'=IF({P("exists")}=1,{DK(L("comm"))}-{B["startK"]},0)')
             put_("expIdx", f'=IF({P("exists")}=1,{DK(L("exp"))}-{B["startK"]},-1)')
         else:
@@ -818,8 +818,8 @@ def build_space_params(B):
                 put_(f"fre{k}", f'=IF({L(f"fre{k}")}="",-1,{DK(L(f"fre{k}"))}-{B["startK"]})')
                 put_(f"frp{k}", f'=IF({L(f"frp{k}")}="",1,{L(f"frp{k}")}/100)')
                 put_(f"frr{k}", f'=IF({L(f"frr{k}")}=TRUE,1,0)')
-            put_("isNNN", f'=IF(OR({L("struct")}="NNN",{L("struct")}="NN"),1,0)')
-            put_("isMG", f'=IF({L("struct")}="MG",1,0)')
+            put_("isNNN", f'=IF(OR({L("struct")}="nnn",{L("struct")}="nn"),1,0)')
+            put_("isMG", f'=IF({L("struct")}="mg",1,0)')
             put_("share", f'=IF({P("exists")}=0,0,IF({L("share")}="",{P("sf")}/{B["bsf"]},{L("share")}/100))')
             put_("admin", f'=IF({L("admin")}="",0,{L("admin")}/100)')
             xr = f"{D}!${lc['x0']}${lr}:${lc[f'x{MX-1}']}${lr}"
@@ -1255,7 +1255,7 @@ def build_valuation(B):
     line("mktSF", "SF priced at market", f"SUMPRODUCT({spr('sf')},{spr('hasProf')})", NF_NUM)
     line("blend0", "Blended market rent, building ($/mo, month 0)",
          f'IF({B["nProf"]}=0,"",IF({B["mktSF"]}<=0,0,{B["mktSum0"]}/{B["mktSF"]}*{bsf}))')
-    p1nnn = f'IF(OR(INDEX({B["P_struct"]},1)="",INDEX({B["P_struct"]},1)="NNN",INDEX({B["P_struct"]},1)="NN"),1,0)'
+    p1nnn = f'IF(OR(INDEX({B["P_struct"]},1)="",INDEX({B["P_struct"]},1)="nnn",INDEX({B["P_struct"]},1)="nn"),1,0)'
     line("stabNNN", "First profile recovers NNN (1/0)", f'IF({B["nProf"]}=0,0,{p1nnn})', "0")
     gvcl = f'(IF({B["gvPct"]}="",0,{B["gvPct"]})+IF({B["clPct"]}="",0,{B["clPct"]}))/100'
 
@@ -1274,8 +1274,8 @@ def build_valuation(B):
     hasDC = B["hasDC"]
     line("dcExclAmt", "Excluded expenses added back (year 1)", f'IF(AND({hasDC}=1,{B["dcHasExcl"]}=1,{B["dcBasis"]}="year1"),SUMPRODUCT((ExpCalc!$F$2:${LASTC}$2<12)*ExpCalc!$F${B["EX_DCEXCL"]}:${LASTC}${B["EX_DCEXCL"]}),0)')
     basis = B["dcBasis"]
-    raw = (f'IF({basis}="year1",{SUMM("NOI", 0, 12)}+{B["dcExclAmt"]},IF({basis}="inPlace",{AT("NOI", 0)}*12,'
-           f'IF({basis}="stabilizedAtMarket",{B["stab0"]},IF(OR({basis}="custom",{basis}="trailing12"),{B["dcCustom"]},""))))')
+    raw = (f'IF({basis}="year1",{SUMM("NOI", 0, 12)}+{B["dcExclAmt"]},IF({basis}="in_place",{AT("NOI", 0)}*12,'
+           f'IF({basis}="stabilized_at_market",{B["stab0"]},IF(OR({basis}="custom",{basis}="trailing12"),{B["dcCustom"]},""))))')
     line("dcRaw", "Basis NOI before vacancy/below-line adjustments", f'IF({hasDC}=0,"",{raw})')
     addgv = f'IF(AND({B["dcGV"]}=FALSE,{B["dcGV"]}<>"",{basis}<>"custom",{basis}<>"trailing12"),{SUMM("GV", 0, 12)}+{SUMM("CL", 0, 12)},0)'
     btl = f'IF({B["dcBTL"]}=TRUE,{SUMM("BELOW", 0, 12)},0)'
@@ -1301,14 +1301,14 @@ def build_valuation(B):
     # ---------- DCF (computeDCF)
     sec("Discounted cash flow")
     hasDcf = B["hasDcf"]
-    tvb = f'IF({B["tvBasis"]}="","forwardYear",{B["tvBasis"]})'
+    tvb = f'IF({B["tvBasis"]}="","forward_year",{B["tvBasis"]})'
     line("tvBasisE", "Terminal NOI basis", f'IF({hasDcf}=0,"",{tvb})', None)
-    tnoi = (f'IF({B["tvBasisE"]}="forwardYear",{SUMM("NOI", H, H + "+12")},IF({B["tvBasisE"]}="trailingYear",'
+    tnoi = (f'IF({B["tvBasisE"]}="forward_year",{SUMM("NOI", H, H + "+12")},IF({B["tvBasisE"]}="trailing_year",'
             f'{SUMM("NOI", H + "-12", H)},{B["stabH"]}))')
     line("tNOIraw", "Terminal NOI", f'IF(OR({hasDcf}=0,{B["tvMethod"]}<>"direct_cap"),"",{tnoi})')
     line("tNOI", "Terminal NOI after below-the-line", f'IF({B["tNOIraw"]}="","",{B["tNOIraw"]}-IF({B["tvBTL"]}=TRUE,{SUMM("BELOW", H, H + "+12")},0))')
     taxrow = f'INDEX(ExpCalc!$F${B["E_row0"]}:${LASTC}${B["E_row0"] + NE - 1},TR_IDX,0)'
-    tfrom = f'IF({B["tvBasisE"]}="trailingYear",{H}-12,{H})'
+    tfrom = f'IF({B["tvBasisE"]}="trailing_year",{H}-12,{H})'
     line("sellerTax", "Seller's terminal-year property tax (reassessment load)",
          f'IF(OR({B["tNOI"]}="",TR_REV=0),0,SUMPRODUCT(({M}>={tfrom})*({M}<{tfrom}+12),{taxrow}))')
     tg = (f'IF({B["tvMethod"]}="direct_cap",IF(TR_REV=1,({B["tNOI"]}+{B["sellerTax"]})/({B["tvCap"]}/100+{B["TR_RATE"]}/100),'

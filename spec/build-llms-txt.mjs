@@ -72,8 +72,8 @@ operations, international conventions, debt waterfalls.
   property \`notes\`: there is no structured field yet, and you must not invent one.
 - **Multifamily, student housing, self-storage, manufactured housing:** there is no
   unit mix in the format yet. Write ONE LEASE PER UNIT:
-  \`baseRent.unit: "totalPerMonth"\` with the unit's monthly rent,
-  \`reimbursement.structure: "Gross"\`, \`escalation.type: "none"\`, the unit number
+  \`baseRent.unit: "total_per_month"\` with the unit's monthly rent,
+  \`reimbursement.structure: "gross"\`, \`escalation.type: "none"\`, the unit number
   in \`suite\`, and a \`spaceType\` naming the unit type (\`one_bed\`, \`two_bed\`).
   Give each unit type a leasing profile with a 12-month term; market rent is stated
   per square foot, so divide the monthly market rent by the unit size. Vacant units

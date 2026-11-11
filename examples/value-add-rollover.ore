@@ -60,7 +60,7 @@
         "commencementDate": "2016-09-01",
         "expirationDate": "2027-08-31",
         "baseRent": {
-          "unit": "perSFPerMonth",
+          "unit": "per_sf_per_month",
           "schedule": [
             {
               "startDate": "2024-09-01",
@@ -72,7 +72,7 @@
           "type": "none"
         },
         "reimbursement": {
-          "structure": "NN",
+          "structure": "nn",
           "proRataSharePercent": 100,
           "notes": "Tenant reimburses taxes, insurance, and maintenance; landlord retains roof and structure."
         },
@@ -93,7 +93,7 @@
         "name": "Real Estate Taxes",
         "category": "real_estate_taxes",
         "amount": 158000,
-        "amountUnit": "totalPerYear",
+        "amountUnit": "total_per_year",
         "recoverable": true,
         "growthOverridePercent": 2.0
       },
@@ -102,7 +102,7 @@
         "name": "Insurance",
         "category": "insurance",
         "amount": 0.32,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": true
       },
       {
@@ -110,7 +110,7 @@
         "name": "Repairs & Maintenance",
         "category": "repairs_maintenance",
         "amount": 0.45,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": true
       },
       {
@@ -118,7 +118,7 @@
         "name": "Roof & Structure",
         "category": "repairs_maintenance",
         "amount": 0.2,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": false,
         "notes": "Landlord obligation under the NN structure; non-recoverable."
       },
@@ -127,7 +127,7 @@
         "name": "Management Fee",
         "category": "management_fee",
         "amount": 2.5,
-        "amountUnit": "percentOfEGR",
+        "amountUnit": "percent_of_egr",
         "recoverable": true
       },
       {
@@ -135,7 +135,7 @@
         "name": "Capital Reserves",
         "category": "reserves",
         "amount": 0.2,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": false,
         "belowTheLine": true,
         "notes": "Elevated reserve for 1975 vintage roof and truck court."
@@ -163,7 +163,7 @@
       "warehouse": {
         "marketRent": {
           "amount": 1.6,
-          "unit": "perSFPerMonth"
+          "unit": "per_sf_per_month"
         },
         "termMonths": 84,
         "escalation": {
@@ -171,7 +171,7 @@
           "rate": 3.5,
           "frequencyMonths": 12
         },
-        "reimbursementStructure": "NNN",
+        "reimbursementStructure": "nnn",
         "downtimeMonths": 6,
         "renewalProbabilityPercent": 40,
         "newTenant": {
@@ -212,7 +212,7 @@
       "terminalValue": {
         "method": "direct_cap",
         "capRatePercent": 5.75,
-        "noiBasis": "stabilizedAtMarket",
+        "noiBasis": "stabilized_at_market",
         "sellingCostsPercent": 1.5,
         "deductUnfundedObligations": true,
         "notes": "Exit timed 63 months out: 3 months after the second-generation lease's free rent burns off. Terminal NOI at market strips any residual legacy-lease drag; reversion discounted at a 50 bp premium."
@@ -221,7 +221,7 @@
     },
     "directCap": {
       "capRatePercent": 5.75,
-      "noiBasis": "stabilizedAtMarket",
+      "noiBasis": "stabilized_at_market",
       "applyGeneralVacancy": true,
       "markToMarket": {
         "discountRatePercent": 8.0,

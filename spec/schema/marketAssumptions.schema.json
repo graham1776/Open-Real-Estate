@@ -79,7 +79,7 @@
             "amount": { "type": "number", "exclusiveMinimum": 0, "description": "Market rent as of marketAssumptions.asOfDate, grown by growth.marketRent thereafter." },
             "unit": {
               "type": "string",
-              "enum": ["perSFPerMonth", "perSFPerYear"],
+              "enum": ["per_sf_per_month", "per_sf_per_year"],
               "description": "Unit for amount. Declared explicitly — never inferred from market convention."
             }
           }
@@ -91,8 +91,8 @@
         },
         "reimbursementStructure": {
           "type": "string",
-          "enum": ["NNN", "NN", "MG", "Gross"],
-          "default": "NNN",
+          "enum": ["nnn", "nn", "mg", "gross"],
+          "default": "nnn",
           "description": "Reimbursement structure for market leases. MG market leases use the first calendar year of the new lease as the base year."
         },
         "downtimeMonths": {

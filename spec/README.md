@@ -30,6 +30,12 @@ document, never separate files.
 ## Conventions
 
 - **Dates** are ISO 8601 (`YYYY-MM-DD`) strings.
+- **Names:** field names are camelCase (`leasedSF`, `discountRatePercent`).
+  Enum values are snake_case: lowercase words joined by underscores, with
+  acronyms lowercased (`fixed_percent`, `per_sf_per_year`, `percent_of_egr`,
+  `nnn`, `dcf`). Digits may follow a word (`year1`, `trailing12`). A value may
+  depart from this where it must match an external standard or data format,
+  such as the ISO 3166 country code `US`.
 - **Self-description:** files may carry a root `$schema` URL pointing at the
   published schema, and field names spell out their units (`clearHeightFt`,
   `...Percent`) — a reader (human, tool, or LLM) should understand a `.ore` file
