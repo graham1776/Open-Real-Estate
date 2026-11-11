@@ -1,8 +1,8 @@
 // TypeScript types for the ORE v0.1 format.
 // These mirror spec/schema/*.schema.json; the schema is normative.
 
-export type RentUnit = "perSFPerMonth" | "perSFPerYear" | "totalPerMonth" | "totalPerYear";
-export type ReimbursementStructure = "NNN" | "NN" | "MG" | "Gross";
+export type RentUnit = "per_sf_per_month" | "per_sf_per_year" | "total_per_month" | "total_per_year";
+export type ReimbursementStructure = "nnn" | "nn" | "mg" | "gross";
 export type GrowthCurve = number | { fromYear: number; annualPercent: number }[];
 
 export interface OreFile {
@@ -112,7 +112,7 @@ export interface ExpenseItem {
   name: string;
   category?: string;
   amount: number;
-  amountUnit: "totalPerYear" | "perSFPerYear" | "percentOfEGR";
+  amountUnit: "total_per_year" | "per_sf_per_year" | "percent_of_egr";
   recoverable: boolean;
   controllable?: boolean;
   belowTheLine?: boolean;
@@ -130,7 +130,7 @@ export interface MarketAssumptions {
 }
 
 export interface LeasingProfile {
-  marketRent: { amount: number; unit: "perSFPerMonth" | "perSFPerYear" };
+  marketRent: { amount: number; unit: "per_sf_per_month" | "per_sf_per_year" };
   termMonths: number;
   escalation?: Escalation;
   reimbursementStructure?: ReimbursementStructure;
@@ -187,7 +187,7 @@ export interface Dcf {
 export interface TerminalValue {
   method: "direct_cap" | "exit_price_psf" | "fixed_value" | "grown_purchase_price";
   capRatePercent?: number;
-  noiBasis?: "forwardYear" | "trailingYear" | "stabilizedAtMarket";
+  noiBasis?: "forward_year" | "trailing_year" | "stabilized_at_market";
   deductBelowTheLineItems?: boolean;
   exitPricePerSF?: number;
   fixedValue?: number;
@@ -199,7 +199,7 @@ export interface TerminalValue {
 
 export interface DirectCap {
   capRatePercent: number;
-  noiBasis: "year1" | "inPlace" | "stabilizedAtMarket" | "trailing12" | "custom";
+  noiBasis: "year1" | "in_place" | "stabilized_at_market" | "trailing12" | "custom";
   customNOI?: number;
   applyGeneralVacancy?: boolean;
   deductBelowTheLineItems?: boolean;

@@ -56,8 +56,8 @@ operations, international conventions, debt waterfalls.
   property `notes`: there is no structured field yet, and you must not invent one.
 - **Multifamily, student housing, self-storage, manufactured housing:** there is no
   unit mix in the format yet. Write ONE LEASE PER UNIT:
-  `baseRent.unit: "totalPerMonth"` with the unit's monthly rent,
-  `reimbursement.structure: "Gross"`, `escalation.type: "none"`, the unit number
+  `baseRent.unit: "total_per_month"` with the unit's monthly rent,
+  `reimbursement.structure: "gross"`, `escalation.type: "none"`, the unit number
   in `suite`, and a `spaceType` naming the unit type (`one_bed`, `two_bed`).
   Give each unit type a leasing profile with a 12-month term; market rent is stated
   per square foot, so divide the monthly market rent by the unit size. Vacant units
@@ -128,6 +128,12 @@ document, never separate files.
 ## Conventions
 
 - **Dates** are ISO 8601 (`YYYY-MM-DD`) strings.
+- **Names:** field names are camelCase (`leasedSF`, `discountRatePercent`).
+  Enum values are snake_case: lowercase words joined by underscores, with
+  acronyms lowercased (`fixed_percent`, `per_sf_per_year`, `percent_of_egr`,
+  `nnn`, `dcf`). Digits may follow a word (`year1`, `trailing12`). A value may
+  depart from this where it must match an external standard or data format,
+  such as the ISO 3166 country code `US`.
 - **Self-description:** files may carry a root `$schema` URL pointing at the
   published schema, and field names spell out their units (`clearHeightFt`,
   `...Percent`) — a reader (human, tool, or LLM) should understand a `.ore` file
@@ -286,7 +292,7 @@ Steps are in ascending date order; steps before `asOfDate` may be omitted.
 
 | Field | Type | Definition |
 |---|---|---|
-| `unit` **(R)** | enum | `perSFPerMonth`, `perSFPerYear`, `totalPerMonth`, `totalPerYear`. Applies to every `amount` in the schedule. Per-SF units are multiplied by `leasedSF`; annual units divided by 12 for monthly cash flows. |
+| `unit` **(R)** | enum | `per_sf_per_month`, `per_sf_per_year`, `total_per_month`, `total_per_year`. Applies to every `amount` in the schedule. Per-SF units are multiplied by `leasedSF`; annual units divided by 12 for monthly cash flows. |
 | `schedule[]` **(R)** | array | Steps of `{ startDate, amount }`, min 1. |
 
 > **Why an explicit unit?** Rents are quoted per unit per month for apartments, and industrial rents are quoted per-SF-per-month in some
@@ -322,7 +328,7 @@ authoritative over generated ones.
 
 | Field | Type | Definition |
 |---|---|---|
-| `structure` **(R)** | enum | `NNN` — tenant reimburses pro-rata share of all recoverable expenses. `NN` — as NNN, except landlord retains roof/structure. `MG` — tenant reimburses increases over a base year or expense stop. `Gross` — no reimbursement. |
+| `structure` **(R)** | enum | `nnn` — tenant reimburses pro-rata share of all recoverable expenses. `nn` — as `nnn`, except landlord retains roof/structure. `mg` — tenant reimburses increases over a base year or expense stop. `gross` — no reimbursement. |
 | `proRataSharePercent` | number | Tenant's share, percent. Defaults to `leasedSF / property.physical.buildingSF × 100`. |
 | `baseYear` | integer | MG base year (provide this **or** `expenseStopPerSF`, not both). |
 | `baseYearExpenseAmount` | number | Actual building-level annual recoverable expenses in the base year. Optional companion to `baseYear`; when present the engine uses it as the MG base instead of deflating current expenses (removes the estimate warning). |
@@ -377,11 +383,11 @@ per `marketAssumptions.growth.expenses` unless an item carries its own override.
 | `name` **(R)** | string | Display name, e.g. "Real Estate Taxes". |
 | `category` | enum | `real_estate_taxes`, `insurance`, `cam`, `repairs_maintenance`, `utilities`, `management_fee`, `administrative`, `reserves`, `other`. For cross-file comparability and standards mapping. |
 | `amount` **(R)** | number | Annual amount in `amountUnit`, as of `rentRoll.asOfDate`. |
-| `amountUnit` **(R)** | enum | `totalPerYear` (USD/yr), `perSFPerYear` (USD per `buildingSF` per yr), `percentOfEGR` (percent of effective gross revenue — the conventional management fee basis; `amount` is the percent value, e.g. `2.5`). |
+| `amountUnit` **(R)** | enum | `total_per_year` (USD/yr), `per_sf_per_year` (USD per `buildingSF` per yr), `percent_of_egr` (percent of effective gross revenue — the conventional management fee basis; `amount` is the percent value, e.g. `2.5`). |
 | `recoverable` **(R)** | boolean | Recoverable from tenants, subject to each lease's reimbursement structure and exclusions. |
 | `controllable` | boolean | Whether the item is a controllable expense (cap-eligible). Default by category when omitted: taxes/insurance/utilities non-controllable, all else controllable. Only matters with a lease `expenseCap`. |
 | `belowTheLine` | boolean | Excluded from NOI but included in cash flow (conventionally capital reserves). Default false. |
-| `growthOverridePercent` | number | Item-specific annual growth, percent. No effect on `percentOfEGR` items, which float with revenue. |
+| `growthOverridePercent` | number | Item-specific annual growth, percent. No effect on `percent_of_egr` items, which float with revenue. |
 
 ## `marketAssumptions`
 
@@ -405,10 +411,10 @@ At each lease expiration, engines blend the renewal and new-tenant outcomes by
 
 | Field | Type | Definition |
 |---|---|---|
-| `marketRent` **(R)** | object | `amount` **(R)** + `unit` **(R)** (`perSFPerMonth` or `perSFPerYear`). As of `asOfDate`, grown by `growth.marketRent` thereafter. |
+| `marketRent` **(R)** | object | `amount` **(R)** + `unit` **(R)** (`per_sf_per_month` or `per_sf_per_year`). As of `asOfDate`, grown by `growth.marketRent` thereafter. |
 | `termMonths` **(R)** | integer | Market lease term. |
 | `escalation` | object | Same shape as `lease.escalation`. Defaults to none. |
-| `reimbursementStructure` | enum | `NNN` (default), `NN`, `MG`, `Gross`. MG market leases use the first calendar year of the new lease as base year. |
+| `reimbursementStructure` | enum | `nnn` (default), `nn`, `mg`, `gross`. MG market leases use the first calendar year of the new lease as base year. |
 | `downtimeMonths` **(R)** | number | Vacant months before a new-tenant lease commences. Not applied to renewals. |
 | `renewalProbabilityPercent` **(R)** | number | 0–100. 100 disables new-tenant outcomes; 0 disables renewals. |
 | `newTenant` / `renewal` | object | Leasing costs per outcome: `tiPerSF`, `lcPercentOfRent`, `freeRentMonths` — all default 0. |
@@ -451,7 +457,7 @@ inputs travel as structured, auditable disclosure until engine support lands.
 |---|---|---|
 | `method` **(R)** | enum | `direct_cap`: capitalize terminal NOI. `exit_price_psf`: `exitPricePerSF` × building SF. `fixed_value`: stated value. `grown_purchase_price`: purchase price compounded at `annualAppreciationPercent`. Each method's parameter is conditionally required. |
 | `capRatePercent` | number | Terminal cap rate (required for `direct_cap`). |
-| `noiBasis` | enum | `forwardYear` (default): the 12 months after sale. `trailingYear`: the 12 months before. `stabilizedAtMarket`: all space at market rent/structure at exit — strips residual below-market leases from terminal NOI (the lease-to-market exit). |
+| `noiBasis` | enum | `forward_year` (default): the 12 months after sale. `trailing_year`: the 12 months before. `stabilized_at_market`: all space at market rent/structure at exit — strips residual below-market leases from terminal NOI (the lease-to-market exit). |
 | `deductBelowTheLineItems` | boolean | Capitalize NOI net of reserves. Default false; declared so engines agree. |
 | `exitPricePerSF` / `fixedValue` / `annualAppreciationPercent` | number | Parameter for the respective method. |
 | `sellingCostsPercent` | number | Percent of gross reversion, default 0. |
@@ -462,7 +468,7 @@ inputs travel as structured, auditable disclosure until engine support lands.
 | Field | Type | Definition |
 |---|---|---|
 | `capRatePercent` **(R)** | number | Overall capitalization rate. |
-| `noiBasis` **(R)** | enum | `year1`: forward 12 months per the full assumption set. `inPlace`: annualized contractual rent less annualized expenses, no rollover or lease-up. `stabilizedAtMarket`: all space at market — the fee-simple / lease-to-market basis, typically paired with `markToMarket` and `nearTermAdjustments` to walk back to as-is leased-fee value. `trailing12` / `custom`: the stated `customNOI` (required for both). |
+| `noiBasis` **(R)** | enum | `year1`: forward 12 months per the full assumption set. `in_place`: annualized contractual rent less annualized expenses, no rollover or lease-up. `stabilized_at_market`: all space at market — the fee-simple / lease-to-market basis, typically paired with `markToMarket` and `nearTermAdjustments` to walk back to as-is leased-fee value. `trailing12` / `custom`: the stated `customNOI` (required for both). |
 | `customNOI` | number | Stated annual NOI for `custom`/`trailing12` bases. |
 | `applyGeneralVacancy` | boolean | Apply general vacancy / credit loss in the basis NOI. Default true. |
 | `deductBelowTheLineItems` | boolean | Capitalize NOI net of reserves. Default false. |
@@ -780,8 +786,8 @@ These are authoritative; prose above is explanatory.
         },
         "amountUnit": {
           "type": "string",
-          "enum": ["totalPerYear", "perSFPerYear", "percentOfEGR"],
-          "description": "totalPerYear: USD per year. perSFPerYear: USD per SF of property.physical.buildingSF per year. percentOfEGR: percent of effective gross revenue (the conventional management fee basis) — amount is the percent value, e.g. 2.5."
+          "enum": ["total_per_year", "per_sf_per_year", "percent_of_egr"],
+          "description": "total_per_year: USD per year. per_sf_per_year: USD per SF of property.physical.buildingSF per year. percent_of_egr: percent of effective gross revenue (the conventional management fee basis) — amount is the percent value, e.g. 2.5."
         },
         "recoverable": {
           "type": "boolean",
@@ -798,7 +804,7 @@ These are authoritative; prose above is explanatory.
         },
         "growthOverridePercent": {
           "type": "number",
-          "description": "Annual growth rate in percent for this item only, overriding marketAssumptions.growth.expenses. Has no effect on percentOfEGR items, which float with revenue."
+          "description": "Annual growth rate in percent for this item only, overriding marketAssumptions.growth.expenses. Has no effect on percent_of_egr items, which float with revenue."
         },
         "notes": { "type": "string" }
       }
@@ -891,7 +897,7 @@ These are authoritative; prose above is explanatory.
             "amount": { "type": "number", "exclusiveMinimum": 0, "description": "Market rent as of marketAssumptions.asOfDate, grown by growth.marketRent thereafter." },
             "unit": {
               "type": "string",
-              "enum": ["perSFPerMonth", "perSFPerYear"],
+              "enum": ["per_sf_per_month", "per_sf_per_year"],
               "description": "Unit for amount. Declared explicitly — never inferred from market convention."
             }
           }
@@ -903,8 +909,8 @@ These are authoritative; prose above is explanatory.
         },
         "reimbursementStructure": {
           "type": "string",
-          "enum": ["NNN", "NN", "MG", "Gross"],
-          "default": "NNN",
+          "enum": ["nnn", "nn", "mg", "gross"],
+          "default": "nnn",
           "description": "Reimbursement structure for market leases. MG market leases use the first calendar year of the new lease as the base year."
         },
         "downtimeMonths": {
@@ -1418,7 +1424,7 @@ These are authoritative; prose above is explanatory.
       "properties": {
         "unit": {
           "type": "string",
-          "enum": ["perSFPerMonth", "perSFPerYear", "totalPerMonth", "totalPerYear"],
+          "enum": ["per_sf_per_month", "per_sf_per_year", "total_per_month", "total_per_year"],
           "description": "Unit for every `amount` in the schedule. Per-SF units are multiplied by leasedSF. Annual units are divided by 12 for monthly cash flows."
         },
         "schedule": {
@@ -1472,8 +1478,8 @@ These are authoritative; prose above is explanatory.
       "properties": {
         "structure": {
           "type": "string",
-          "enum": ["NNN", "NN", "MG", "Gross"],
-          "description": "NNN: tenant reimburses its pro-rata share of all recoverable expenses (taxes, insurance, CAM). NN: as NNN except landlord retains responsibility for roof/structure (capital items). MG: tenant reimburses recoverable expense increases over a base year or expense stop. Gross: no reimbursement."
+          "enum": ["nnn", "nn", "mg", "gross"],
+          "description": "nnn (triple net): tenant reimburses its pro-rata share of all recoverable expenses (taxes, insurance, CAM). nn (double net): as nnn except landlord retains responsibility for roof/structure (capital items). mg (modified gross): tenant reimburses recoverable expense increases over a base year or expense stop. gross: no reimbursement."
         },
         "proRataSharePercent": {
           "type": "number",
@@ -1757,9 +1763,9 @@ These are authoritative; prose above is explanatory.
         },
         "noiBasis": {
           "type": "string",
-          "enum": ["forwardYear", "trailingYear", "stabilizedAtMarket"],
-          "default": "forwardYear",
-          "description": "NOI capitalized at exit. forwardYear: the 12 months following sale (hold + 1), per the full assumption set. trailingYear: the 12 months preceding sale. stabilizedAtMarket: all space at market rent and structure as of the exit date — a fee-simple-style exit that strips any residual below-market leases out of the terminal NOI."
+          "enum": ["forward_year", "trailing_year", "stabilized_at_market"],
+          "default": "forward_year",
+          "description": "NOI capitalized at exit. forward_year: the 12 months following sale (hold + 1), per the full assumption set. trailing_year: the 12 months preceding sale. stabilized_at_market: all space at market rent and structure as of the exit date — a fee-simple-style exit that strips any residual below-market leases out of the terminal NOI."
         },
         "deductBelowTheLineItems": {
           "type": "boolean",
@@ -1824,8 +1830,8 @@ These are authoritative; prose above is explanatory.
         },
         "noiBasis": {
           "type": "string",
-          "enum": ["year1", "inPlace", "stabilizedAtMarket", "trailing12", "custom"],
-          "description": "NOI to capitalize. year1: forward 12 months from analysisStartDate per the full assumption set. inPlace: annualized contractual rent in force at analysisStartDate less annualized expenses, ignoring rollover and lease-up. stabilizedAtMarket: all space leased at market rent and structure — the fee-simple / lease-to-market basis, typically paired with markToMarket and nearTermAdjustments to walk back to leased-fee as-is value. trailing12: not computable from this file alone; provide customNOI alongside. custom: the stated customNOI."
+          "enum": ["year1", "in_place", "stabilized_at_market", "trailing12", "custom"],
+          "description": "NOI to capitalize. year1: forward 12 months from analysisStartDate per the full assumption set. in_place: annualized contractual rent in force at analysisStartDate less annualized expenses, ignoring rollover and lease-up. stabilized_at_market: all space leased at market rent and structure — the fee-simple / lease-to-market basis, typically paired with markToMarket and nearTermAdjustments to walk back to leased-fee as-is value. trailing12: not computable from this file alone; provide customNOI alongside. custom: the stated customNOI."
         },
         "customNOI": {
           "type": "number",
@@ -2217,7 +2223,7 @@ A complete, valid `.ore` file populating every module (synthetic data). This is 
         "commencementDate": "2021-09-01",
         "expirationDate": "2028-08-31",
         "baseRent": {
-          "unit": "perSFPerMonth",
+          "unit": "per_sf_per_month",
           "schedule": [
             {
               "startDate": "2025-09-01",
@@ -2231,7 +2237,7 @@ A complete, valid `.ore` file populating every module (synthetic data). This is 
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN",
+          "structure": "nnn",
           "proRataSharePercent": 100
         },
         "options": [
@@ -2262,7 +2268,7 @@ A complete, valid `.ore` file populating every module (synthetic data). This is 
         "name": "Real Estate Taxes",
         "category": "real_estate_taxes",
         "amount": 169200,
-        "amountUnit": "totalPerYear",
+        "amountUnit": "total_per_year",
         "recoverable": true,
         "growthOverridePercent": 2.0,
         "notes": "Synthetic; modeled at 1.2% of assumed price, statutory 2% annual growth."
@@ -2272,7 +2278,7 @@ A complete, valid `.ore` file populating every module (synthetic data). This is 
         "name": "Insurance",
         "category": "insurance",
         "amount": 0.3,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": true
       },
       {
@@ -2280,7 +2286,7 @@ A complete, valid `.ore` file populating every module (synthetic data). This is 
         "name": "CAM / Repairs & Maintenance",
         "category": "cam",
         "amount": 0.5,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": true
       },
       {
@@ -2288,7 +2294,7 @@ A complete, valid `.ore` file populating every module (synthetic data). This is 
         "name": "Management Fee",
         "category": "management_fee",
         "amount": 2.5,
-        "amountUnit": "percentOfEGR",
+        "amountUnit": "percent_of_egr",
         "recoverable": true
       },
       {
@@ -2296,7 +2302,7 @@ A complete, valid `.ore` file populating every module (synthetic data). This is 
         "name": "Capital Reserves",
         "category": "reserves",
         "amount": 0.1,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": false,
         "belowTheLine": true
       }
@@ -2324,7 +2330,7 @@ A complete, valid `.ore` file populating every module (synthetic data). This is 
       "warehouse": {
         "marketRent": {
           "amount": 1.55,
-          "unit": "perSFPerMonth"
+          "unit": "per_sf_per_month"
         },
         "termMonths": 60,
         "escalation": {
@@ -2332,7 +2338,7 @@ A complete, valid `.ore` file populating every module (synthetic data). This is 
           "rate": 3.5,
           "frequencyMonths": 12
         },
-        "reimbursementStructure": "NNN",
+        "reimbursementStructure": "nnn",
         "downtimeMonths": 4,
         "renewalProbabilityPercent": 70,
         "newTenant": {
@@ -2367,7 +2373,7 @@ A complete, valid `.ore` file populating every module (synthetic data). This is 
       "terminalValue": {
         "method": "direct_cap",
         "capRatePercent": 5.75,
-        "noiBasis": "forwardYear",
+        "noiBasis": "forward_year",
         "deductBelowTheLineItems": false,
         "sellingCostsPercent": 1.5
       }

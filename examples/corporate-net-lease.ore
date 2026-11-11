@@ -61,7 +61,7 @@
         "commencementDate": "2022-03-01",
         "expirationDate": "2032-02-29",
         "baseRent": {
-          "unit": "totalPerYear",
+          "unit": "total_per_year",
           "schedule": [
             { "startDate": "2026-03-01", "amount": 4567585 },
             { "startDate": "2027-03-01", "amount": 4704613 },
@@ -75,7 +75,7 @@
           "type": "none"
         },
         "reimbursement": {
-          "structure": "NNN",
+          "structure": "nnn",
           "proRataSharePercent": 100,
           "notes": "Effectively absolute net: tenant performs and pays for all maintenance including capital repairs; landlord's scheduled expenses are fully recovered."
         },
@@ -106,7 +106,7 @@
         "name": "Real Estate Taxes",
         "category": "real_estate_taxes",
         "amount": 1.85,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": true,
         "growthOverridePercent": 3.0
       },
@@ -115,7 +115,7 @@
         "name": "Insurance",
         "category": "insurance",
         "amount": 0.28,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": true
       },
       {
@@ -123,7 +123,7 @@
         "name": "CAM / Site Maintenance",
         "category": "cam",
         "amount": 0.45,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": true
       },
       {
@@ -131,7 +131,7 @@
         "name": "Management Fee",
         "category": "management_fee",
         "amount": 1.5,
-        "amountUnit": "percentOfEGR",
+        "amountUnit": "percent_of_egr",
         "recoverable": true
       },
       {
@@ -139,7 +139,7 @@
         "name": "Capital Reserves",
         "category": "reserves",
         "amount": 0.1,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": false,
         "belowTheLine": true
       }
@@ -158,7 +158,7 @@
       "warehouse": {
         "marketRent": {
           "amount": 15.0,
-          "unit": "perSFPerYear"
+          "unit": "per_sf_per_year"
         },
         "termMonths": 60,
         "escalation": {
@@ -166,7 +166,7 @@
           "rate": 3.0,
           "frequencyMonths": 12
         },
-        "reimbursementStructure": "NNN",
+        "reimbursementStructure": "nnn",
         "downtimeMonths": 12,
         "renewalProbabilityPercent": 60,
         "newTenant": {
@@ -202,7 +202,7 @@
       "terminalValue": {
         "method": "direct_cap",
         "capRatePercent": 5.5,
-        "noiBasis": "stabilizedAtMarket",
+        "noiBasis": "stabilized_at_market",
         "sellingCostsPercent": 0.75,
         "notes": "Exit capitalizes fully-marked-to-market NOI (all space at grown market rent) — the seller's residual below/above-market lease position is stripped from the terminal value, as institutional buyers commonly underwrite it."
       },

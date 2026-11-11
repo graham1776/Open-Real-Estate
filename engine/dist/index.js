@@ -27,10 +27,10 @@ function yearOf(dateStr) {
 }
 function monthlyTotal(amount, unit, sf) {
     switch (unit) {
-        case "perSFPerMonth": return amount * sf;
-        case "perSFPerYear": return (amount * sf) / 12;
-        case "totalPerMonth": return amount;
-        case "totalPerYear": return amount / 12;
+        case "per_sf_per_month": return amount * sf;
+        case "per_sf_per_year": return (amount * sf) / 12;
+        case "total_per_month": return amount;
+        case "total_per_year": return amount / 12;
     }
 }
 function rateForYear(curve, year1based) {
@@ -113,7 +113,7 @@ function resolveTaxReassessment(deal) {
     if (!taxItem || price == null)
         return null;
     const sf = deal.property.physical.buildingSF;
-    const currentTaxAnnual = taxItem.amountUnit === "perSFPerYear" ? taxItem.amount * sf : taxItem.amount;
+    const currentTaxAnnual = taxItem.amountUnit === "per_sf_per_year" ? taxItem.amount * sf : taxItem.amount;
     const rateDerived = tr.effectiveTaxRatePercent == null;
     const ratePct = tr.effectiveTaxRatePercent ?? (currentTaxAnnual / price) * 100;
     return {
@@ -218,8 +218,8 @@ function rolloverStreams(t, sf, profile, ctx, memo) {
     const p = (profile.renewalProbabilityPercent ?? 0) / 100;
     const T = profile.termMonths;
     const D = profile.downtimeMonths ?? 0;
-    const nnn = (profile.reimbursementStructure ?? "NNN") === "NNN" || (profile.reimbursementStructure ?? "NNN") === "NN";
-    if ((profile.reimbursementStructure ?? "NNN") === "MG") {
+    const nnn = (profile.reimbursementStructure ?? "nnn") === "nnn" || (profile.reimbursementStructure ?? "nnn") === "nn";
+    if ((profile.reimbursementStructure ?? "nnn") === "mg") {
         ctx.warnings.add("market_mg_simplified", "MG leasing profile: first-calendar-year base year means near-zero recoveries early in each market lease; engine models zero recoveries for market MG leases.");
     }
     // renewal branch (weight p)
@@ -300,7 +300,7 @@ function rolloverWithRenewalOption(t, sf, profile, ctx, memo, ov) {
     const p = (profile.renewalProbabilityPercent ?? 0) / 100;
     const T = profile.termMonths;
     const D = profile.downtimeMonths ?? 0;
-    const nnn = (profile.reimbursementStructure ?? "NNN") === "NNN" || (profile.reimbursementStructure ?? "NNN") === "NN";
+    const nnn = (profile.reimbursementStructure ?? "nnn") === "nnn" || (profile.reimbursementStructure ?? "nnn") === "nn";
     // renewal branch (weight p): tenant exercises the option — its rent and term
     if (p > 0) {
         const br = emptyStreams(h);
@@ -417,13 +417,13 @@ function expensesAt(ctx, m, excludeIds) {
     for (const item of ctx.deal.expenses?.items ?? []) {
         if (excludeIds?.includes(item.expenseId))
             continue;
-        if (item.amountUnit === "percentOfEGR") {
+        if (item.amountUnit === "percent_of_egr") {
             out.mgmtPct += item.amount / 100;
             if (item.recoverable)
                 out.mgmtRecoverable = true;
             continue;
         }
-        let annual = item.amountUnit === "perSFPerYear" ? item.amount * ctx.buildingSF : item.amount;
+        let annual = item.amountUnit === "per_sf_per_year" ? item.amount * ctx.buildingSF : item.amount;
         if (ctx.taxOverride && item.expenseId === ctx.taxOverride.expenseId)
             annual = ctx.taxOverride.baseAnnual; // property tax reassessed to purchase price
         const curve = item.growthOverridePercent != null ? item.growthOverridePercent : growth;
@@ -517,7 +517,7 @@ export function buildModel(deal, horizon, warnings) {
         const structure = lease.reimbursement.structure;
         // MG / expense-stop base
         let mgBaseMonthly = null;
-        if (structure === "MG") {
+        if (structure === "mg") {
             const r = lease.reimbursement;
             if (r.expenseStopPerSF != null) {
                 mgBaseMonthly = (r.expenseStopPerSF * lease.leasedSF) / 12 / share; // stop stated per tenant SF; convert to building-level base
@@ -542,7 +542,7 @@ export function buildModel(deal, horizon, warnings) {
         const adminMarkup = 1 + (lease.reimbursement.adminFeePercent ?? 0) / 100;
         // controllable-expense cap: ceilings on the recoverable controllable expenses (NNN/NN)
         const cap = lease.reimbursement.expenseCap;
-        const capCeil = cap && (structure === "NNN" || structure === "NN")
+        const capCeil = cap && (structure === "nnn" || structure === "nn")
             ? capCeilingsAnnual(ctx, lease, Math.ceil(horizon / 12)) : null;
         if (cap && capCeil) {
             ctx.warnings.add("expense_cap_applied", `Lease ${lease.leaseId}: ${cap.capPercent}% ${cap.basis ?? "cumulative_compounded"} cap applied to recoverable controllable expenses (taxes/insurance/utilities uncapped).`, "cap:" + lease.leaseId);
@@ -555,7 +555,7 @@ export function buildModel(deal, horizon, warnings) {
             total.sched[m] += rate * ab.rentFactor;
             total.free[m] += rate * (1 - ab.rentFactor);
             const reimbursing = !(ab.abatesReimb && ab.rentFactor < 1);
-            if ((structure === "NNN" || structure === "NN") && reimbursing) {
+            if ((structure === "nnn" || structure === "nn") && reimbursing) {
                 // Base recovery: an exclusion list forces the direct-dollar path (the
                 // aggregate SF-fraction path can't carry it); otherwise stay aggregate so
                 // the recoverable-management-fee gross-up still reaches this lease.
@@ -579,7 +579,7 @@ export function buildModel(deal, horizon, warnings) {
                         mgRecov[m] -= share * excess * adminMarkup;
                 }
             }
-            if (structure === "MG" && mgBaseMonthly != null && reimbursing) {
+            if (structure === "mg" && mgBaseMonthly != null && reimbursing) {
                 const recovNow = leaseRecovBase(ctx, m, lease);
                 mgRecov[m] += Math.max(0, share * (recovNow - mgBaseMonthly * growthFactor(0, m))) * adminMarkup;
             }
@@ -632,7 +632,7 @@ export function buildModel(deal, horizon, warnings) {
         const memo = new Map();
         const bn = emptyStreams(horizon);
         const D = profile.downtimeMonths ?? 0;
-        const nnn = (profile.reimbursementStructure ?? "NNN") !== "MG" && (profile.reimbursementStructure ?? "NNN") !== "Gross";
+        const nnn = (profile.reimbursementStructure ?? "nnn") !== "mg" && (profile.reimbursementStructure ?? "nnn") !== "gross";
         for (let m = 0; m < Math.min(D, horizon); m++)
             bn.pot[m] += marketRate(profile, suite.sf, m, ctx);
         const s = D;
@@ -702,7 +702,7 @@ function stabilizedAnnualNOI(deal, atMonth, warnings) {
     const profile = profiles[key];
     const rentM = blendedMarketMonthlyRent(ctx, atMonth) ?? marketRate(profile, ctx.buildingSF, atMonth, ctx);
     const e = expensesAt(ctx, atMonth);
-    const nnn = (profile.reimbursementStructure ?? "NNN") === "NNN" || (profile.reimbursementStructure ?? "NNN") === "NN";
+    const nnn = (profile.reimbursementStructure ?? "nnn") === "nnn" || (profile.reimbursementStructure ?? "nnn") === "nn";
     const recovFrac = nnn ? 1 : 0;
     const denom = 1 - (e.mgmtRecoverable ? recovFrac * e.mgmtPct : 0);
     const egr = (rentM + recovFrac * e.recoverableFixed) / (denom <= 0 ? 1 : denom);
@@ -749,9 +749,9 @@ export function computeDirectCap(deal, model, warnings) {
     if (basisNOI == null) {
         if (dc.noiBasis === "year1")
             basisNOI = sum(model.noi, 0, 12);
-        else if (dc.noiBasis === "inPlace")
+        else if (dc.noiBasis === "in_place")
             basisNOI = model.noi[0] * 12;
-        else if (dc.noiBasis === "stabilizedAtMarket")
+        else if (dc.noiBasis === "stabilized_at_market")
             basisNOI = stabilizedAnnualNOI(deal, 0, warnings);
         else if (dc.noiBasis === "custom" || dc.noiBasis === "trailing12")
             basisNOI = dc.customNOI ?? null;
@@ -825,10 +825,10 @@ export function computeDCF(deal, model, warnings) {
     let terminalGross = null;
     if (tv.method === "direct_cap") {
         let tNOI = null;
-        const basis = tv.noiBasis ?? "forwardYear";
-        if (basis === "forwardYear")
+        const basis = tv.noiBasis ?? "forward_year";
+        if (basis === "forward_year")
             tNOI = sum(model.noi, H, H + 12);
-        else if (basis === "trailingYear")
+        else if (basis === "trailing_year")
             tNOI = sum(model.noi, H - 12, H);
         else
             tNOI = stabilizedAnnualNOI(deal, H, warnings);
@@ -842,7 +842,7 @@ export function computeDCF(deal, model, warnings) {
         if (rx?.reassessRev) {
             // Load the exit cap by the tax rate so the buyer's taxes reset to the sale
             // price: V = (terminal NOI + seller's terminal property tax) / (cap + rate).
-            const from = basis === "trailingYear" ? H - 12 : H;
+            const from = basis === "trailing_year" ? H - 12 : H;
             const effBase = rx.reassessAcq ? rx.baseAnnual : rx.currentAnnual;
             const curve = itemGrowthCurve(deal, rx.expenseId);
             let sellerTax = 0;
@@ -1003,10 +1003,10 @@ export function computeSensitivity(deal, model, warnings) {
     const discounts = [-1, -0.5, 0, 0.5, 1].map((d) => round2(dcf.discountRatePercent + d));
     let tNOI = null;
     if (tv.method === "direct_cap") {
-        const basis = tv.noiBasis ?? "forwardYear";
-        if (basis === "forwardYear")
+        const basis = tv.noiBasis ?? "forward_year";
+        if (basis === "forward_year")
             tNOI = sum(model.noi, H, H + 12);
-        else if (basis === "trailingYear")
+        else if (basis === "trailing_year")
             tNOI = sum(model.noi, H - 12, H);
         else
             tNOI = stabilizedAnnualNOI(deal, H, warnings);

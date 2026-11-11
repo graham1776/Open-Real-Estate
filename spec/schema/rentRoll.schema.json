@@ -174,7 +174,7 @@
       "properties": {
         "unit": {
           "type": "string",
-          "enum": ["perSFPerMonth", "perSFPerYear", "totalPerMonth", "totalPerYear"],
+          "enum": ["per_sf_per_month", "per_sf_per_year", "total_per_month", "total_per_year"],
           "description": "Unit for every `amount` in the schedule. Per-SF units are multiplied by leasedSF. Annual units are divided by 12 for monthly cash flows."
         },
         "schedule": {
@@ -228,8 +228,8 @@
       "properties": {
         "structure": {
           "type": "string",
-          "enum": ["NNN", "NN", "MG", "Gross"],
-          "description": "NNN: tenant reimburses its pro-rata share of all recoverable expenses (taxes, insurance, CAM). NN: as NNN except landlord retains responsibility for roof/structure (capital items). MG: tenant reimburses recoverable expense increases over a base year or expense stop. Gross: no reimbursement."
+          "enum": ["nnn", "nn", "mg", "gross"],
+          "description": "nnn (triple net): tenant reimburses its pro-rata share of all recoverable expenses (taxes, insurance, CAM). nn (double net): as nnn except landlord retains responsibility for roof/structure (capital items). mg (modified gross): tenant reimburses recoverable expense increases over a base year or expense stop. gross: no reimbursement."
         },
         "proRataSharePercent": {
           "type": "number",
