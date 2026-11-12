@@ -1386,34 +1386,187 @@ export function computePortfolio(entries) {
     };
 }
 // ------------------------------------------------------------------ lint
+//
+// Cross-field rules (references, unique ids, option fields) live here because
+// JSON Schema cannot express them. Ids, severities, and JSON Pointers are the
+// conformance contract in spec/validation.md, locked by engine/golden/invalid/.
+const RENEWAL_ONLY_FIELDS = ["renewalTermMonths", "renewalCount", "rentBasis", "fixedRent", "percentOfMarket"];
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+function jsonPointer(segments) {
+    const enc = (s) => s.replace(/~/g, "~0").replace(/\//g, "~1");
+    return "/" + segments.map((s) => enc(String(s))).join("/");
+}
+function lintIssue(severity, code, message, path) {
+    const problem = { severity, code, message };
+    if (path !== undefined)
+        problem.path = path;
+    return problem;
+}
+function leasingProfilesOf(deal) {
+    const profiles = deal.marketAssumptions?.leasingProfiles;
+    if (profiles == null || typeof profiles !== "object" || Array.isArray(profiles))
+        return null;
+    return profiles;
+}
+function expenseIdsOf(deal) {
+    const ids = new Set();
+    const items = deal.expenses?.items;
+    if (!Array.isArray(items))
+        return ids;
+    for (const item of items) {
+        if (item && typeof item.expenseId === "string")
+            ids.add(item.expenseId);
+    }
+    return ids;
+}
 export function lint(deal) {
     const problems = [];
+    if (typeof deal !== "object" || deal == null || Array.isArray(deal)) {
+        return [lintIssue("error", "not_object", "File is not a JSON object.", "/")];
+    }
     const d = deal;
-    if (typeof deal !== "object" || deal == null)
-        return [{ code: "not_object", message: "File is not a JSON object." }];
     if (!d.formatVersion)
-        problems.push({ code: "missing", message: "formatVersion is required." });
+        problems.push(lintIssue("error", "missing", "formatVersion is required.", "/formatVersion"));
     else if (!/^0\.1\.\d+$/.test(d.formatVersion))
-        problems.push({ code: "version", message: `formatVersion ${d.formatVersion} is not 0.1.x.` });
+        problems.push(lintIssue("error", "version", `formatVersion ${d.formatVersion} is not 0.1.x.`, "/formatVersion"));
     if (!d.property)
-        problems.push({ code: "missing", message: "property module is required." });
+        problems.push(lintIssue("error", "missing", "property module is required.", "/property"));
     else if (!d.property.physical?.buildingSF)
-        problems.push({ code: "missing", message: "property.physical.buildingSF is required." });
+        problems.push(lintIssue("error", "missing", "property.physical.buildingSF is required.", "/property/physical/buildingSF"));
+    const profiles = leasingProfilesOf(d);
+    const expenseIds = expenseIdsOf(d);
+    const seenLeaseIds = new Map();
     if (!d.rentRoll)
-        problems.push({ code: "missing", message: "rentRoll module is required." });
+        problems.push(lintIssue("error", "missing", "rentRoll module is required.", "/rentRoll"));
     else {
         if (!d.rentRoll.asOfDate)
-            problems.push({ code: "missing", message: "rentRoll.asOfDate is required." });
-        (d.rentRoll.leases ?? []).forEach((l, i) => {
+            problems.push(lintIssue("error", "missing", "rentRoll.asOfDate is required.", "/rentRoll/asOfDate"));
+        const leases = Array.isArray(d.rentRoll.leases) ? d.rentRoll.leases : [];
+        leases.forEach((l, i) => {
+            if (l == null || typeof l !== "object")
+                return;
             for (const f of ["leaseId", "tenant", "leasedSF", "commencementDate", "expirationDate", "baseRent", "reimbursement"]) {
                 if (l[f] == null)
-                    problems.push({ code: "missing", message: `leases[${i}] missing ${f}.` });
+                    problems.push(lintIssue("error", "missing", `leases[${i}] missing ${f}.`, jsonPointer(["rentRoll", "leases", i, f])));
+            }
+            if (typeof l.leaseId === "string") {
+                const path = jsonPointer(["rentRoll", "leases", i, "leaseId"]);
+                const first = seenLeaseIds.get(l.leaseId);
+                if (first !== undefined) {
+                    problems.push(lintIssue("error", "lease_id_duplicate", `leaseId "${l.leaseId}" is duplicated (also at ${first}).`, path));
+                }
+                else {
+                    seenLeaseIds.set(l.leaseId, path);
+                }
+            }
+            if (typeof l.spaceType === "string") {
+                const issue = spaceTypeIssue(l.spaceType, profiles, jsonPointer(["rentRoll", "leases", i, "spaceType"]));
+                if (issue)
+                    problems.push(issue);
+            }
+            const excluded = l.reimbursement?.excludedExpenses;
+            if (Array.isArray(excluded)) {
+                excluded.forEach((id, j) => {
+                    if (typeof id !== "string" || expenseIds.has(id))
+                        return;
+                    problems.push(lintIssue("error", "expense_ref_unknown", `excludedExpenses "${id}" does not match an expenses.items expenseId.`, jsonPointer(["rentRoll", "leases", i, "reimbursement", "excludedExpenses", j])));
+                });
+            }
+            const options = l.options;
+            if (Array.isArray(options)) {
+                options.forEach((opt, j) => {
+                    if (opt == null || typeof opt !== "object")
+                        return;
+                    const base = ["rentRoll", "leases", i, "options", j];
+                    if (opt.type !== "renewal") {
+                        for (const field of RENEWAL_ONLY_FIELDS) {
+                            if (opt[field] != null) {
+                                problems.push(lintIssue("error", "option_field_mismatch", `${field} is only valid on a renewal option (type is "${opt.type ?? "missing"}").`, jsonPointer([...base, field])));
+                            }
+                        }
+                    }
+                    else {
+                        if (opt.rentBasis === "fixed" && opt.fixedRent == null) {
+                            problems.push(lintIssue("error", "option_rent_incomplete", `rentBasis "fixed" requires fixedRent.`, jsonPointer([...base, "fixedRent"])));
+                        }
+                        if (opt.rentBasis === "percent_of_market" && opt.percentOfMarket == null) {
+                            problems.push(lintIssue("error", "option_rent_incomplete", `rentBasis "percent_of_market" requires percentOfMarket.`, jsonPointer([...base, "percentOfMarket"])));
+                        }
+                    }
+                    if (opt.type !== "termination" && opt.terminationFee != null) {
+                        problems.push(lintIssue("error", "option_field_mismatch", `terminationFee is only valid on a termination option (type is "${opt.type ?? "missing"}").`, jsonPointer([...base, "terminationFee"])));
+                    }
+                });
+            }
+            // contractRate() takes the last step whose startDate has passed, in array
+            // order, so an out-of-order schedule silently prices the wrong rent.
+            const schedule = l.baseRent?.schedule;
+            if (Array.isArray(schedule)) {
+                let prev = null;
+                schedule.forEach((step, j) => {
+                    const start = step?.startDate;
+                    if (typeof start !== "string" || !ISO_DATE.test(start))
+                        return;
+                    if (prev !== null && start <= prev) {
+                        problems.push(lintIssue("error", "rent_steps_unordered", `Rent step startDate ${start} is not after an earlier step's ${prev}; steps must be in strictly ascending startDate order.`, jsonPointer(["rentRoll", "leases", i, "baseRent", "schedule", j, "startDate"])));
+                    }
+                    if (prev === null || start > prev)
+                        prev = start;
+                });
+            }
+        });
+        const vacant = d.rentRoll.vacantSuites;
+        if (Array.isArray(vacant)) {
+            vacant.forEach((suite, i) => {
+                if (suite == null || typeof suite !== "object" || typeof suite.spaceType !== "string")
+                    return;
+                const issue = spaceTypeIssue(suite.spaceType, profiles, jsonPointer(["rentRoll", "vacantSuites", i, "spaceType"]));
+                if (issue)
+                    problems.push(issue);
+            });
+        }
+    }
+    const items = d.expenses?.items;
+    if (Array.isArray(items)) {
+        const seenExpenseIds = new Map();
+        items.forEach((item, i) => {
+            if (item == null || typeof item !== "object" || typeof item.expenseId !== "string")
+                return;
+            const path = jsonPointer(["expenses", "items", i, "expenseId"]);
+            const first = seenExpenseIds.get(item.expenseId);
+            if (first !== undefined) {
+                problems.push(lintIssue("error", "expense_id_duplicate", `expenseId "${item.expenseId}" is duplicated (also at ${first}).`, path));
+            }
+            else {
+                seenExpenseIds.set(item.expenseId, path);
             }
         });
     }
+    const excludeExpenseIds = d.valuation?.directCap?.excludeExpenseIds;
+    if (Array.isArray(excludeExpenseIds)) {
+        excludeExpenseIds.forEach((id, i) => {
+            if (typeof id !== "string" || expenseIds.has(id))
+                return;
+            problems.push(lintIssue("error", "expense_ref_unknown", `excludeExpenseIds "${id}" does not match an expenses.items expenseId.`, jsonPointer(["valuation", "directCap", "excludeExpenseIds", i])));
+        });
+    }
+    const taxExpenseId = d.valuation?.taxReassessment?.expenseId;
+    if (typeof taxExpenseId === "string" && !expenseIds.has(taxExpenseId)) {
+        problems.push(lintIssue("error", "expense_ref_unknown", `taxReassessment.expenseId "${taxExpenseId}" does not match an expenses.items expenseId.`, "/valuation/taxReassessment/expenseId"));
+    }
     if (!d.marketAssumptions)
-        problems.push({ code: "advice", message: "No marketAssumptions: rollover, lease-up, and stabilized values cannot be modeled." });
+        problems.push(lintIssue("warning", "advice", "No marketAssumptions: rollover, lease-up, and stabilized values cannot be modeled.", "/marketAssumptions"));
     if (!d.valuation)
-        problems.push({ code: "advice", message: "No valuation module: engine reports operating metrics only." });
+        problems.push(lintIssue("warning", "advice", "No valuation module: engine reports operating metrics only.", "/valuation"));
     return problems;
+}
+// With no leasing profiles a spaceType prices nothing (the engine already warns
+// no_market_profile / vacant_no_profile), so it is descriptive: warning, not error.
+function spaceTypeIssue(spaceType, profiles, path) {
+    if (profiles == null) {
+        return lintIssue("warning", "space_type_without_profiles", `Space type "${spaceType}" cannot be matched: the file has no marketAssumptions.leasingProfiles, so it is descriptive only.`, path);
+    }
+    if (Object.hasOwn(profiles, spaceType))
+        return null;
+    return lintIssue("error", "space_type_unknown", `Space type "${spaceType}" is not a key of marketAssumptions.leasingProfiles. Profiles in this file: ${Object.keys(profiles).join(", ") || "(none)"}.`, path);
 }

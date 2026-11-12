@@ -2,7 +2,8 @@
 
 ORE (Open Real Estate) is an open, JSON-based file format for property-level
 underwriting data. A `.ore` file is standard JSON — `cat deal.ore | jq` just works —
-validated against the published JSON Schema in [`schema/`](schema/).
+validated against the published JSON Schema in [`schema/`](schema/), then against
+the cross-field rules in [`validation.md`](validation.md).
 
 - Current format version: **0.1.0** (pre-release, unstable until tagged)
 - Schema dialect: JSON Schema draft 2020-12
@@ -45,6 +46,7 @@ document, never separate files.
 ## Documents
 
 - [`data-dictionary.md`](data-dictionary.md) — every field defined, typed, and documented
+- [`validation.md`](validation.md) — cross-field rules (`lint()`): ids, severity, JSON Pointers
 - [`coverage.md`](coverage.md) — scope & coverage matrix: what the format represents
   and what the engine computes, by data domain, with the v0.2 gap backlog. The single
   source of truth for "is *X* supported?"

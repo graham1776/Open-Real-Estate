@@ -99,7 +99,8 @@ file you authored from a source document, do all four:
 
 ORE (Open Real Estate) is an open, JSON-based file format for property-level
 underwriting data. A `.ore` file is standard JSON — `cat deal.ore | jq` just works —
-validated against the published JSON Schema in [`schema/`](schema/).
+validated against the published JSON Schema in [`schema/`](schema/), then against
+the cross-field rules in [`validation.md`](validation.md).
 
 - Current format version: **0.1.0** (pre-release, unstable until tagged)
 - Schema dialect: JSON Schema draft 2020-12
@@ -142,6 +143,7 @@ document, never separate files.
 ## Documents
 
 - [`data-dictionary.md`](data-dictionary.md) — every field defined, typed, and documented
+- [`validation.md`](validation.md) — cross-field rules (`lint()`): ids, severity, JSON Pointers
 - [`coverage.md`](coverage.md) — scope & coverage matrix: what the format represents
   and what the engine computes, by data domain, with the v0.2 gap backlog. The single
   source of truth for "is *X* supported?"
@@ -162,6 +164,8 @@ Reporting Standards, REDI), the data dictionary notes the mapping.
 Normative definitions live in the JSON Schema files under [`schema/`](schema/); this
 dictionary restates them for human readers and adds interpretation guidance. Fields
 are listed as JSON paths from the file root. **(R)** marks required fields.
+Cross-field checks — references, unique ids, option fields — are in
+[`validation.md`](validation.md). JSON Schema does not enforce them.
 
 ## Root
 
@@ -249,7 +253,7 @@ are provided it should equal their sum.
 |---|---|---|
 | `asOfDate` **(R)** | date | Date the rent roll was struck. All leases and vacancies reflect this date. |
 | `leases` **(R)** | array | All leases in place. Empty array = fully vacant building. |
-| `vacantSuites[]` | array | Vacant space available for lease-up: `suite`, `sf` **(R)**, `spaceType` (keys into `marketAssumptions.marketRent`), `notes`. |
+| `vacantSuites[]` | array | Vacant space available for lease-up: `suite`, `sf` **(R)**, `spaceType` (keys into `marketAssumptions.leasingProfiles`), `notes`. |
 | `notes` | string | Rent-roll-level notes (estoppel status, pending amendments). |
 
 ### `rentRoll.leases[]`
@@ -336,7 +340,11 @@ instead of the generic market-leasing assumptions. A `market`-basis renewal stay
 the generic path. Renewal *probability* remains the market profile's
 `renewalProbabilityPercent`; when an option is below market the engine warns that real
 exercise is likely higher. termination/expansion/purchase/ROFR/ROFO are carried for
-diligence and do not yet affect cash flows.
+diligence and do not yet affect cash flows. Renewal-only fields
+(`renewalTermMonths`, `renewalCount`, `rentBasis`, `fixedRent`, `percentOfMarket`)
+are rejected on any other option type, and `terminationFee` is rejected except on
+`termination`. `fixedRent` is required when `rentBasis` is `fixed`;
+`percentOfMarket` is required when `rentBasis` is `percent_of_market`.
 
 | Field | Type | Definition |
 |---|---|---|
@@ -538,6 +546,71 @@ Size by exactly one of `loanAmount` or `ltvPercent`.
 Mappings to NCREIF PREA Reporting Standards and REDI field definitions will be added
 field-by-field, anchored on `expenses.items[].category` and the valuation parameters,
 before v0.1.0 is tagged.
+
+---
+
+# Validation rules
+
+# Validation rules
+
+JSON Schema checks the shape of one value. The rules below check relationships
+across fields. The reference engine implements them in `lint()`. Any conforming
+implementation — including a Python port — produces the same results.
+
+A result has:
+
+| Field | Meaning |
+|---|---|
+| `code` | Rule id from the tables below. This is the conformance id. |
+| `severity` | `error` — the file is invalid. `warning` — a default or fallback still produced a result; it does not by itself fail validation. |
+| `path` | JSON Pointer (RFC 6901) to the offending value. Omitted only when the whole document is the problem and no pointer applies; `not_object` uses `/`. |
+| `message` | Human-readable detail. Wording is not part of the conformance contract. |
+
+Results follow the file: structural checks, then each lease (required fields,
+duplicate `leaseId`, `spaceType`, `excludedExpenses`, options, rent steps), then vacant
+suites, then duplicate `expenseId`s, then `excludeExpenseIds`, then
+`taxReassessment.expenseId`, then warning-level advice. Option fields on a
+non-renewal are reported in the order `renewalTermMonths`, `renewalCount`,
+`rentBasis`, `fixedRent`, `percentOfMarket`, then `terminationFee` when that
+field is present on a non-termination.
+
+Conformance fixtures live in [`engine/golden/invalid/`](../engine/golden/invalid/).
+Most are invalid; a fixture whose expected issues are all warnings (e.g.
+`space-type-without-profiles`) locks a warning-level rule.
+Each `*.ore` file has a sibling `*.lint.json` listing the `code`, `severity`,
+and `path` that `lint()` must produce, in order, and nothing else. `schemaValid`
+says whether the file also passes JSON Schema. Reference and id rules are
+schema-valid on purpose: JSON Schema cannot check them. Option rules are also
+expressed as `if`/`then` in the rent-roll schema, the same way `escalation`
+requires `rate` or `amount`, so a schema-only check rejects them too.
+
+Omitting `spaceType` is not an error. A space with no `spaceType` uses the
+file's first leasing profile. Omitting `taxReassessment.expenseId` is not an
+error either: it defaults to the `real_estate_taxes` item.
+
+## Cross-field rules
+
+| Id | Severity | Rule |
+|---|---|---|
+| `space_type_unknown` | error | A lease or vacant-suite `spaceType` is not a key of `marketAssumptions.leasingProfiles`. |
+| `space_type_without_profiles` | warning | A lease or vacant-suite `spaceType` is present but the file has no leasing profiles (`marketAssumptions` omitted). Nothing is priced from it, so it is descriptive only; the file stays valid. |
+| `expense_ref_unknown` | error | A string in `reimbursement.excludedExpenses`, `valuation.directCap.excludeExpenseIds`, or `valuation.taxReassessment.expenseId` is not an `expenses.items[].expenseId`. |
+| `lease_id_duplicate` | error | `leaseId` repeats an earlier lease. The pointer is the later occurrence. |
+| `expense_id_duplicate` | error | `expenseId` repeats an earlier expense item. The pointer is the later occurrence. |
+| `option_field_mismatch` | error | A renewal-only field (`renewalTermMonths`, `renewalCount`, `rentBasis`, `fixedRent`, `percentOfMarket`) is set on an option whose `type` is not `renewal`, or `terminationFee` is set on an option whose `type` is not `termination`. |
+| `option_rent_incomplete` | error | A renewal option has `rentBasis` `fixed` without `fixedRent`, or `percent_of_market` without `percentOfMarket`. The pointer is the missing field. Not reported when `rentBasis` itself is illegal for the option type. |
+| `rent_steps_unordered` | error | A `baseRent.schedule[]` step's `startDate` is not after the latest earlier step's `startDate` (steps must be in strictly ascending order; a repeated date is ambiguous). The pointer is each offending step's `startDate`. The ordering itself is stated in the rent-roll schema and data dictionary; JSON Schema cannot compare array items. |
+
+## Structural checks
+
+These predate the cross-field rules. They stay in `lint()` so a file can be checked without a schema validator.
+
+| Id | Severity | Rule |
+|---|---|---|
+| `not_object` | error | The document is not a JSON object. |
+| `missing` | error | `formatVersion`, `property`, `property.physical.buildingSF`, `rentRoll`, `rentRoll.asOfDate`, or a required lease field is absent. |
+| `version` | error | `formatVersion` is not `0.1.x`. |
+| `advice` | warning | `marketAssumptions` or `valuation` is omitted. The engine can still report what the remaining inputs support. |
 
 ---
 
@@ -1198,7 +1271,7 @@ These are authoritative; prose above is explanatory.
         "properties": {
           "suite": { "type": "string", "description": "Suite or unit identifier." },
           "sf": { "type": "number", "exclusiveMinimum": 0, "description": "Vacant area in square feet." },
-          "spaceType": { "type": "string", "description": "Space type key matching an entry in marketAssumptions.marketRent, used to price lease-up." },
+          "spaceType": { "type": "string", "description": "Space type key matching an entry in marketAssumptions.leasingProfiles, used to price lease-up. Omit when a single profile applies to the whole property." },
           "notes": { "type": "string" }
         }
       }
@@ -1465,6 +1538,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["type"],
       "additionalProperties": false,
+      "description": "Tenant option. Renewal-only fields (renewalTermMonths, renewalCount, rentBasis, fixedRent, percentOfMarket) are rejected on any other type, and terminationFee is rejected except on termination. fixedRent is required when rentBasis is fixed; percentOfMarket is required when rentBasis is percent_of_market.",
       "properties": {
         "type": {
           "type": "string",
@@ -1484,7 +1558,51 @@ These are authoritative; prose above is explanatory.
         "percentOfMarket": { "type": "number", "exclusiveMinimum": 0, "description": "Percent of fair market rent when rentBasis is percent_of_market, e.g. 95." },
         "terminationFee": { "type": "number", "minimum": 0, "description": "Fee payable on exercise of a termination option, in USD." },
         "notes": { "type": "string", "description": "Terms the structured fields cannot carry (e.g. expansion premises description, ROFR trigger)." }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "not": {
+              "properties": { "type": { "const": "renewal" } },
+              "required": ["type"]
+            }
+          },
+          "then": {
+            "properties": {
+              "renewalTermMonths": false,
+              "renewalCount": false,
+              "rentBasis": false,
+              "fixedRent": false,
+              "percentOfMarket": false
+            }
+          }
+        },
+        {
+          "if": {
+            "not": {
+              "properties": { "type": { "const": "termination" } },
+              "required": ["type"]
+            }
+          },
+          "then": {
+            "properties": { "terminationFee": false }
+          }
+        },
+        {
+          "if": {
+            "properties": { "rentBasis": { "const": "fixed" } },
+            "required": ["rentBasis"]
+          },
+          "then": { "required": ["fixedRent"] }
+        },
+        {
+          "if": {
+            "properties": { "rentBasis": { "const": "percent_of_market" } },
+            "required": ["rentBasis"]
+          },
+          "then": { "required": ["percentOfMarket"] }
+        }
+      ]
     }
   }
 }

@@ -68,8 +68,17 @@ function checkFile(path, validateSchema) {
   return { deal, schemaErrors, problems: lint(deal), parseError: null };
 }
 
+// error = invalid file. warning (including the legacy `advice` code) prints and does not fail.
+function isLintError(p) {
+  return p.severity ? p.severity === "error" : p.code !== "advice";
+}
+
+function formatProblem(p) {
+  return `${p.code}: ${p.path ? p.path + " " : ""}${p.message}`;
+}
+
 function isBlocked(r) {
-  return r.parseError != null || r.schemaErrors.length > 0 || r.problems.some((p) => p.code !== "advice");
+  return r.parseError != null || r.schemaErrors.length > 0 || r.problems.some(isLintError);
 }
 
 function fail(msg) {
@@ -90,12 +99,12 @@ function cmdValidate(paths) {
       console.error(`FAIL  ${name}`);
       if (r.parseError) console.error(`      ${r.parseError}`);
       for (const e of r.schemaErrors) console.error(`      schema: ${e}`);
-      for (const p of r.problems.filter((p) => p.code !== "advice")) console.error(`      ${p.code}: ${p.message}`);
+      for (const p of r.problems.filter(isLintError)) console.error(`      ${formatProblem(p)}`);
     } else {
       console.log(`PASS  ${name}`);
     }
-    for (const p of (r.problems ?? []).filter((p) => p.code === "advice")) {
-      console.log(`      advice: ${p.message}`);
+    for (const p of (r.problems ?? []).filter((p) => !isLintError(p))) {
+      console.log(`      ${formatProblem(p)}`);
     }
   }
   process.exit(failures === 0 ? 0 : 1);

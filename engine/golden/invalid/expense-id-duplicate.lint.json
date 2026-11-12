@@ -1,0 +1,10 @@
+{
+  "schemaValid": true,
+  "issues": [
+    {
+      "code": "expense_id_duplicate",
+      "severity": "error",
+      "path": "/expenses/items/1/expenseId"
+    }
+  ]
+}

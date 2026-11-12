@@ -112,6 +112,7 @@ sections.push(preamble);
 
 sections.push("# Human specification\n\n" + read("spec/README.md"));
 sections.push("# Data dictionary\n\n" + read("spec/data-dictionary.md"));
+sections.push("# Validation rules\n\n" + read("spec/validation.md"));
 
 // Normative schemas, ordered with the root first.
 const schemaDir = "spec/schema";

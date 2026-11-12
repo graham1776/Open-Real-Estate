@@ -10,8 +10,9 @@
     "cli": "node validator/cli.mjs",
     "golden": "node engine/golden/run-golden.mjs",
     "golden:update": "node engine/golden/run-golden.mjs --update",
+    "lint:fixtures": "node engine/golden/run-lint.mjs",
     "llms": "node spec/build-llms-txt.mjs",
-    "test": "npm run build && npm run validate && npm run golden",
+    "test": "npm run build && npm run validate && npm run golden && npm run lint:fixtures",
     "excel:build": "python3 excel/build_workbook.py && python3 excel/build_xlsm.py",
     "excel:test": "python3 excel/test_workbook.py && python3 excel/test_macro.py",
     "demo": "npx -y http-server -c-1 -o /demo/ ."

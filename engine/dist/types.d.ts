@@ -284,3 +284,13 @@ export interface Warning {
     code: string;
     message: string;
 }
+/**
+ * One `lint()` result. `severity: "error"` means the file is invalid.
+ * `severity: "warning"` names a default or fallback that still produced a result.
+ * Rule ids and paths are specified in `spec/validation.md`.
+ */
+export interface LintProblem extends Warning {
+    severity: "error" | "warning";
+    /** JSON Pointer (RFC 6901) to the offending value, when the issue has a location. */
+    path?: string;
+}

@@ -197,7 +197,7 @@
           "form": "letter_of_credit"
         },
         "notes": "Month 13 of free rent (Nov 2026) remains unburned as of the as-of date.",
-        "spaceType": "flex"
+        "spaceType": "small_bay"
       },
       {
         "leaseId": "L-450",
@@ -244,7 +244,7 @@
       {
         "suite": "500",
         "sf": 2400,
-        "spaceType": "creative"
+        "spaceType": "small_bay"
       }
     ],
     "notes": "Synthetic multi-tenant infill example: NNN, MG base-year, and CPI structures plus one vacant suite."

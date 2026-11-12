@@ -1,0 +1,37 @@
+{
+  "formatVersion": "0.1.0",
+  "property": {
+    "name": "Lint fixture",
+    "propertyType": "industrial",
+    "address": {
+      "street1": "1 Fixture St",
+      "city": "Santa Fe Springs",
+      "state": "CA",
+      "postalCode": "90670"
+    },
+    "physical": { "buildingSF": 10000 }
+  },
+  "rentRoll": {
+    "asOfDate": "2026-01-01",
+    "leases": [
+      {
+        "leaseId": "L-1",
+        "tenant": { "name": "Fixture Tenant" },
+        "spaceType": "small_bay",
+        "leasedSF": 10000,
+        "commencementDate": "2026-01-01",
+        "expirationDate": "2031-01-01",
+        "baseRent": {
+          "unit": "perSFPerYear",
+          "schedule": [{ "startDate": "2026-01-01", "amount": 12 }]
+        },
+        "reimbursement": { "structure": "NNN" }
+      }
+    ]
+  },
+  "valuation": {
+    "analysisStartDate": "2026-01-01",
+    "methods": ["direct_cap"],
+    "directCap": { "capRatePercent": 6, "noiBasis": "year1" }
+  }
+}

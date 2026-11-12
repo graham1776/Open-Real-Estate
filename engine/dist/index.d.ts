@@ -1,4 +1,4 @@
-import type { OreFile, Warning } from "./types.js";
+import type { OreFile, Warning, LintProblem } from "./types.js";
 export declare const ENGINE_VERSION = "0.1.0";
 declare class Warnings {
     list: Warning[];
@@ -232,5 +232,5 @@ export declare function computePortfolio(entries: PortfolioEntry[]): {
     warnings: Warning[];
 };
 export type PortfolioOutput = ReturnType<typeof computePortfolio>;
-export declare function lint(deal: unknown): Warning[];
+export declare function lint(deal: unknown): LintProblem[];
 export {};

@@ -1,0 +1,15 @@
+{
+  "schemaValid": true,
+  "issues": [
+    {
+      "code": "rent_steps_unordered",
+      "severity": "error",
+      "path": "/rentRoll/leases/0/baseRent/schedule/2/startDate"
+    },
+    {
+      "code": "rent_steps_unordered",
+      "severity": "error",
+      "path": "/rentRoll/leases/0/baseRent/schedule/3/startDate"
+    }
+  ]
+}
