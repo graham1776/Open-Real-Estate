@@ -56,7 +56,7 @@ underwritten by unit type, which needs a unit mix the format does not have yet.
 | Land | none | ✅ | — | no income to model; sales comparison inputs travel as disclosure | #38 |
 
 Until the unit mix lands, a unit-based property is written **one unit per lease**:
-`baseRent.unit: "totalPerMonth"`, `reimbursement.structure: "Gross"`, one leasing
+`baseRent.unit: "total_per_month"`, `reimbursement.structure: "gross"`, one leasing
 profile per unit type with a 12-month term. The engine computes that correctly.
 It is practical for a small property and verbose for a large one. See
 [`examples/small-multifamily.ore`](../examples/small-multifamily.ore) and the design
@@ -263,7 +263,7 @@ one PR.
 | ~~**G4**~~ | ~~Property-tax reassessment on sale (going-in & reversion)~~ | **done** — `valuation.taxReassessment`; going-in tax = price × rate, reversion loads the exit cap. Mostly a reversion effect for NNN/NN (in-place tenant reimburses) |
 | ~~**G5**~~ | ~~Actual MG base-year amount (stop estimating by deflation)~~ | **done** — `reimbursement.baseYearExpenseAmount`; engine uses it exactly, deflation estimate only as fallback |
 | **G6** | One-time / dated capital expenditures in the DCF | only a recurring reserve today |
-| ~~**G7**~~ | ~~Fix silent `Gross` recoveries + apply `adminFeePercent`~~ | **done** — `adminFeePercent` now adds a markup on recoverable expenses (kept on the aggregate path so the lease still recovers its management fee); `Gross` handled explicitly as $0 |
+| ~~**G7**~~ | ~~Fix silent `gross` recoveries + apply `adminFeePercent`~~ | **done** — `adminFeePercent` now adds a markup on recoverable expenses (kept on the aggregate path so the lease still recovers its management fee); `gross` handled explicitly as $0 |
 | **G8** | Reserve the hierarchy field names (§10) | the one item with a clock |
 | **G9** | Ground-lease payment stream; parking / IOS other-income line | missing income & outflow streams |
 | **G10** | Gross area vs net rentable area + load factor (REDI naming) | pro-rata share & $/SF depend on it |

@@ -391,14 +391,14 @@ function card(k, v, s) { return `<div class="card"><div class="k">${k}</div><div
 // until Save. Fields the forms don't cover stay reachable in the Edit JSON tab.
 
 const ENUMS = {
-  rentUnit: ["perSFPerMonth", "perSFPerYear", "totalPerMonth", "totalPerYear"],
-  marketRentUnit: ["perSFPerMonth", "perSFPerYear"],
+  rentUnit: ["per_sf_per_month", "per_sf_per_year", "total_per_month", "total_per_year"],
+  marketRentUnit: ["per_sf_per_month", "per_sf_per_year"],
   escalation: ["none", "fixed_percent", "fixed_amount", "cpi"],
-  structure: ["NNN", "NN", "MG", "Gross"],
-  amountUnit: ["totalPerYear", "perSFPerYear", "percentOfEGR"],
+  structure: ["nnn", "nn", "mg", "gross"],
+  amountUnit: ["total_per_year", "per_sf_per_year", "percent_of_egr"],
   category: ["real_estate_taxes", "insurance", "cam", "repairs_maintenance", "utilities", "management_fee", "administrative", "reserves", "other"],
-  directCapBasis: ["year1", "inPlace", "stabilizedAtMarket"],
-  terminalBasis: ["forwardYear", "trailingYear", "stabilizedAtMarket"],
+  directCapBasis: ["year1", "in_place", "stabilized_at_market"],
+  terminalBasis: ["forward_year", "trailing_year", "stabilized_at_market"],
   propertyType: ["industrial", "office", "medical_office", "life_science", "retail", "multifamily", "student_housing", "senior_housing", "manufactured_housing", "self_storage", "data_center", "hospitality", "mixed_use", "land", "other"],
   tenancy: ["single", "multi"],
 };
@@ -584,9 +584,9 @@ function runOp(entry, op, a) {
         leasedSF: 1000,
         commencementDate: asOf,
         expirationDate: addYears(asOf, like?.baseRent?.unit?.startsWith("total") ? 1 : 5),
-        baseRent: { unit: like?.baseRent?.unit ?? "perSFPerMonth", schedule: [{ startDate: asOf, amount: like?.baseRent?.unit?.startsWith("total") ? 1000 : 1 }] },
+        baseRent: { unit: like?.baseRent?.unit ?? "per_sf_per_month", schedule: [{ startDate: asOf, amount: like?.baseRent?.unit?.startsWith("total") ? 1000 : 1 }] },
         escalation: like?.escalation ? JSON.parse(JSON.stringify(like.escalation)) : { type: "fixed_percent", rate: 3, frequencyMonths: 12 },
-        reimbursement: { structure: like?.reimbursement?.structure ?? "NNN" },
+        reimbursement: { structure: like?.reimbursement?.structure ?? "nnn" },
       });
       entry.open.add(id);
     } else if (op === "rmLease") {
@@ -607,7 +607,7 @@ function runOp(entry, op, a) {
       if (!rr.vacantSuites.length) delete rr.vacantSuites;
     } else if (op === "addExpense") {
       const items = (d.expenses ??= { items: [] }).items;
-      items.push({ expenseId: uniqueId(items.map((x) => x.expenseId), "E-"), name: "New expense", category: "other", amount: 0, amountUnit: "totalPerYear", recoverable: true });
+      items.push({ expenseId: uniqueId(items.map((x) => x.expenseId), "E-"), name: "New expense", category: "other", amount: 0, amountUnit: "total_per_year", recoverable: true });
     } else if (op === "rmExpense") {
       d.expenses.items.splice(a.i, 1);
     } else if (op === "growthFlat") {
@@ -720,7 +720,7 @@ function renderRentRoll(deal, entry) {
         <tr><td>Lease ID</td><td class="code">${esc(l.leaseId)}</td><td>Industry</td><td>${edText([...L, i, "tenant", "industry"], l.tenant.industry, { w: 26 })}</td></tr>
         <tr><td>Rent unit</td><td>${edSel([...L, i, "baseRent", "unit"], l.baseRent.unit, ENUMS.rentUnit, { req: true })}</td><td>Space type</td><td>${profiles.length ? edSel([...L, i, "spaceType"], l.spaceType, profiles) : edText([...L, i, "spaceType"], l.spaceType)} <span class="muted">prices the space at rollover</span></td></tr>
         <tr><td>Rent schedule</td><td>${steps}${opBtn("addStep", "+ rent step", { i })}</td><td>Escalation every</td><td>${edNum([...L, i, "escalation", "frequencyMonths"], esc2?.frequencyMonths, { w: 5, d: 0, post: " months" })}${esc2?.type === "cpi" ? ` · floor ${edNum([...L, i, "escalation", "cpiFloorPercent"], esc2.cpiFloorPercent, { w: 5, post: "%" })} cap ${edNum([...L, i, "escalation", "cpiCapPercent"], esc2.cpiCapPercent, { w: 5, post: "%" })}` : ""}</td></tr>
-        <tr><td>Recoveries</td><td colspan="3">admin fee ${edNum([...L, i, "reimbursement", "adminFeePercent"], l.reimbursement.adminFeePercent, { w: 5, post: "%" })} · pro-rata share ${edNum([...L, i, "reimbursement", "proRataSharePercent"], l.reimbursement.proRataSharePercent, { w: 6, post: "%" })}${l.reimbursement.structure === "MG" ? ` · base year ${edNum([...L, i, "reimbursement", "baseYear"], l.reimbursement.baseYear, { w: 6, plain: true })} · expense stop ${edNum([...L, i, "reimbursement", "expenseStopPerSF"], l.reimbursement.expenseStopPerSF, { w: 6, pre: "$", post: "/SF" })}` : ""}</td></tr>
+        <tr><td>Recoveries</td><td colspan="3">admin fee ${edNum([...L, i, "reimbursement", "adminFeePercent"], l.reimbursement.adminFeePercent, { w: 5, post: "%" })} · pro-rata share ${edNum([...L, i, "reimbursement", "proRataSharePercent"], l.reimbursement.proRataSharePercent, { w: 6, post: "%" })}${l.reimbursement.structure === "mg" ? ` · base year ${edNum([...L, i, "reimbursement", "baseYear"], l.reimbursement.baseYear, { w: 6, plain: true })} · expense stop ${edNum([...L, i, "reimbursement", "expenseStopPerSF"], l.reimbursement.expenseStopPerSF, { w: 6, pre: "$", post: "/SF" })}` : ""}</td></tr>
         ${opts || free ? `<tr><td>Options / free rent</td><td colspan="3" class="muted">${opts || "no options"}${free ? ` · free rent ${free}` : ""} <span>(change these in Edit JSON)</span></td></tr>` : ""}
         <tr><td>Notes</td><td colspan="3">${edText([...L, i, "notes"], l.notes, { w: 70, ph: "notes" })}</td></tr>
         <tr><td></td><td colspan="3">${opBtn("vacateLease", "Mark suite vacant", { i }, "Remove the lease and list the space as vacant")} ${opBtn("rmLease", "Remove lease", { i })}</td></tr>
@@ -741,7 +741,7 @@ function renderExpenses(deal) {
   if (!items) { $("tab-expenses").innerHTML = `<p class="muted">No expenses module in this file.</p><p>${opBtn("addExpense", "+ Add expense item")}</p>`; return; }
   const sf = deal.property.physical.buildingSF, X = ["expenses", "items"];
   const rows = items.map((it, i) => {
-    const annual = it.amountUnit === "perSFPerYear" ? it.amount * sf : it.amountUnit === "totalPerYear" ? it.amount : null;
+    const annual = it.amountUnit === "per_sf_per_year" ? it.amount * sf : it.amountUnit === "total_per_year" ? it.amount : null;
     return `<tr><td>${edText([...X, i, "name"], it.name, { req: true, w: Math.min(34, Math.max(14, it.name.length + 2)) })}<div class="muted code">${esc(it.expenseId)}</div></td>
       <td>${edSel([...X, i, "category"], it.category, ENUMS.category)}</td>
       <td class="num">${edNum([...X, i, "amount"], it.amount, { req: true })}</td>
@@ -809,7 +809,7 @@ function renderValuation(deal) {
     html += `<h2>DCF</h2><table class="form"><tbody>
       <tr><td>Hold</td><td>${v.dcf.holdPeriodYears != null ? edNum([...D, "holdPeriodYears"], v.dcf.holdPeriodYears, { req: true, w: 5, d: 0, post: " yrs" }) : edNum([...D, "holdPeriodMonths"], v.dcf.holdPeriodMonths, { req: true, w: 5, d: 0, post: " mo" })}</td></tr>
       <tr><td>Discount rate</td><td>${edNum([...D, "discountRatePercent"], v.dcf.discountRatePercent, { req: true, w: 6, post: "%" })} · reversion ${edNum([...D, "reversionDiscountRatePercent"], v.dcf.reversionDiscountRatePercent, { w: 6, post: "%" })} <span class="muted">(blank = same) · ${esc(v.dcf.discountTiming ?? "monthly")}, ${esc(v.dcf.periodConvention ?? "end")}-period</span></td></tr>
-      <tr><td>Terminal value</td><td>${esc(tv.method)}${tv.method === "direct_cap" ? ` at ${edNum([...T, "capRatePercent"], tv.capRatePercent, { req: true, w: 6, post: "%" })} on ${edSel([...T, "noiBasis"], tv.noiBasis ?? "forwardYear", ENUMS.terminalBasis, { req: true })} NOI` : ""}${tv.method === "exit_price_psf" ? ` ${edNum([...T, "exitPricePerSF"], tv.exitPricePerSF, { req: true, pre: "$", post: "/SF" })}` : ""}${tv.method === "fixed_value" ? ` ${edNum([...T, "fixedValue"], tv.fixedValue, { req: true, pre: "$", d: 0 })}` : ""}${tv.method === "grown_purchase_price" ? ` growing ${edNum([...T, "annualAppreciationPercent"], tv.annualAppreciationPercent, { req: true, w: 5, post: "%/yr" })}` : ""}, less ${edNum([...T, "sellingCostsPercent"], tv.sellingCostsPercent, { w: 5, post: "%" })} selling costs${tv.deductUnfundedObligations ? ", less unfunded obligations" : ""}</td></tr>
+      <tr><td>Terminal value</td><td>${esc(tv.method)}${tv.method === "direct_cap" ? ` at ${edNum([...T, "capRatePercent"], tv.capRatePercent, { req: true, w: 6, post: "%" })} on ${edSel([...T, "noiBasis"], tv.noiBasis ?? "forward_year", ENUMS.terminalBasis, { req: true })} NOI` : ""}${tv.method === "exit_price_psf" ? ` ${edNum([...T, "exitPricePerSF"], tv.exitPricePerSF, { req: true, pre: "$", post: "/SF" })}` : ""}${tv.method === "fixed_value" ? ` ${edNum([...T, "fixedValue"], tv.fixedValue, { req: true, pre: "$", d: 0 })}` : ""}${tv.method === "grown_purchase_price" ? ` growing ${edNum([...T, "annualAppreciationPercent"], tv.annualAppreciationPercent, { req: true, w: 5, post: "%/yr" })}` : ""}, less ${edNum([...T, "sellingCostsPercent"], tv.sellingCostsPercent, { w: 5, post: "%" })} selling costs${tv.deductUnfundedObligations ? ", less unfunded obligations" : ""}</td></tr>
       ${tv.notes ? `<tr><td>Notes</td><td class="muted">${esc(tv.notes)}</td></tr>` : ""}
     </tbody></table>`;
   }
@@ -874,17 +874,17 @@ function newDealText() {
       leases: [{
         leaseId: "L-1", tenant: { name: "Tenant name" }, leasedSF: 50000,
         commencementDate: first, expirationDate: addYears(first, 5),
-        baseRent: { unit: "perSFPerMonth", schedule: [{ startDate: first, amount: 1.25 }] },
+        baseRent: { unit: "per_sf_per_month", schedule: [{ startDate: first, amount: 1.25 }] },
         escalation: { type: "fixed_percent", rate: 3, frequencyMonths: 12 },
-        reimbursement: { structure: "NNN" },
+        reimbursement: { structure: "nnn" },
       }],
     },
     expenses: {
       items: [
-        { expenseId: "E-TAX", name: "Real Estate Taxes", category: "real_estate_taxes", amount: 2.0, amountUnit: "perSFPerYear", recoverable: true },
-        { expenseId: "E-INS", name: "Insurance", category: "insurance", amount: 0.3, amountUnit: "perSFPerYear", recoverable: true },
-        { expenseId: "E-CAM", name: "Common Area Maintenance", category: "cam", amount: 0.5, amountUnit: "perSFPerYear", recoverable: true },
-        { expenseId: "E-MGMT", name: "Management Fee", category: "management_fee", amount: 2.5, amountUnit: "percentOfEGR", recoverable: true },
+        { expenseId: "E-TAX", name: "Real Estate Taxes", category: "real_estate_taxes", amount: 2.0, amountUnit: "per_sf_per_year", recoverable: true },
+        { expenseId: "E-INS", name: "Insurance", category: "insurance", amount: 0.3, amountUnit: "per_sf_per_year", recoverable: true },
+        { expenseId: "E-CAM", name: "Common Area Maintenance", category: "cam", amount: 0.5, amountUnit: "per_sf_per_year", recoverable: true },
+        { expenseId: "E-MGMT", name: "Management Fee", category: "management_fee", amount: 2.5, amountUnit: "percent_of_egr", recoverable: true },
       ],
     },
     marketAssumptions: {
@@ -892,8 +892,8 @@ function newDealText() {
       generalVacancyPercent: 3,
       leasingProfiles: {
         default: {
-          marketRent: { amount: 1.3, unit: "perSFPerMonth" }, termMonths: 60,
-          escalation: { type: "fixed_percent", rate: 3, frequencyMonths: 12 }, reimbursementStructure: "NNN",
+          marketRent: { amount: 1.3, unit: "per_sf_per_month" }, termMonths: 60,
+          escalation: { type: "fixed_percent", rate: 3, frequencyMonths: 12 }, reimbursementStructure: "nnn",
           downtimeMonths: 6, renewalProbabilityPercent: 65,
           newTenant: { tiPerSF: 5, lcPercentOfRent: 6, freeRentMonths: 2 },
           renewal: { tiPerSF: 1, lcPercentOfRent: 3, freeRentMonths: 0 },
@@ -902,7 +902,7 @@ function newDealText() {
     },
     valuation: {
       analysisStartDate: first, methods: ["dcf", "direct_cap"], purchasePrice: 12000000,
-      dcf: { holdPeriodYears: 10, discountRatePercent: 7.5, terminalValue: { method: "direct_cap", capRatePercent: 6, noiBasis: "forwardYear", sellingCostsPercent: 1.5 } },
+      dcf: { holdPeriodYears: 10, discountRatePercent: 7.5, terminalValue: { method: "direct_cap", capRatePercent: 6, noiBasis: "forward_year", sellingCostsPercent: 1.5 } },
       directCap: { capRatePercent: 5.75, noiBasis: "year1" },
     },
     provenance: { generatedAt: new Date().toISOString().slice(0, 19) + "Z", generatedBy: { name: "Your name", role: "other" }, notes: "Started from the viewer's blank template. Every figure is a placeholder until replaced." },

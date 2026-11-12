@@ -66,7 +66,7 @@ only item that changes cash flow and has no workaround.
 
 ### What works today
 
-A unit can be written as a lease: rent in `totalPerMonth`, a `Gross` structure,
+A unit can be written as a lease: rent in `total_per_month`, a `gross` structure,
 no escalation, a 12-month leasing profile per unit type. The engine's two-branch
 rollover (renew or re-let, with downtime and turn cost) is a fair model of an
 apartment turning over. For a 12-unit building this is accurate and readable.

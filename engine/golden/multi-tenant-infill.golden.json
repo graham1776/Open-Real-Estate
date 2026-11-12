@@ -185,7 +185,7 @@
     ]
   },
   "directCap": {
-    "basis": "stabilizedAtMarket",
+    "basis": "stabilized_at_market",
     "basisNOI": 1349770,
     "capRatePercent": 5.6,
     "grossValue": 24103031,

@@ -61,7 +61,7 @@
         "commencementDate": "2021-05-01",
         "expirationDate": "2036-04-30",
         "baseRent": {
-          "unit": "totalPerYear",
+          "unit": "total_per_year",
           "schedule": [
             { "startDate": "2026-05-01", "amount": 7814087 },
             { "startDate": "2027-05-01", "amount": 8048510 },
@@ -79,7 +79,7 @@
           "type": "none"
         },
         "reimbursement": {
-          "structure": "NNN",
+          "structure": "nnn",
           "proRataSharePercent": 100,
           "notes": "Absolute net: tenant pays every expense of the property directly, including capital repairs, taxes, and insurance. No landlord expense schedule exists, so this file intentionally omits the expenses module."
         },
@@ -112,7 +112,7 @@
       "warehouse": {
         "marketRent": {
           "amount": 14.5,
-          "unit": "perSFPerYear"
+          "unit": "per_sf_per_year"
         },
         "termMonths": 60,
         "escalation": {
@@ -120,7 +120,7 @@
           "rate": 3.0,
           "frequencyMonths": 12
         },
-        "reimbursementStructure": "NNN",
+        "reimbursementStructure": "nnn",
         "downtimeMonths": 9,
         "renewalProbabilityPercent": 50,
         "newTenant": {

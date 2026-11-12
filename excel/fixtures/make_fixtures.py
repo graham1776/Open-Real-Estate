@@ -46,7 +46,7 @@ def save(name, d):
 d = load("multi-tenant-infill")
 L100, L200, L300 = d["rentRoll"]["leases"]
 L100["reimbursement"] = {
-    "structure": "NNN", "adminFeePercent": 10, "excludedExpenses": ["E-CAM"],
+    "structure": "nnn", "adminFeePercent": 10, "excludedExpenses": ["E-CAM"],
     "expenseCap": {"capPercent": 3, "basis": "non_cumulative", "baseYearControllableAmount": 40000},
 }
 L100["baseRent"]["schedule"] = [
@@ -58,25 +58,25 @@ L100["escalation"] = {"type": "fixed_amount", "amount": 0.05, "frequencyMonths":
 L100["freeRent"] = [{"startDate": "2026-08-01", "endDate": "2026-09-30", "percentAbated": 50, "abatesReimbursements": True}]
 L100["leasingCommissions"] = {"percentOfTotalRent": 4, "fundingDate": "2026-09-01"}
 L100["tenantImprovements"] = {"amountPerSF": 6}
-L200["reimbursement"] = {"structure": "MG", "expenseStopPerSF": 5.0}
+L200["reimbursement"] = {"structure": "mg", "expenseStopPerSF": 5.0}
 L200["expirationDate"] = "2027-12-31"
-L300["reimbursement"] = {"structure": "NNN", "proRataSharePercent": 27,
+L300["reimbursement"] = {"structure": "nnn", "proRataSharePercent": 27,
                          "expenseCap": {"capPercent": 4, "basis": "cumulative"}}
 L300["spaceType"] = "small_bay"
 L300["options"] = [{"type": "renewal", "rentBasis": "percent_of_market", "percentOfMarket": 90, "renewalTermMonths": 30}]
 d["rentRoll"]["leases"].append({
     "leaseId": "L-450", "tenant": {"name": "Forward Commit Tenant"}, "suite": "450", "leasedSF": 6000,
     "commencementDate": "2026-10-01", "expirationDate": "2031-09-30",
-    "baseRent": {"unit": "perSFPerYear", "schedule": [{"startDate": "2026-10-01", "amount": 17.4}]},
+    "baseRent": {"unit": "per_sf_per_year", "schedule": [{"startDate": "2026-10-01", "amount": 17.4}]},
     "escalation": {"type": "cpi", "frequencyMonths": 12, "cpiFloorPercent": 3.0},
-    "reimbursement": {"structure": "MG", "baseYear": 2024},
+    "reimbursement": {"structure": "mg", "baseYear": 2024},
     "freeRent": [{"startDate": "2026-10-01", "endDate": "2026-12-31"}],
 })
 d["rentRoll"]["vacantSuites"][0]["sf"] = 8200
 d["rentRoll"]["vacantSuites"].append({"suite": "500", "sf": 2400, "spaceType": "small_bay"})
 d["property"]["physical"]["buildingSF"] = 78400 + 6000 - 6000 + 2400 - 6000 + 6000  # SF mismatch on purpose
 d["expenses"]["items"].append({"expenseId": "E-LAND", "name": "Landscaping", "category": "cam", "amount": 9000,
-                               "amountUnit": "totalPerYear", "recoverable": True, "controllable": False})
+                               "amountUnit": "total_per_year", "recoverable": True, "controllable": False})
 d["marketAssumptions"]["growth"] = {
     "marketRent": [{"fromYear": 1, "annualPercent": 5.0}, {"fromYear": 3, "annualPercent": 3.0}, {"fromYear": 6, "annualPercent": 2.5}],
     "expenses": [{"fromYear": 1, "annualPercent": 3.5}, {"fromYear": 4, "annualPercent": 2.75}],
@@ -86,15 +86,15 @@ prof = d["marketAssumptions"]["leasingProfiles"]["small_bay"]
 prof["escalation"] = {"type": "cpi", "frequencyMonths": 12, "cpiFloorPercent": 2.5, "cpiCapPercent": 4.0}
 prof["renewal"]["freeRentMonths"] = 2
 d["marketAssumptions"]["leasingProfiles"]["mg_suite"] = {
-    "marketRent": {"amount": 16.0, "unit": "perSFPerYear"}, "termMonths": 36,
+    "marketRent": {"amount": 16.0, "unit": "per_sf_per_year"}, "termMonths": 36,
     "escalation": {"type": "fixed_amount", "amount": 0.5, "frequencyMonths": 12},
-    "reimbursementStructure": "MG", "downtimeMonths": 0, "renewalProbabilityPercent": 100,
+    "reimbursementStructure": "mg", "downtimeMonths": 0, "renewalProbabilityPercent": 100,
     "renewal": {"tiPerSF": 0.5, "lcPercentOfRent": 2}, "renewalRentPercentOfMarket": 100,
 }
 L200["spaceType"] = "mg_suite"
 v = d["valuation"]
 v["dcf"].update({"discountTiming": "annual", "periodConvention": "mid", "holdPeriodYears": 6})
-v["dcf"]["terminalValue"].update({"noiBasis": "trailingYear", "deductBelowTheLineItems": True})
+v["dcf"]["terminalValue"].update({"noiBasis": "trailing_year", "deductBelowTheLineItems": True})
 v["directCap"] = {"capRatePercent": 5.6, "noiBasis": "year1", "applyGeneralVacancy": False,
                   "deductBelowTheLineItems": True, "excludeExpenseIds": ["E-UTIL"],
                   "nearTermAdjustments": {"periodMonths": 12, "includeTI": False, "discountRatePercent": 9},
@@ -107,7 +107,7 @@ save("stress-multi-tenant", d)
 # 2. Fee simple + growth-curve CPI, in-place basis, exit price per SF.
 d = load("multi-tenant-infill")
 d["valuation"]["interestAppraised"] = "fee_simple"
-d["valuation"]["directCap"] = {"capRatePercent": 5.25, "noiBasis": "inPlace"}
+d["valuation"]["directCap"] = {"capRatePercent": 5.25, "noiBasis": "in_place"}
 d["valuation"]["dcf"]["terminalValue"] = {"method": "exit_price_psf", "exitPricePerSF": 340, "sellingCostsPercent": 2,
                                           "deductUnfundedObligations": True}
 save("stress-fee-simple", d)
@@ -126,18 +126,18 @@ d["debt"] = {"loanAmount": 9000000, "interestRatePercent": 5.5, "termMonths": 12
 lease = d["rentRoll"]["leases"][0]
 lease["options"] = [{"type": "termination"}, {"type": "renewal", "rentBasis": "fixed", "fixedRent": 1.95,
                                               "renewalTermMonths": 48, "renewalCount": 2}]
-lease["reimbursement"] = {"structure": "Gross"}
+lease["reimbursement"] = {"structure": "gross"}
 save("stress-single-tenant", d)
 
 # 4. Value-add: stabilized exit with reassessment at reversion on current taxes (no acquisition reset),
-#    vacancy in place of the tenant, totalPerMonth rents, and an LC by amountPerSF.
+#    vacancy in place of the tenant, total_per_month rents, and an LC by amountPerSF.
 d = load("value-add-rollover")
 v = d["valuation"]
 v["taxReassessment"] = {"effectiveTaxRatePercent": 1.1, "reassessOnAcquisition": False, "reassessAtReversion": True,
                         "expenseId": "E-TAX"}
-v["dcf"]["terminalValue"]["noiBasis"] = "forwardYear"
+v["dcf"]["terminalValue"]["noiBasis"] = "forward_year"
 lease = d["rentRoll"]["leases"][0]
-lease["baseRent"] = {"unit": "totalPerMonth", "schedule": [{"startDate": "2024-09-01", "amount": 52700}]}
+lease["baseRent"] = {"unit": "total_per_month", "schedule": [{"startDate": "2024-09-01", "amount": 52700}]}
 lease["leasingCommissions"] = {"amountPerSF": 1.25}
 d["rentRoll"]["leases"][0]["leasedSF"] = 50000
 d["rentRoll"]["vacantSuites"] = [{"suite": "B", "sf": 12000}]

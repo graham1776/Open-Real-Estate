@@ -144,9 +144,9 @@
         },
         "noiBasis": {
           "type": "string",
-          "enum": ["forwardYear", "trailingYear", "stabilizedAtMarket"],
-          "default": "forwardYear",
-          "description": "NOI capitalized at exit. forwardYear: the 12 months following sale (hold + 1), per the full assumption set. trailingYear: the 12 months preceding sale. stabilizedAtMarket: all space at market rent and structure as of the exit date — a fee-simple-style exit that strips any residual below-market leases out of the terminal NOI."
+          "enum": ["forward_year", "trailing_year", "stabilized_at_market"],
+          "default": "forward_year",
+          "description": "NOI capitalized at exit. forward_year: the 12 months following sale (hold + 1), per the full assumption set. trailing_year: the 12 months preceding sale. stabilized_at_market: all space at market rent and structure as of the exit date — a fee-simple-style exit that strips any residual below-market leases out of the terminal NOI."
         },
         "deductBelowTheLineItems": {
           "type": "boolean",
@@ -211,8 +211,8 @@
         },
         "noiBasis": {
           "type": "string",
-          "enum": ["year1", "inPlace", "stabilizedAtMarket", "trailing12", "custom"],
-          "description": "NOI to capitalize. year1: forward 12 months from analysisStartDate per the full assumption set. inPlace: annualized contractual rent in force at analysisStartDate less annualized expenses, ignoring rollover and lease-up. stabilizedAtMarket: all space leased at market rent and structure — the fee-simple / lease-to-market basis, typically paired with markToMarket and nearTermAdjustments to walk back to leased-fee as-is value. trailing12: not computable from this file alone; provide customNOI alongside. custom: the stated customNOI."
+          "enum": ["year1", "in_place", "stabilized_at_market", "trailing12", "custom"],
+          "description": "NOI to capitalize. year1: forward 12 months from analysisStartDate per the full assumption set. in_place: annualized contractual rent in force at analysisStartDate less annualized expenses, ignoring rollover and lease-up. stabilized_at_market: all space leased at market rent and structure — the fee-simple / lease-to-market basis, typically paired with markToMarket and nearTermAdjustments to walk back to leased-fee as-is value. trailing12: not computable from this file alone; provide customNOI alongside. custom: the stated customNOI."
         },
         "customNOI": {
           "type": "number",
