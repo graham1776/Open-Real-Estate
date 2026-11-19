@@ -422,7 +422,7 @@ function edDate(path, value, opts = {}) {
 }
 function edSel(path, value, options, opts = {}) {
   const list = options.includes(value) || value == null ? options : [value, ...options];
-  return `<select class="ed" data-kind="enum" data-path="${pathAttr(path)}" ${opts.req ? "data-req=1" : ""}>${opts.req ? "" : `<option value=""${value == null ? " selected" : ""}>—</option>`}${list.map((o) => `<option value="${esc(o)}"${o === value ? " selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
+  return `<select class="ed" data-kind="enum" data-path="${pathAttr(path)}" ${opts.req ? "data-req=1" : ""}>${opts.req ? "" : `<option value=""${value == null ? " selected" : ""}>${esc(opts.blank ?? "—")}</option>`}${list.map((o) => `<option value="${esc(o)}"${o === value ? " selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
 }
 function edBool(path, value) {
   return `<input type="checkbox" class="edbox" data-kind="bool" data-path="${pathAttr(path)}" ${value ? "checked" : ""}>`;
@@ -571,6 +571,17 @@ function runOp(entry, op, a) {
   if (op === "excel") return void downloadExcel(entry);
   if (op === "rmLease" && !confirm("Remove this lease from the file?")) return;
   if (op === "rmExpense" && !confirm("Remove this expense item from the file?")) return;
+  const taken = Object.keys(entry.deal?.marketAssumptions?.leasingProfiles ?? {});
+  if (op === "addProfile" || op === "renameProfile") {
+    const name = prompt(op === "addProfile" ? "Name the new leasing profile (e.g. lease_up, general):" : `Rename profile "${a.k}" to:`, op === "addProfile" ? (taken.length ? "" : "default") : a.k)?.trim();
+    if (!name || name === a.k) return;
+    if (taken.includes(name)) { flash(`There is already a profile called "${name}".`); return; }
+    a = { ...a, name };
+  }
+  if (op === "rmProfile") {
+    if (taken.length === 1) { flash("A marketAssumptions module needs at least one leasing profile."); return; }
+    if (!confirm(`Remove leasing profile "${a.k}"? Spaces that point at it fall back to the first profile.`)) return;
+  }
   const changed = commit(entry, (d) => {
     const rr = d.rentRoll, asOf = rr.asOfDate ?? new Date().toISOString().slice(0, 10);
     if (op === "addLease") {
@@ -610,6 +621,26 @@ function runOp(entry, op, a) {
       items.push({ expenseId: uniqueId(items.map((x) => x.expenseId), "E-"), name: "New expense", category: "other", amount: 0, amountUnit: "totalPerYear", recoverable: true });
     } else if (op === "rmExpense") {
       d.expenses.items.splice(a.i, 1);
+    } else if (op === "addProfile") {
+      // copy the last profile so the new one starts from this file's terms
+      const ma = (d.marketAssumptions ??= { growth: { marketRent: 3, expenses: 3 }, leasingProfiles: {} });
+      const profs = (ma.leasingProfiles ??= {}), like = Object.values(profs).pop();
+      profs[a.name] = like ? JSON.parse(JSON.stringify(like)) : {
+        marketRent: { amount: 1, unit: "perSFPerMonth" }, termMonths: 60,
+        escalation: { type: "fixed_percent", rate: 3, frequencyMonths: 12 }, reimbursementStructure: "NNN",
+        downtimeMonths: 6, renewalProbabilityPercent: 65,
+        newTenant: { tiPerSF: 0, lcPercentOfRent: 0, freeRentMonths: 0 },
+        renewal: { tiPerSF: 0, lcPercentOfRent: 0, freeRentMonths: 0 },
+      };
+      delete profs[a.name].notes;
+    } else if (op === "renameProfile") {
+      // keep key order (the first profile is the fallback) and repoint every space
+      const ma = d.marketAssumptions;
+      ma.leasingProfiles = Object.fromEntries(Object.entries(ma.leasingProfiles).map(([k, v]) => [k === a.k ? a.name : k, v]));
+      for (const sp of [...rr.leases, ...(rr.vacantSuites ?? [])]) if (sp.spaceType === a.k) sp.spaceType = a.name;
+    } else if (op === "rmProfile") {
+      delete d.marketAssumptions.leasingProfiles[a.k];
+      for (const sp of [...rr.leases, ...(rr.vacantSuites ?? [])]) if (sp.spaceType === a.k) delete sp.spaceType;
     } else if (op === "growthFlat") {
       // a stepped curve becomes a single rate (its first step)
       const g = d.marketAssumptions.growth[a.k];
@@ -695,9 +726,25 @@ function currentStep(lease, asOf) {
   return j;
 }
 
+// Which leasing profile prices a space, by the engine's rule: its spaceType if that
+// names a profile, else the file's first profile. Shown as a control plus a
+// sentence, so a lease never silently rolls to a profile nobody chose.
+function spaceTypeEd(deal, path, spaceType) {
+  const profs = deal.marketAssumptions?.leasingProfiles ?? {}, keys = Object.keys(profs);
+  if (!keys.length) {
+    return `${spaceType ? `<span class="code">${esc(spaceType)}</span> ` : ""}<span class="muted">nothing yet: this file has no leasing profiles, so no profile prices this space.</span> ${opBtn("addProfile", "+ Add leasing profile", {}, "Add a leasing profile under Assumptions")}`;
+  }
+  const known = spaceType != null && Object.hasOwn(profs, spaceType);
+  const key = known ? spaceType : keys[0], p = profs[key];
+  const rent = p.marketRent ? `$${Number(p.marketRent.amount).toFixed(2)}${p.marketRent.unit === "perSFPerYear" ? "/SF/yr" : "/SF/mo"}` : "";
+  const terms = [rent, p.downtimeMonths != null ? `${fmtNum(p.downtimeMonths, 1)} mo downtime` : "", p.renewalProbabilityPercent != null ? `${fmtNum(p.renewalProbabilityPercent, 1)}% renewal` : ""].filter(Boolean).join(", ");
+  const why = spaceType == null ? " (none chosen, so the first profile applies)"
+    : !known ? ` ("${esc(spaceType)}" is not a profile in this file, so the first applies; the validator rejects this)` : "";
+  return `${edSel(path, spaceType, keys, { blank: `— (uses ${keys[0]})` })} <span class="muted">uses <b>${esc(key)}</b>${why}: ${terms}</span>`;
+}
+
 function renderRentRoll(deal, entry) {
   const rr = deal.rentRoll, L = ["rentRoll", "leases"];
-  const profiles = Object.keys(deal.marketAssumptions?.leasingProfiles ?? {});
   const rows = rr.leases.map((l, i) => {
     const j = currentStep(l, rr.asOfDate), step = l.baseRent.schedule[j], open = entry.open.has(l.leaseId);
     const esc2 = l.escalation;
@@ -718,7 +765,7 @@ function renderRentRoll(deal, entry) {
     return main + `<tr class="detail"><td></td><td colspan="7">
       <table class="form"><tbody>
         <tr><td>Lease ID</td><td class="code">${esc(l.leaseId)}</td><td>Industry</td><td>${edText([...L, i, "tenant", "industry"], l.tenant.industry, { w: 26 })}</td></tr>
-        <tr><td>Rent unit</td><td>${edSel([...L, i, "baseRent", "unit"], l.baseRent.unit, ENUMS.rentUnit, { req: true })}</td><td>Space type</td><td>${profiles.length ? edSel([...L, i, "spaceType"], l.spaceType, profiles) : edText([...L, i, "spaceType"], l.spaceType)} <span class="muted">prices the space at rollover</span></td></tr>
+        <tr><td>Rent unit</td><td>${edSel([...L, i, "baseRent", "unit"], l.baseRent.unit, ENUMS.rentUnit, { req: true })}</td><td>At expiry</td><td>${spaceTypeEd(deal, [...L, i, "spaceType"], l.spaceType)}</td></tr>
         <tr><td>Rent schedule</td><td>${steps}${opBtn("addStep", "+ rent step", { i })}</td><td>Escalation every</td><td>${edNum([...L, i, "escalation", "frequencyMonths"], esc2?.frequencyMonths, { w: 5, d: 0, post: " months" })}${esc2?.type === "cpi" ? ` · floor ${edNum([...L, i, "escalation", "cpiFloorPercent"], esc2.cpiFloorPercent, { w: 5, post: "%" })} cap ${edNum([...L, i, "escalation", "cpiCapPercent"], esc2.cpiCapPercent, { w: 5, post: "%" })}` : ""}</td></tr>
         <tr><td>Recoveries</td><td colspan="3">admin fee ${edNum([...L, i, "reimbursement", "adminFeePercent"], l.reimbursement.adminFeePercent, { w: 5, post: "%" })} · pro-rata share ${edNum([...L, i, "reimbursement", "proRataSharePercent"], l.reimbursement.proRataSharePercent, { w: 6, post: "%" })}${l.reimbursement.structure === "MG" ? ` · base year ${edNum([...L, i, "reimbursement", "baseYear"], l.reimbursement.baseYear, { w: 6, plain: true })} · expense stop ${edNum([...L, i, "reimbursement", "expenseStopPerSF"], l.reimbursement.expenseStopPerSF, { w: 6, pre: "$", post: "/SF" })}` : ""}</td></tr>
         ${opts || free ? `<tr><td>Options / free rent</td><td colspan="3" class="muted">${opts || "no options"}${free ? ` · free rent ${free}` : ""} <span>(change these in Edit JSON)</span></td></tr>` : ""}
@@ -727,7 +774,8 @@ function renderRentRoll(deal, entry) {
       </tbody></table></td></tr>`;
   }).join("");
   const vac = (rr.vacantSuites ?? []).map((v, i) =>
-    `<tr><td></td><td>${edText(["rentRoll", "vacantSuites", i, "suite"], v.suite, { w: 7 })}</td><td class="muted">VACANT ${profiles.length ? edSel(["rentRoll", "vacantSuites", i, "spaceType"], v.spaceType, profiles) : ""}</td><td class="num">${edNum(["rentRoll", "vacantSuites", i, "sf"], v.sf, { req: true, d: 0 })}</td><td colspan="3" class="muted">${edText(["rentRoll", "vacantSuites", i, "notes"], v.notes, { w: 50, ph: "notes" })}</td><td>${opBtn("rmVacant", "×", { i }, "Remove this vacant suite")}</td></tr>`).join("");
+    `<tr><td></td><td>${edText(["rentRoll", "vacantSuites", i, "suite"], v.suite, { w: 7 })}</td><td class="muted">VACANT</td><td class="num">${edNum(["rentRoll", "vacantSuites", i, "sf"], v.sf, { req: true, d: 0 })}</td><td colspan="3" class="muted">${edText(["rentRoll", "vacantSuites", i, "notes"], v.notes, { w: 50, ph: "notes" })}</td><td>${opBtn("rmVacant", "×", { i }, "Remove this vacant suite")}</td></tr>
+    <tr class="detail"><td></td><td colspan="7"><span class="muted">Leases up on</span> ${spaceTypeEd(deal, ["rentRoll", "vacantSuites", i, "spaceType"], v.spaceType)}</td></tr>`).join("");
   $("tab-rentroll").innerHTML = `
     <h2>Rent roll as of ${edDate(["rentRoll", "asOfDate"], rr.asOfDate, { req: true })}</h2>
     <table><thead><tr><th></th><th>Suite</th><th>Tenant</th><th class="num">SF</th><th>Term</th><th class="num">Base rent</th><th>Escalation</th><th>Structure</th></tr></thead>
@@ -759,9 +807,19 @@ function renderExpenses(deal) {
     ${deal.expenses.notes ? `<p class="muted">${esc(deal.expenses.notes)}</p>` : ""}`;
 }
 
+// The leases and vacant suites a profile prices, by the engine's matching rule.
+function spacesUsing(deal, key) {
+  const keys = Object.keys(deal.marketAssumptions?.leasingProfiles ?? {});
+  const uses = (t) => (t != null && keys.includes(t) ? t : keys[0]) === key;
+  return [
+    ...deal.rentRoll.leases.filter((l) => uses(l.spaceType)).map((l) => l.tenant?.name || l.leaseId),
+    ...(deal.rentRoll.vacantSuites ?? []).filter((v) => uses(v.spaceType)).map((v) => `vacant ${v.suite || fmtNum(v.sf, 0) + " SF"}`),
+  ];
+}
+
 function renderMarket(deal) {
   const ma = deal.marketAssumptions;
-  if (!ma) { $("tab-market").innerHTML = `<p class="muted">No marketAssumptions module in this file.</p>`; return; }
+  if (!ma) { $("tab-market").innerHTML = `<p class="muted">No marketAssumptions module in this file, so vacant space never leases up and expiring leases are not re-let.</p><p>${opBtn("addProfile", "+ Add leasing profile", {}, "Adds a marketAssumptions module with one leasing profile")}</p>`; return; }
   const M = ["marketAssumptions"];
   const growthEd = (k) => {
     const g = ma.growth?.[k];
@@ -770,8 +828,10 @@ function renderMarket(deal) {
   };
   const profs = Object.entries(ma.leasingProfiles ?? {}).map(([k, p]) => {
     const P = [...M, "leasingProfiles", k];
+    const users = spacesUsing(deal, k);
     return `
-    <table class="form"><thead><tr><th colspan="2">Profile: ${esc(k)}</th></tr></thead><tbody>
+    <table class="form"><thead><tr><th colspan="2">Profile: ${esc(k)} ${opBtn("renameProfile", "rename", { k }, "Rename this profile and every space that points at it")} ${opBtn("rmProfile", "remove", { k })}</th></tr></thead><tbody>
+      <tr><td>Used by</td><td class="muted">${users.length ? esc(users.join(", ")) : "no lease or vacant suite"}</td></tr>
       <tr><td>Market rent</td><td>${edNum([...P, "marketRent", "amount"], p.marketRent.amount, { req: true })} ${edSel([...P, "marketRent", "unit"], p.marketRent.unit, ENUMS.marketRentUnit, { req: true })}</td></tr>
       <tr><td>Term / downtime</td><td>${edNum([...P, "termMonths"], p.termMonths, { req: true, w: 5, d: 0, post: " mo" })} / ${edNum([...P, "downtimeMonths"], p.downtimeMonths, { req: true, w: 5, post: " mo" })}</td></tr>
       <tr><td>Renewal probability</td><td>${edNum([...P, "renewalProbabilityPercent"], p.renewalProbabilityPercent, { req: true, w: 5, post: "%" })} at ${edNum([...P, "renewalRentPercentOfMarket"], p.renewalRentPercentOfMarket, { w: 5, post: "% of market" })}</td></tr>
@@ -790,7 +850,9 @@ function renderMarket(deal) {
       ${card("General vacancy", edNum([...M, "generalVacancyPercent"], ma.generalVacancyPercent, { w: 5, post: "%" }))}
       ${card("Credit loss", edNum([...M, "creditLossPercent"], ma.creditLossPercent, { w: 5, post: "%" }))}
     </div>
-    <h2>Leasing profiles <span class="muted">(what happens to a space when its lease ends)</span></h2>${profs}
+    <h2>Leasing profiles <span class="muted">(how vacant space leases up, and what happens to a space when its lease ends)</span></h2>
+    ${profs || `<p class="muted">No leasing profiles yet.</p>`}
+    <p>${opBtn("addProfile", "+ Add leasing profile", {}, "Add a profile, then choose it for leases and vacant suites on the rent roll")}</p>
     ${ma.notes ? `<p class="muted">${esc(ma.notes)}</p>` : ""}`;
 }
 
