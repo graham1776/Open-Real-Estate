@@ -8,6 +8,8 @@
 // schemaValid says whether JSON Schema accepts the file. Reference and id
 // failures stay schema-valid; option-field failures are rejected by schema too.
 // Every example deal must lint with no error-severity issues.
+// Every list in COMPUTED_ENUMS must equal the schema enum it names, so the
+// enum_value_unknown rule cannot drift from the schema.
 //
 // The rule ids are specified in spec/validation.md. A Python port can run the
 // same fixtures without this harness.
@@ -17,7 +19,7 @@ import { dirname, join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
-import { lint } from "../dist/index.js";
+import { lint, COMPUTED_ENUMS } from "../dist/index.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..", "..");
@@ -75,6 +77,22 @@ for (const f of readdirSync(examplesDir).filter((f) => f.endsWith(".ore")).sort(
     failures++;
     console.error(`FAIL  example ${f}`);
     for (const p of errors) console.error(`      ${p.code}: ${p.path ?? ""} ${p.message}`);
+  }
+}
+
+const schemaDir = join(root, "spec", "schema");
+for (const rule of COMPUTED_ENUMS) {
+  const [file, pointer] = rule.schema.split("#");
+  let node = JSON.parse(readFileSync(join(schemaDir, file), "utf8"));
+  for (const seg of pointer.split("/").slice(1)) node = node?.[seg.replace(/~1/g, "/").replace(/~0/g, "~")];
+  const label = `enum ${rule.path.join(".")}`;
+  if (Array.isArray(node?.enum) && JSON.stringify(node.enum) === JSON.stringify(rule.values)) {
+    console.log(`PASS  ${label}`);
+  } else {
+    failures++;
+    console.error(`FAIL  ${label}`);
+    console.error(`      lint:   ${JSON.stringify(rule.values)}`);
+    console.error(`      schema: ${JSON.stringify(node?.enum ?? null)} at ${rule.schema}`);
   }
 }
 

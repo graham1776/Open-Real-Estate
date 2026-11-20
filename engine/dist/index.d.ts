@@ -233,4 +233,9 @@ export declare function computePortfolio(entries: PortfolioEntry[]): {
 };
 export type PortfolioOutput = ReturnType<typeof computePortfolio>;
 export declare function lint(deal: unknown): LintProblem[];
+export declare const COMPUTED_ENUMS: readonly {
+    path: readonly string[];
+    values: readonly string[];
+    schema: string;
+}[];
 export {};

@@ -1,0 +1,40 @@
+{
+  "schemaValid": false,
+  "issues": [
+    {
+      "code": "enum_value_unknown",
+      "severity": "error",
+      "path": "/rentRoll/leases/0/baseRent/unit"
+    },
+    {
+      "code": "enum_value_unknown",
+      "severity": "error",
+      "path": "/rentRoll/leases/0/escalation/type"
+    },
+    {
+      "code": "enum_value_unknown",
+      "severity": "error",
+      "path": "/rentRoll/leases/0/reimbursement/structure"
+    },
+    {
+      "code": "enum_value_unknown",
+      "severity": "error",
+      "path": "/rentRoll/leases/1/reimbursement/structure"
+    },
+    {
+      "code": "enum_value_unknown",
+      "severity": "error",
+      "path": "/expenses/items/0/amountUnit"
+    },
+    {
+      "code": "enum_value_unknown",
+      "severity": "error",
+      "path": "/marketAssumptions/leasingProfiles/small_bay/reimbursementStructure"
+    },
+    {
+      "code": "enum_value_unknown",
+      "severity": "error",
+      "path": "/valuation/directCap/noiBasis"
+    }
+  ]
+}

@@ -1684,8 +1684,73 @@ export function lint(deal: unknown): LintProblem[] {
     ));
   }
 
+  problems.push(...enumIssues(d));
+
   if (!d.marketAssumptions) problems.push(lintIssue("warning", "advice", "No marketAssumptions: rollover, lease-up, and stabilized values cannot be modeled.", "/marketAssumptions"));
   if (!d.valuation) problems.push(lintIssue("warning", "advice", "No valuation module: engine reports operating metrics only.", "/valuation"));
+  return problems;
+}
+
+// The enums the engine computes from. An unrecognised value here does not
+// fail loudly in the arithmetic: it falls through a switch and prices NaN or
+// a default. JSON Schema rejects it too, but a reader that runs lint() alone
+// (the viewer) would otherwise see a quiet wrong number. Paths use "*" for
+// array items and "{}" for the values of a keyed map. engine/golden/run-lint.mjs
+// checks each list against the schema enum named in `schema`.
+export const COMPUTED_ENUMS: readonly { path: readonly string[]; values: readonly string[]; schema: string }[] = [
+  { path: ["property", "propertyType"], values: ["industrial", "office", "medical_office", "life_science", "retail", "multifamily", "student_housing", "senior_housing", "manufactured_housing", "self_storage", "data_center", "hospitality", "mixed_use", "land", "other"], schema: "property.schema.json#/properties/propertyType" },
+  { path: ["rentRoll", "leases", "*", "baseRent", "unit"], values: ["per_sf_per_month", "per_sf_per_year", "total_per_month", "total_per_year"], schema: "rentRoll.schema.json#/$defs/baseRent/properties/unit" },
+  { path: ["rentRoll", "leases", "*", "escalation", "type"], values: ["fixed_percent", "fixed_amount", "cpi", "none"], schema: "rentRoll.schema.json#/$defs/escalation/properties/type" },
+  { path: ["rentRoll", "leases", "*", "reimbursement", "structure"], values: ["nnn", "nn", "mg", "gross"], schema: "rentRoll.schema.json#/$defs/reimbursement/properties/structure" },
+  { path: ["rentRoll", "leases", "*", "reimbursement", "expenseCap", "basis"], values: ["non_cumulative", "cumulative", "cumulative_compounded"], schema: "rentRoll.schema.json#/$defs/reimbursement/properties/expenseCap/properties/basis" },
+  { path: ["rentRoll", "leases", "*", "options", "*", "type"], values: ["renewal", "termination", "purchase", "expansion", "right_of_first_refusal", "right_of_first_offer"], schema: "rentRoll.schema.json#/$defs/leaseOption/properties/type" },
+  { path: ["rentRoll", "leases", "*", "options", "*", "rentBasis"], values: ["market", "fixed", "percent_of_market"], schema: "rentRoll.schema.json#/$defs/leaseOption/properties/rentBasis" },
+  { path: ["expenses", "items", "*", "category"], values: ["real_estate_taxes", "insurance", "cam", "repairs_maintenance", "utilities", "management_fee", "administrative", "reserves", "other"], schema: "expenses.schema.json#/$defs/expenseItem/properties/category" },
+  { path: ["expenses", "items", "*", "amountUnit"], values: ["total_per_year", "per_sf_per_year", "percent_of_egr"], schema: "expenses.schema.json#/$defs/expenseItem/properties/amountUnit" },
+  { path: ["marketAssumptions", "leasingProfiles", "{}", "marketRent", "unit"], values: ["per_sf_per_month", "per_sf_per_year"], schema: "marketAssumptions.schema.json#/$defs/leasingProfile/properties/marketRent/properties/unit" },
+  { path: ["marketAssumptions", "leasingProfiles", "{}", "escalation", "type"], values: ["fixed_percent", "fixed_amount", "cpi", "none"], schema: "rentRoll.schema.json#/$defs/escalation/properties/type" },
+  { path: ["marketAssumptions", "leasingProfiles", "{}", "reimbursementStructure"], values: ["nnn", "nn", "mg", "gross"], schema: "marketAssumptions.schema.json#/$defs/leasingProfile/properties/reimbursementStructure" },
+  { path: ["valuation", "dcf", "discountTiming"], values: ["monthly", "annual"], schema: "valuation.schema.json#/$defs/dcf/properties/discountTiming" },
+  { path: ["valuation", "dcf", "periodConvention"], values: ["end", "mid"], schema: "valuation.schema.json#/$defs/dcf/properties/periodConvention" },
+  { path: ["valuation", "dcf", "terminalValue", "method"], values: ["direct_cap", "exit_price_psf", "fixed_value", "grown_purchase_price"], schema: "valuation.schema.json#/$defs/terminalValue/properties/method" },
+  { path: ["valuation", "dcf", "terminalValue", "noiBasis"], values: ["forward_year", "trailing_year", "stabilized_at_market"], schema: "valuation.schema.json#/$defs/terminalValue/properties/noiBasis" },
+  { path: ["valuation", "directCap", "noiBasis"], values: ["year1", "in_place", "stabilized_at_market", "trailing12", "custom"], schema: "valuation.schema.json#/$defs/directCap/properties/noiBasis" },
+  { path: ["valuation", "directCap", "adjustments", "*", "type"], values: ["deduction", "addition"], schema: "valuation.schema.json#/$defs/directCap/properties/adjustments/items/properties/type" },
+];
+
+// camelCase or upper case to snake_case: perSFPerYear -> per_sf_per_year,
+// NNN -> nnn, inPlace -> in_place. Used only to suggest a fix.
+function snakeCase(v: string): string {
+  return v.replace(/([a-z0-9])([A-Z])/g, "$1_$2").replace(/([A-Z]+)([A-Z][a-z])/g, "$1_$2").toLowerCase();
+}
+
+function enumIssues(d: OreFile): LintProblem[] {
+  const problems: LintProblem[] = [];
+  for (const rule of COMPUTED_ENUMS) {
+    const visit = (node: unknown, i: number, at: (string | number)[]) => {
+      if (node == null || typeof node !== "object") return;
+      const seg = rule.path[i]!;
+      const last = i === rule.path.length - 1;
+      if (seg === "*" || seg === "{}") {
+        if (seg === "*" ? !Array.isArray(node) : Array.isArray(node)) return;
+        const entries: [string | number, unknown][] = Array.isArray(node) ? node.map((v, k): [number, unknown] => [k, v]) : Object.entries(node);
+        for (const [k, v] of entries) visit(v, i + 1, [...at, k]);
+        return;
+      }
+      const value = (node as Record<string, unknown>)[seg];
+      if (!last) { visit(value, i + 1, [...at, seg]); return; }
+      if (value == null || (typeof value === "string" && rule.values.includes(value))) return;
+      const suggestion = typeof value === "string" ? snakeCase(value) : null;
+      const hint = suggestion && suggestion !== value && rule.values.includes(suggestion) ? ` Use "${suggestion}".` : "";
+      problems.push(lintIssue(
+        "error",
+        "enum_value_unknown",
+        `${seg} ${JSON.stringify(value)} is not a recognised value.${hint} Allowed: ${rule.values.join(", ")}.`,
+        jsonPointer([...at, seg]),
+      ));
+    };
+    visit(d, 0, []);
+  }
   return problems;
 }
 
