@@ -403,6 +403,21 @@ const ENUMS = {
   tenancy: ["single", "multi"],
 };
 
+// Enum values are snake_case in the file (nnn, per_sf_per_month). Show people
+// the terms they use. The file keeps the real value: a dropdown stores it, and
+// the Edit JSON tab shows it as written.
+const LABELS = {
+  per_sf_per_month: "$/SF/mo", per_sf_per_year: "$/SF/yr", total_per_month: "$/mo", total_per_year: "$/yr",
+  percent_of_egr: "% of EGR",
+  nnn: "NNN", nn: "NN", mg: "Modified gross", gross: "Gross",
+  none: "None", fixed_percent: "Fixed %", fixed_amount: "Fixed $", cpi: "CPI",
+  cam: "CAM", repairs_maintenance: "Repairs & maintenance",
+  year1: "Year 1", in_place: "In-place", stabilized_at_market: "Stabilized at market", trailing12: "Trailing 12", custom: "Custom",
+  forward_year: "Forward year", trailing_year: "Trailing year",
+  direct_cap: "Direct cap", exit_price_psf: "Exit $/SF", fixed_value: "Fixed value", grown_purchase_price: "Grown purchase price",
+};
+const label = (v) => v == null ? "" : LABELS[v] ?? String(v).replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
+
 const pathAttr = (path) => esc(JSON.stringify(path));
 const fmtNum = (n, d) => n == null || n === "" ? "" : Number(n).toLocaleString("en-US", { maximumFractionDigits: d ?? 6 });
 
@@ -420,9 +435,11 @@ function edText(path, value, opts = {}) {
 function edDate(path, value, opts = {}) {
   return `<input class="ed" type="date" data-kind="date" data-path="${pathAttr(path)}" ${opts.req ? "data-req=1" : ""} value="${esc(value ?? "")}">`;
 }
+// A dropdown. Options show their LABELS; opts.raw shows them as written (for
+// identifiers such as leasing profile keys). opts: req, blank, raw
 function edSel(path, value, options, opts = {}) {
   const list = options.includes(value) || value == null ? options : [value, ...options];
-  return `<select class="ed" data-kind="enum" data-path="${pathAttr(path)}" ${opts.req ? "data-req=1" : ""}>${opts.req ? "" : `<option value=""${value == null ? " selected" : ""}>${esc(opts.blank ?? "—")}</option>`}${list.map((o) => `<option value="${esc(o)}"${o === value ? " selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
+  return `<select class="ed" data-kind="enum" data-path="${pathAttr(path)}" ${opts.req ? "data-req=1" : ""}>${opts.req ? "" : `<option value=""${value == null ? " selected" : ""}>${esc(opts.blank ?? "—")}</option>`}${list.map((o) => `<option value="${esc(o)}"${o === value ? " selected" : ""}>${esc(opts.raw || !options.includes(o) ? o : label(o))}</option>`).join("")}</select>`;
 }
 function edBool(path, value) {
   return `<input type="checkbox" class="edbox" data-kind="bool" data-path="${pathAttr(path)}" ${value ? "checked" : ""}>`;
@@ -626,8 +643,8 @@ function runOp(entry, op, a) {
       const ma = (d.marketAssumptions ??= { growth: { marketRent: 3, expenses: 3 }, leasingProfiles: {} });
       const profs = (ma.leasingProfiles ??= {}), like = Object.values(profs).pop();
       profs[a.name] = like ? JSON.parse(JSON.stringify(like)) : {
-        marketRent: { amount: 1, unit: "perSFPerMonth" }, termMonths: 60,
-        escalation: { type: "fixed_percent", rate: 3, frequencyMonths: 12 }, reimbursementStructure: "NNN",
+        marketRent: { amount: 1, unit: "per_sf_per_month" }, termMonths: 60,
+        escalation: { type: "fixed_percent", rate: 3, frequencyMonths: 12 }, reimbursementStructure: "nnn",
         downtimeMonths: 6, renewalProbabilityPercent: 65,
         newTenant: { tiPerSF: 0, lcPercentOfRent: 0, freeRentMonths: 0 },
         renewal: { tiPerSF: 0, lcPercentOfRent: 0, freeRentMonths: 0 },
@@ -736,11 +753,11 @@ function spaceTypeEd(deal, path, spaceType) {
   }
   const known = spaceType != null && Object.hasOwn(profs, spaceType);
   const key = known ? spaceType : keys[0], p = profs[key];
-  const rent = p.marketRent ? `$${Number(p.marketRent.amount).toFixed(2)}${p.marketRent.unit === "perSFPerYear" ? "/SF/yr" : "/SF/mo"}` : "";
+  const rent = p.marketRent ? `$${Number(p.marketRent.amount).toFixed(2)}${p.marketRent.unit === "per_sf_per_year" ? "/SF/yr" : "/SF/mo"}` : "";
   const terms = [rent, p.downtimeMonths != null ? `${fmtNum(p.downtimeMonths, 1)} mo downtime` : "", p.renewalProbabilityPercent != null ? `${fmtNum(p.renewalProbabilityPercent, 1)}% renewal` : ""].filter(Boolean).join(", ");
   const why = spaceType == null ? " (none chosen, so the first profile applies)"
     : !known ? ` ("${esc(spaceType)}" is not a profile in this file, so the first applies; the validator rejects this)` : "";
-  return `${edSel(path, spaceType, keys, { blank: `— (uses ${keys[0]})` })} <span class="muted">uses <b>${esc(key)}</b>${why}: ${terms}</span>`;
+  return `${edSel(path, spaceType, keys, { raw: true, blank: `— (uses ${keys[0]})` })} <span class="muted">uses <b>${esc(key)}</b>${why}: ${terms}</span>`;
 }
 
 function renderRentRoll(deal, entry) {
@@ -754,7 +771,7 @@ function renderRentRoll(deal, entry) {
       <td>${edText([...L, i, "tenant", "name"], l.tenant.name, { req: true, w: Math.min(34, Math.max(12, l.tenant.name.length + 2)) })}<div class="muted">${esc(l.tenant.industry ?? "")}</div></td>
       <td class="num">${edNum([...L, i, "leasedSF"], l.leasedSF, { req: true, d: 0 })}</td>
       <td>${edDate([...L, i, "commencementDate"], l.commencementDate, { req: true })} → ${edDate([...L, i, "expirationDate"], l.expirationDate, { req: true })}</td>
-      <td class="num">${edNum([...L, i, "baseRent", "schedule", j, "amount"], step.amount, { req: true })}<div class="muted">${esc(l.baseRent.unit)}${l.baseRent.schedule.length > 1 ? ` · step ${j + 1} of ${l.baseRent.schedule.length}` : ""}</div></td>
+      <td class="num">${edNum([...L, i, "baseRent", "schedule", j, "amount"], step.amount, { req: true })}<div class="muted">${esc(label(l.baseRent.unit))}${l.baseRent.schedule.length > 1 ? ` · step ${j + 1} of ${l.baseRent.schedule.length}` : ""}</div></td>
       <td>${edSel([...L, i, "escalation", "type"], esc2?.type ?? "none", ENUMS.escalation, { req: true })}${esc2?.type === "fixed_percent" ? ` ${edNum([...L, i, "escalation", "rate"], esc2.rate, { w: 5, post: "%" })}` : esc2?.type === "fixed_amount" ? ` ${edNum([...L, i, "escalation", "amount"], esc2.amount, { w: 6 })}` : ""}</td>
       <td>${edSel([...L, i, "reimbursement", "structure"], l.reimbursement.structure, ENUMS.structure, { req: true })}</td>
     </tr>`;
@@ -871,14 +888,14 @@ function renderValuation(deal) {
     html += `<h2>DCF</h2><table class="form"><tbody>
       <tr><td>Hold</td><td>${v.dcf.holdPeriodYears != null ? edNum([...D, "holdPeriodYears"], v.dcf.holdPeriodYears, { req: true, w: 5, d: 0, post: " yrs" }) : edNum([...D, "holdPeriodMonths"], v.dcf.holdPeriodMonths, { req: true, w: 5, d: 0, post: " mo" })}</td></tr>
       <tr><td>Discount rate</td><td>${edNum([...D, "discountRatePercent"], v.dcf.discountRatePercent, { req: true, w: 6, post: "%" })} · reversion ${edNum([...D, "reversionDiscountRatePercent"], v.dcf.reversionDiscountRatePercent, { w: 6, post: "%" })} <span class="muted">(blank = same) · ${esc(v.dcf.discountTiming ?? "monthly")}, ${esc(v.dcf.periodConvention ?? "end")}-period</span></td></tr>
-      <tr><td>Terminal value</td><td>${esc(tv.method)}${tv.method === "direct_cap" ? ` at ${edNum([...T, "capRatePercent"], tv.capRatePercent, { req: true, w: 6, post: "%" })} on ${edSel([...T, "noiBasis"], tv.noiBasis ?? "forward_year", ENUMS.terminalBasis, { req: true })} NOI` : ""}${tv.method === "exit_price_psf" ? ` ${edNum([...T, "exitPricePerSF"], tv.exitPricePerSF, { req: true, pre: "$", post: "/SF" })}` : ""}${tv.method === "fixed_value" ? ` ${edNum([...T, "fixedValue"], tv.fixedValue, { req: true, pre: "$", d: 0 })}` : ""}${tv.method === "grown_purchase_price" ? ` growing ${edNum([...T, "annualAppreciationPercent"], tv.annualAppreciationPercent, { req: true, w: 5, post: "%/yr" })}` : ""}, less ${edNum([...T, "sellingCostsPercent"], tv.sellingCostsPercent, { w: 5, post: "%" })} selling costs${tv.deductUnfundedObligations ? ", less unfunded obligations" : ""}</td></tr>
+      <tr><td>Terminal value</td><td>${esc(label(tv.method))}${tv.method === "direct_cap" ? ` at ${edNum([...T, "capRatePercent"], tv.capRatePercent, { req: true, w: 6, post: "%" })} on ${edSel([...T, "noiBasis"], tv.noiBasis ?? "forward_year", ENUMS.terminalBasis, { req: true })} NOI` : ""}${tv.method === "exit_price_psf" ? ` ${edNum([...T, "exitPricePerSF"], tv.exitPricePerSF, { req: true, pre: "$", post: "/SF" })}` : ""}${tv.method === "fixed_value" ? ` ${edNum([...T, "fixedValue"], tv.fixedValue, { req: true, pre: "$", d: 0 })}` : ""}${tv.method === "grown_purchase_price" ? ` growing ${edNum([...T, "annualAppreciationPercent"], tv.annualAppreciationPercent, { req: true, w: 5, post: "%/yr" })}` : ""}, less ${edNum([...T, "sellingCostsPercent"], tv.sellingCostsPercent, { w: 5, post: "%" })} selling costs${tv.deductUnfundedObligations ? ", less unfunded obligations" : ""}</td></tr>
       ${tv.notes ? `<tr><td>Notes</td><td class="muted">${esc(tv.notes)}</td></tr>` : ""}
     </tbody></table>`;
   }
   if (v.directCap) {
     const d = v.directCap, C = [...V, "directCap"];
     html += `<h2>Direct capitalization</h2><table class="form"><tbody>
-      <tr><td>Cap rate / basis</td><td>${edNum([...C, "capRatePercent"], d.capRatePercent, { req: true, w: 6, post: "%" })} on ${ENUMS.directCapBasis.includes(d.noiBasis) ? edSel([...C, "noiBasis"], d.noiBasis, ENUMS.directCapBasis, { req: true }) : esc(d.noiBasis)} NOI</td></tr>
+      <tr><td>Cap rate / basis</td><td>${edNum([...C, "capRatePercent"], d.capRatePercent, { req: true, w: 6, post: "%" })} on ${ENUMS.directCapBasis.includes(d.noiBasis) ? edSel([...C, "noiBasis"], d.noiBasis, ENUMS.directCapBasis, { req: true }) : esc(label(d.noiBasis))} NOI</td></tr>
       ${d.nearTermAdjustments ? `<tr><td>Near-term deductions</td><td>${edNum([...C, "nearTermAdjustments", "periodMonths"], d.nearTermAdjustments.periodMonths, { req: true, w: 5, d: 0 })} months${d.nearTermAdjustments.discountRatePercent ? `, PV @ ${d.nearTermAdjustments.discountRatePercent}%` : ", face value"}</td></tr>` : ""}
       ${d.markToMarket ? `<tr><td>Mark-to-market</td><td>PV @ ${edNum([...C, "markToMarket", "discountRatePercent"], d.markToMarket.discountRatePercent, { req: true, w: 6, post: "%" })}</td></tr>` : ""}
       ${(d.adjustments ?? []).map((a, i) => `<tr><td>${esc(a.name)}</td><td>${a.type === "deduction" ? "−" : "+"}${edNum([...C, "adjustments", i, "amount"], a.amount, { req: true, pre: "$", d: 0 })} <span class="muted">${esc(a.category ?? "")}</span></td></tr>`).join("")}
@@ -989,12 +1006,12 @@ function renderOutputs(deal, out, err) {
     <div class="cards">
       ${card("Year-1 NOI", usd(out.noi.year1NOI))}
       ${card("Stabilized NOI (at market)", usd(out.noi.stabilizedAtMarketNOI))}
-      ${card("Direct cap value", d ? usd(d.indicatedValue) : "—", d ? `${d.capRatePercent}% on ${d.basis} · $${num(d.perSF, 0)}/SF` : "")}
+      ${card("Direct cap value", d ? usd(d.indicatedValue) : "—", d ? `${d.capRatePercent}% on ${esc(label(d.basis).toLowerCase())} NOI · $${num(d.perSF, 0)}/SF` : "")}
       ${card("DCF value", c ? usd(c.indicatedValue) : "—", c ? `${c.holdMonths} mo @ ${c.discountRatePercent}% · $${num(c.perSF, 0)}/SF` : "")}
       ${card("Concluded value", usd(out.concluded.value), esc(out.concluded.source ?? ""))}
     </div>
     ${d ? `<h2>Direct cap walk</h2><table><tbody>
-      <tr><td>Basis NOI (${esc(d.basis)})</td><td class="num">${usd(d.basisNOI)}</td></tr>
+      <tr><td>Basis NOI (${esc(label(d.basis).toLowerCase())})</td><td class="num">${usd(d.basisNOI)}</td></tr>
       <tr><td>Capped @ ${d.capRatePercent}%</td><td class="num">${usd(d.grossValue)}</td></tr>
       ${d.adjustmentsApplied.map((a) => `<tr><td>${esc(a.name)}</td><td class="num">${usd(a.amount)}</td></tr>`).join("")}
       <tr><td><strong>Indicated value</strong></td><td class="num"><strong>${usd(d.indicatedValue)}</strong></td></tr>
