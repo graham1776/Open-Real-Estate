@@ -22,10 +22,10 @@
         "commencementDate": "2026-01-01",
         "expirationDate": "2031-01-01",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [{ "startDate": "2026-01-01", "amount": 12 }]
         },
-        "reimbursement": { "structure": "NNN" }
+        "reimbursement": { "structure": "nnn" }
       }
     ]
   },
