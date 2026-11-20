@@ -25,7 +25,7 @@
         "commencementDate": "2026-01-01",
         "expirationDate": "2031-01-01",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2026-01-01",
@@ -46,7 +46,7 @@
           ]
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       }
     ]
@@ -57,7 +57,7 @@
         "expenseId": "E-TAX",
         "name": "Real Estate Taxes",
         "amount": 10000,
-        "amountUnit": "totalPerYear",
+        "amountUnit": "total_per_year",
         "recoverable": true
       }
     ]
@@ -71,7 +71,7 @@
       "small_bay": {
         "marketRent": {
           "amount": 12,
-          "unit": "perSFPerYear"
+          "unit": "per_sf_per_year"
         },
         "termMonths": 60,
         "downtimeMonths": 3,

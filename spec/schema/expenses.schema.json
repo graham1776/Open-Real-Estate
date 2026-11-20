@@ -55,8 +55,8 @@
         },
         "amountUnit": {
           "type": "string",
-          "enum": ["totalPerYear", "perSFPerYear", "percentOfEGR"],
-          "description": "totalPerYear: USD per year. perSFPerYear: USD per SF of property.physical.buildingSF per year. percentOfEGR: percent of effective gross revenue (the conventional management fee basis) — amount is the percent value, e.g. 2.5."
+          "enum": ["total_per_year", "per_sf_per_year", "percent_of_egr"],
+          "description": "total_per_year: USD per year. per_sf_per_year: USD per SF of property.physical.buildingSF per year. percent_of_egr: percent of effective gross revenue (the conventional management fee basis) — amount is the percent value, e.g. 2.5."
         },
         "recoverable": {
           "type": "boolean",
@@ -73,7 +73,7 @@
         },
         "growthOverridePercent": {
           "type": "number",
-          "description": "Annual growth rate in percent for this item only, overriding marketAssumptions.growth.expenses. Has no effect on percentOfEGR items, which float with revenue."
+          "description": "Annual growth rate in percent for this item only, overriding marketAssumptions.growth.expenses. Has no effect on percent_of_egr items, which float with revenue."
         },
         "notes": { "type": "string" }
       }

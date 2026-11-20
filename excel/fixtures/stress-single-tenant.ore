@@ -63,7 +63,7 @@
         "commencementDate": "2021-09-01",
         "expirationDate": "2028-08-31",
         "baseRent": {
-          "unit": "perSFPerMonth",
+          "unit": "per_sf_per_month",
           "schedule": [
             {
               "startDate": "2025-09-01",
@@ -77,7 +77,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "Gross"
+          "structure": "gross"
         },
         "options": [
           {
@@ -108,7 +108,7 @@
         "name": "Real Estate Taxes",
         "category": "real_estate_taxes",
         "amount": 169200,
-        "amountUnit": "totalPerYear",
+        "amountUnit": "total_per_year",
         "recoverable": true,
         "growthOverridePercent": 2.0,
         "notes": "Synthetic; modeled at 1.2% of assumed price, statutory 2% annual growth."
@@ -118,7 +118,7 @@
         "name": "Insurance",
         "category": "insurance",
         "amount": 0.3,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": true
       },
       {
@@ -126,7 +126,7 @@
         "name": "CAM / Repairs & Maintenance",
         "category": "cam",
         "amount": 0.5,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": true
       },
       {
@@ -134,7 +134,7 @@
         "name": "Management Fee",
         "category": "management_fee",
         "amount": 2.5,
-        "amountUnit": "percentOfEGR",
+        "amountUnit": "percent_of_egr",
         "recoverable": true
       },
       {
@@ -142,7 +142,7 @@
         "name": "Capital Reserves",
         "category": "reserves",
         "amount": 0.1,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": false,
         "belowTheLine": true
       }
@@ -170,7 +170,7 @@
       "warehouse": {
         "marketRent": {
           "amount": 1.55,
-          "unit": "perSFPerMonth"
+          "unit": "per_sf_per_month"
         },
         "termMonths": 60,
         "escalation": {
@@ -178,7 +178,7 @@
           "rate": 3.5,
           "frequencyMonths": 12
         },
-        "reimbursementStructure": "NNN",
+        "reimbursementStructure": "nnn",
         "downtimeMonths": 4,
         "renewalProbabilityPercent": 70,
         "newTenant": {

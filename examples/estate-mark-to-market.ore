@@ -42,7 +42,7 @@
         "commencementDate": "2026-08-01",
         "expirationDate": "2031-07-31",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2026-08-01",
@@ -56,7 +56,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         },
         "freeRent": [
           {
@@ -86,7 +86,7 @@
         "commencementDate": "2018-04-01",
         "expirationDate": "2028-07-31",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2025-08-01",
@@ -100,7 +100,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -115,7 +115,7 @@
         "commencementDate": "2016-09-01",
         "expirationDate": "2028-10-31",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2025-10-01",
@@ -129,7 +129,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -144,7 +144,7 @@
         "commencementDate": "2015-04-01",
         "expirationDate": "2027-08-31",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2025-09-01",
@@ -158,7 +158,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -173,7 +173,7 @@
         "commencementDate": "2017-06-01",
         "expirationDate": "2032-06-30",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2025-07-01",
@@ -187,7 +187,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -202,7 +202,7 @@
         "commencementDate": "2017-12-01",
         "expirationDate": "2028-05-31",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2026-01-01",
@@ -216,7 +216,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -231,7 +231,7 @@
         "commencementDate": "2018-04-01",
         "expirationDate": "2028-07-31",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2025-08-01",
@@ -245,7 +245,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -260,7 +260,7 @@
         "commencementDate": "2018-01-01",
         "expirationDate": "2028-04-30",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2026-05-01",
@@ -274,7 +274,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -289,7 +289,7 @@
         "commencementDate": "2020-07-01",
         "expirationDate": "2030-07-31",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2025-08-01",
@@ -303,7 +303,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -318,7 +318,7 @@
         "commencementDate": "2020-07-01",
         "expirationDate": "2030-10-31",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2025-11-01",
@@ -332,7 +332,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -347,7 +347,7 @@
         "commencementDate": "2019-10-01",
         "expirationDate": "2030-03-31",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2025-11-01",
@@ -361,7 +361,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -376,7 +376,7 @@
         "commencementDate": "2018-02-01",
         "expirationDate": "2028-05-31",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2026-03-01",
@@ -390,7 +390,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -405,7 +405,7 @@
         "commencementDate": "2018-10-01",
         "expirationDate": "2031-03-31",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2026-03-01",
@@ -419,7 +419,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -434,7 +434,7 @@
         "commencementDate": "2019-07-01",
         "expirationDate": "2029-09-30",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2025-10-01",
@@ -448,7 +448,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -463,7 +463,7 @@
         "commencementDate": "2020-04-01",
         "expirationDate": "2030-05-31",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2025-06-01",
@@ -477,7 +477,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -492,7 +492,7 @@
         "commencementDate": "2020-07-01",
         "expirationDate": "2027-10-31",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2026-05-01",
@@ -510,7 +510,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -525,7 +525,7 @@
         "commencementDate": "2023-01-01",
         "expirationDate": "2033-04-30",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2026-01-01",
@@ -539,7 +539,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -554,7 +554,7 @@
         "commencementDate": "2022-10-01",
         "expirationDate": "2033-02-28",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2025-11-01",
@@ -568,7 +568,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -583,7 +583,7 @@
         "commencementDate": "2023-08-01",
         "expirationDate": "2034-01-31",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2025-09-01",
@@ -597,7 +597,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -612,7 +612,7 @@
         "commencementDate": "2021-06-01",
         "expirationDate": "2028-09-30",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2025-06-01",
@@ -626,7 +626,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -641,7 +641,7 @@
         "commencementDate": "2022-06-01",
         "expirationDate": "2032-11-30",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2025-06-01",
@@ -655,7 +655,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -670,7 +670,7 @@
         "commencementDate": "2021-05-01",
         "expirationDate": "2027-02-28",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2025-08-01",
@@ -682,7 +682,7 @@
           "type": "none"
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -697,7 +697,7 @@
         "commencementDate": "2020-10-01",
         "expirationDate": "2028-03-31",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2025-10-01",
@@ -711,7 +711,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -726,7 +726,7 @@
         "commencementDate": "2022-03-01",
         "expirationDate": "2030-10-31",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2026-03-01",
@@ -740,7 +740,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       },
       {
@@ -755,7 +755,7 @@
         "commencementDate": "2021-04-01",
         "expirationDate": "2026-08-31",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2025-07-01",
@@ -767,7 +767,7 @@
           "type": "none"
         },
         "reimbursement": {
-          "structure": "NNN"
+          "structure": "nnn"
         }
       }
     ],
@@ -780,7 +780,7 @@
         "name": "Common Area Maintenance",
         "category": "cam",
         "amount": 0.62,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": true
       },
       {
@@ -788,7 +788,7 @@
         "name": "Utilities",
         "category": "utilities",
         "amount": 0.12,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": true
       },
       {
@@ -796,7 +796,7 @@
         "name": "Insurance",
         "category": "insurance",
         "amount": 0.41,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": true
       },
       {
@@ -804,7 +804,7 @@
         "name": "Real Estate Taxes",
         "category": "real_estate_taxes",
         "amount": 2.35,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": true
       },
       {
@@ -812,7 +812,7 @@
         "name": "Association Fee",
         "category": "other",
         "amount": 0.04,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": true
       },
       {
@@ -820,7 +820,7 @@
         "name": "Management Fee",
         "category": "management_fee",
         "amount": 3.0,
-        "amountUnit": "percentOfEGR",
+        "amountUnit": "percent_of_egr",
         "recoverable": true
       }
     ],
@@ -837,7 +837,7 @@
       "bulk_distribution": {
         "marketRent": {
           "amount": 16.5,
-          "unit": "perSFPerYear"
+          "unit": "per_sf_per_year"
         },
         "termMonths": 60,
         "escalation": {
@@ -845,7 +845,7 @@
           "rate": 4.0,
           "frequencyMonths": 12
         },
-        "reimbursementStructure": "NNN",
+        "reimbursementStructure": "nnn",
         "downtimeMonths": 4,
         "renewalProbabilityPercent": 75,
         "newTenant": {
@@ -863,7 +863,7 @@
       "mid_bay": {
         "marketRent": {
           "amount": 16.75,
-          "unit": "perSFPerYear"
+          "unit": "per_sf_per_year"
         },
         "termMonths": 60,
         "escalation": {
@@ -871,7 +871,7 @@
           "rate": 4.0,
           "frequencyMonths": 12
         },
-        "reimbursementStructure": "NNN",
+        "reimbursementStructure": "nnn",
         "downtimeMonths": 4,
         "renewalProbabilityPercent": 75,
         "newTenant": {
@@ -889,7 +889,7 @@
       "small_bay": {
         "marketRent": {
           "amount": 17.5,
-          "unit": "perSFPerYear"
+          "unit": "per_sf_per_year"
         },
         "termMonths": 60,
         "escalation": {
@@ -897,7 +897,7 @@
           "rate": 4.0,
           "frequencyMonths": 12
         },
-        "reimbursementStructure": "NNN",
+        "reimbursementStructure": "nnn",
         "downtimeMonths": 4,
         "renewalProbabilityPercent": 75,
         "newTenant": {
@@ -934,7 +934,7 @@
       "terminalValue": {
         "method": "direct_cap",
         "capRatePercent": 5.5,
-        "noiBasis": "stabilizedAtMarket",
+        "noiBasis": "stabilized_at_market",
         "sellingCostsPercent": 2.0,
         "notes": "Exit capitalizes fully marked-to-market NOI at a 150 bps spread over the 4.0% going-in cap, less 2% of gross in disposition costs."
       }

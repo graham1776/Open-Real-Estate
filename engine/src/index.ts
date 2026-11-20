@@ -35,12 +35,12 @@ function yearOf(dateStr: string): number {
   return Number(dateStr.split("-")[0]);
 }
 
-function monthlyTotal(amount: number, unit: RentUnit | "perSFPerMonth" | "perSFPerYear", sf: number): number {
+function monthlyTotal(amount: number, unit: RentUnit | "per_sf_per_month" | "per_sf_per_year", sf: number): number {
   switch (unit) {
-    case "perSFPerMonth": return amount * sf;
-    case "perSFPerYear": return (amount * sf) / 12;
-    case "totalPerMonth": return amount;
-    case "totalPerYear": return amount / 12;
+    case "per_sf_per_month": return amount * sf;
+    case "per_sf_per_year": return (amount * sf) / 12;
+    case "total_per_month": return amount;
+    case "total_per_year": return amount / 12;
   }
 }
 
@@ -158,7 +158,7 @@ function resolveTaxReassessment(deal: OreFile): TaxReassessInfo | null {
     : items.find((i) => i.category === "real_estate_taxes");
   if (!taxItem || price == null) return null;
   const sf = deal.property.physical.buildingSF;
-  const currentTaxAnnual = taxItem.amountUnit === "perSFPerYear" ? taxItem.amount * sf : taxItem.amount;
+  const currentTaxAnnual = taxItem.amountUnit === "per_sf_per_year" ? taxItem.amount * sf : taxItem.amount;
   const rateDerived = tr.effectiveTaxRatePercent == null;
   const ratePct = tr.effectiveTaxRatePercent ?? (currentTaxAnnual / price) * 100;
   return {
@@ -257,8 +257,8 @@ function rolloverStreams(t: number, sf: number, profile: LeasingProfile, ctx: En
   const p = (profile.renewalProbabilityPercent ?? 0) / 100;
   const T = profile.termMonths;
   const D = profile.downtimeMonths ?? 0;
-  const nnn = (profile.reimbursementStructure ?? "NNN") === "NNN" || (profile.reimbursementStructure ?? "NNN") === "NN";
-  if ((profile.reimbursementStructure ?? "NNN") === "MG") {
+  const nnn = (profile.reimbursementStructure ?? "nnn") === "nnn" || (profile.reimbursementStructure ?? "nnn") === "nn";
+  if ((profile.reimbursementStructure ?? "nnn") === "mg") {
     ctx.warnings.add("market_mg_simplified", "MG leasing profile: first-calendar-year base year means near-zero recoveries early in each market lease; engine models zero recoveries for market MG leases.");
   }
 
@@ -347,7 +347,7 @@ function rolloverWithRenewalOption(t: number, sf: number, profile: LeasingProfil
   const p = (profile.renewalProbabilityPercent ?? 0) / 100;
   const T = profile.termMonths;
   const D = profile.downtimeMonths ?? 0;
-  const nnn = (profile.reimbursementStructure ?? "NNN") === "NNN" || (profile.reimbursementStructure ?? "NNN") === "NN";
+  const nnn = (profile.reimbursementStructure ?? "nnn") === "nnn" || (profile.reimbursementStructure ?? "nnn") === "nn";
 
   // renewal branch (weight p): tenant exercises the option — its rent and term
   if (p > 0) {
@@ -456,7 +456,7 @@ interface ExpenseMonth {
   recoverableFixed: number;    // recoverable subset (non-mgmt)
   recoverableControllable: number; // recoverable subset that is controllable (cap-eligible)
   belowLine: number;
-  mgmtPct: number;             // percentOfEGR, as fraction
+  mgmtPct: number;             // percent_of_egr, as fraction
   mgmtRecoverable: boolean;
 }
 
@@ -471,12 +471,12 @@ function expensesAt(ctx: EngineCtx, m: number, excludeIds?: string[]): ExpenseMo
   const growth = ctx.deal.marketAssumptions?.growth.expenses;
   for (const item of ctx.deal.expenses?.items ?? []) {
     if (excludeIds?.includes(item.expenseId)) continue;
-    if (item.amountUnit === "percentOfEGR") {
+    if (item.amountUnit === "percent_of_egr") {
       out.mgmtPct += item.amount / 100;
       if (item.recoverable) out.mgmtRecoverable = true;
       continue;
     }
-    let annual = item.amountUnit === "perSFPerYear" ? item.amount * ctx.buildingSF : item.amount;
+    let annual = item.amountUnit === "per_sf_per_year" ? item.amount * ctx.buildingSF : item.amount;
     if (ctx.taxOverride && item.expenseId === ctx.taxOverride.expenseId) annual = ctx.taxOverride.baseAnnual; // property tax reassessed to purchase price
     const curve = item.growthOverridePercent != null ? item.growthOverridePercent : growth;
     const monthly = (annual / 12) * growthFactor(curve, m);
@@ -580,7 +580,7 @@ export function buildModel(deal: OreFile, horizon: number, warnings: Warnings): 
 
     // MG / expense-stop base
     let mgBaseMonthly: number | null = null;
-    if (structure === "MG") {
+    if (structure === "mg") {
       const r = lease.reimbursement;
       if (r.expenseStopPerSF != null) {
         mgBaseMonthly = (r.expenseStopPerSF * lease.leasedSF) / 12 / share; // stop stated per tenant SF; convert to building-level base
@@ -603,7 +603,7 @@ export function buildModel(deal: OreFile, horizon: number, warnings: Warnings): 
 
     // controllable-expense cap: ceilings on the recoverable controllable expenses (NNN/NN)
     const cap = lease.reimbursement.expenseCap;
-    const capCeil = cap && (structure === "NNN" || structure === "NN")
+    const capCeil = cap && (structure === "nnn" || structure === "nn")
       ? capCeilingsAnnual(ctx, lease, Math.ceil(horizon / 12)) : null;
     if (cap && capCeil) {
       ctx.warnings.add("expense_cap_applied", `Lease ${lease.leaseId}: ${cap.capPercent}% ${cap.basis ?? "cumulative_compounded"} cap applied to recoverable controllable expenses (taxes/insurance/utilities uncapped).`, "cap:" + lease.leaseId);
@@ -617,7 +617,7 @@ export function buildModel(deal: OreFile, horizon: number, warnings: Warnings): 
       total.sched[m]! += rate * ab.rentFactor;
       total.free[m]! += rate * (1 - ab.rentFactor);
       const reimbursing = !(ab.abatesReimb && ab.rentFactor < 1);
-      if ((structure === "NNN" || structure === "NN") && reimbursing) {
+      if ((structure === "nnn" || structure === "nn") && reimbursing) {
         // Base recovery: an exclusion list forces the direct-dollar path (the
         // aggregate SF-fraction path can't carry it); otherwise stay aggregate so
         // the recoverable-management-fee gross-up still reaches this lease.
@@ -638,7 +638,7 @@ export function buildModel(deal: OreFile, horizon: number, warnings: Warnings): 
           if (excess > 0) mgRecov[m]! -= share * excess * adminMarkup;
         }
       }
-      if (structure === "MG" && mgBaseMonthly != null && reimbursing) {
+      if (structure === "mg" && mgBaseMonthly != null && reimbursing) {
         const recovNow = leaseRecovBase(ctx, m, lease);
         mgRecov[m]! += Math.max(0, share * (recovNow - mgBaseMonthly * growthFactor(0, m))) * adminMarkup;
       }
@@ -688,7 +688,7 @@ export function buildModel(deal: OreFile, horizon: number, warnings: Warnings): 
     const memo = new Map<number, Streams>();
     const bn = emptyStreams(horizon);
     const D = profile.downtimeMonths ?? 0;
-    const nnn = (profile.reimbursementStructure ?? "NNN") !== "MG" && (profile.reimbursementStructure ?? "NNN") !== "Gross";
+    const nnn = (profile.reimbursementStructure ?? "nnn") !== "mg" && (profile.reimbursementStructure ?? "nnn") !== "gross";
     for (let m = 0; m < Math.min(D, horizon); m++) bn.pot[m]! += marketRate(profile, suite.sf, m, ctx);
     const s = D;
     const rate0 = marketRate(profile, suite.sf, Math.min(s, horizon - 1), ctx);
@@ -762,7 +762,7 @@ function stabilizedAnnualNOI(deal: OreFile, atMonth: number, warnings: Warnings)
   const profile = profiles[key]!;
   const rentM = blendedMarketMonthlyRent(ctx, atMonth) ?? marketRate(profile, ctx.buildingSF, atMonth, ctx);
   const e = expensesAt(ctx, atMonth);
-  const nnn = (profile.reimbursementStructure ?? "NNN") === "NNN" || (profile.reimbursementStructure ?? "NNN") === "NN";
+  const nnn = (profile.reimbursementStructure ?? "nnn") === "nnn" || (profile.reimbursementStructure ?? "nnn") === "nn";
   const recovFrac = nnn ? 1 : 0;
   const denom = 1 - (e.mgmtRecoverable ? recovFrac * e.mgmtPct : 0);
   const egr = (rentM + recovFrac * e.recoverableFixed) / (denom <= 0 ? 1 : denom);
@@ -816,8 +816,8 @@ export function computeDirectCap(deal: OreFile, model: MonthlyModel, warnings: W
 
   if (basisNOI == null) {
     if (dc.noiBasis === "year1") basisNOI = sum(model.noi, 0, 12);
-    else if (dc.noiBasis === "inPlace") basisNOI = model.noi[0]! * 12;
-    else if (dc.noiBasis === "stabilizedAtMarket") basisNOI = stabilizedAnnualNOI(deal, 0, warnings);
+    else if (dc.noiBasis === "in_place") basisNOI = model.noi[0]! * 12;
+    else if (dc.noiBasis === "stabilized_at_market") basisNOI = stabilizedAnnualNOI(deal, 0, warnings);
     else if (dc.noiBasis === "custom" || dc.noiBasis === "trailing12") basisNOI = dc.customNOI ?? null;
   }
   if (basisNOI == null) {
@@ -897,9 +897,9 @@ export function computeDCF(deal: OreFile, model: MonthlyModel, warnings: Warning
   let terminalGross: number | null = null;
   if (tv.method === "direct_cap") {
     let tNOI: number | null = null;
-    const basis = tv.noiBasis ?? "forwardYear";
-    if (basis === "forwardYear") tNOI = sum(model.noi, H, H + 12);
-    else if (basis === "trailingYear") tNOI = sum(model.noi, H - 12, H);
+    const basis = tv.noiBasis ?? "forward_year";
+    if (basis === "forward_year") tNOI = sum(model.noi, H, H + 12);
+    else if (basis === "trailing_year") tNOI = sum(model.noi, H - 12, H);
     else tNOI = stabilizedAnnualNOI(deal, H, warnings);
     if (tNOI == null) { warnings.add("terminal_incomputable", "Terminal NOI basis could not be computed; DCF skipped."); return null; }
     if (tv.deductBelowTheLineItems) tNOI -= sum(model.belowLine, H, H + 12);
@@ -907,7 +907,7 @@ export function computeDCF(deal: OreFile, model: MonthlyModel, warnings: Warning
     if (rx?.reassessRev) {
       // Load the exit cap by the tax rate so the buyer's taxes reset to the sale
       // price: V = (terminal NOI + seller's terminal property tax) / (cap + rate).
-      const from = basis === "trailingYear" ? H - 12 : H;
+      const from = basis === "trailing_year" ? H - 12 : H;
       const effBase = rx.reassessAcq ? rx.baseAnnual : rx.currentAnnual;
       const curve = itemGrowthCurve(deal, rx.expenseId);
       let sellerTax = 0;
@@ -1074,9 +1074,9 @@ export function computeSensitivity(deal: OreFile, model: MonthlyModel, warnings:
 
   let tNOI: number | null = null;
   if (tv.method === "direct_cap") {
-    const basis = tv.noiBasis ?? "forwardYear";
-    if (basis === "forwardYear") tNOI = sum(model.noi, H, H + 12);
-    else if (basis === "trailingYear") tNOI = sum(model.noi, H - 12, H);
+    const basis = tv.noiBasis ?? "forward_year";
+    if (basis === "forward_year") tNOI = sum(model.noi, H, H + 12);
+    else if (basis === "trailing_year") tNOI = sum(model.noi, H - 12, H);
     else tNOI = stabilizedAnnualNOI(deal, H, warnings);
     if (tNOI != null && tv.deductBelowTheLineItems) tNOI -= sum(model.belowLine, H, H + 12);
   }
@@ -1684,8 +1684,73 @@ export function lint(deal: unknown): LintProblem[] {
     ));
   }
 
+  problems.push(...enumIssues(d));
+
   if (!d.marketAssumptions) problems.push(lintIssue("warning", "advice", "No marketAssumptions: rollover, lease-up, and stabilized values cannot be modeled.", "/marketAssumptions"));
   if (!d.valuation) problems.push(lintIssue("warning", "advice", "No valuation module: engine reports operating metrics only.", "/valuation"));
+  return problems;
+}
+
+// The enums the engine computes from. An unrecognised value here does not
+// fail loudly in the arithmetic: it falls through a switch and prices NaN or
+// a default. JSON Schema rejects it too, but a reader that runs lint() alone
+// (the viewer) would otherwise see a quiet wrong number. Paths use "*" for
+// array items and "{}" for the values of a keyed map. engine/golden/run-lint.mjs
+// checks each list against the schema enum named in `schema`.
+export const COMPUTED_ENUMS: readonly { path: readonly string[]; values: readonly string[]; schema: string }[] = [
+  { path: ["property", "propertyType"], values: ["industrial", "office", "medical_office", "life_science", "retail", "multifamily", "student_housing", "senior_housing", "manufactured_housing", "self_storage", "data_center", "hospitality", "mixed_use", "land", "other"], schema: "property.schema.json#/properties/propertyType" },
+  { path: ["rentRoll", "leases", "*", "baseRent", "unit"], values: ["per_sf_per_month", "per_sf_per_year", "total_per_month", "total_per_year"], schema: "rentRoll.schema.json#/$defs/baseRent/properties/unit" },
+  { path: ["rentRoll", "leases", "*", "escalation", "type"], values: ["fixed_percent", "fixed_amount", "cpi", "none"], schema: "rentRoll.schema.json#/$defs/escalation/properties/type" },
+  { path: ["rentRoll", "leases", "*", "reimbursement", "structure"], values: ["nnn", "nn", "mg", "gross"], schema: "rentRoll.schema.json#/$defs/reimbursement/properties/structure" },
+  { path: ["rentRoll", "leases", "*", "reimbursement", "expenseCap", "basis"], values: ["non_cumulative", "cumulative", "cumulative_compounded"], schema: "rentRoll.schema.json#/$defs/reimbursement/properties/expenseCap/properties/basis" },
+  { path: ["rentRoll", "leases", "*", "options", "*", "type"], values: ["renewal", "termination", "purchase", "expansion", "right_of_first_refusal", "right_of_first_offer"], schema: "rentRoll.schema.json#/$defs/leaseOption/properties/type" },
+  { path: ["rentRoll", "leases", "*", "options", "*", "rentBasis"], values: ["market", "fixed", "percent_of_market"], schema: "rentRoll.schema.json#/$defs/leaseOption/properties/rentBasis" },
+  { path: ["expenses", "items", "*", "category"], values: ["real_estate_taxes", "insurance", "cam", "repairs_maintenance", "utilities", "management_fee", "administrative", "reserves", "other"], schema: "expenses.schema.json#/$defs/expenseItem/properties/category" },
+  { path: ["expenses", "items", "*", "amountUnit"], values: ["total_per_year", "per_sf_per_year", "percent_of_egr"], schema: "expenses.schema.json#/$defs/expenseItem/properties/amountUnit" },
+  { path: ["marketAssumptions", "leasingProfiles", "{}", "marketRent", "unit"], values: ["per_sf_per_month", "per_sf_per_year"], schema: "marketAssumptions.schema.json#/$defs/leasingProfile/properties/marketRent/properties/unit" },
+  { path: ["marketAssumptions", "leasingProfiles", "{}", "escalation", "type"], values: ["fixed_percent", "fixed_amount", "cpi", "none"], schema: "rentRoll.schema.json#/$defs/escalation/properties/type" },
+  { path: ["marketAssumptions", "leasingProfiles", "{}", "reimbursementStructure"], values: ["nnn", "nn", "mg", "gross"], schema: "marketAssumptions.schema.json#/$defs/leasingProfile/properties/reimbursementStructure" },
+  { path: ["valuation", "dcf", "discountTiming"], values: ["monthly", "annual"], schema: "valuation.schema.json#/$defs/dcf/properties/discountTiming" },
+  { path: ["valuation", "dcf", "periodConvention"], values: ["end", "mid"], schema: "valuation.schema.json#/$defs/dcf/properties/periodConvention" },
+  { path: ["valuation", "dcf", "terminalValue", "method"], values: ["direct_cap", "exit_price_psf", "fixed_value", "grown_purchase_price"], schema: "valuation.schema.json#/$defs/terminalValue/properties/method" },
+  { path: ["valuation", "dcf", "terminalValue", "noiBasis"], values: ["forward_year", "trailing_year", "stabilized_at_market"], schema: "valuation.schema.json#/$defs/terminalValue/properties/noiBasis" },
+  { path: ["valuation", "directCap", "noiBasis"], values: ["year1", "in_place", "stabilized_at_market", "trailing12", "custom"], schema: "valuation.schema.json#/$defs/directCap/properties/noiBasis" },
+  { path: ["valuation", "directCap", "adjustments", "*", "type"], values: ["deduction", "addition"], schema: "valuation.schema.json#/$defs/directCap/properties/adjustments/items/properties/type" },
+];
+
+// camelCase or upper case to snake_case: perSFPerYear -> per_sf_per_year,
+// NNN -> nnn, inPlace -> in_place. Used only to suggest a fix.
+function snakeCase(v: string): string {
+  return v.replace(/([a-z0-9])([A-Z])/g, "$1_$2").replace(/([A-Z]+)([A-Z][a-z])/g, "$1_$2").toLowerCase();
+}
+
+function enumIssues(d: OreFile): LintProblem[] {
+  const problems: LintProblem[] = [];
+  for (const rule of COMPUTED_ENUMS) {
+    const visit = (node: unknown, i: number, at: (string | number)[]) => {
+      if (node == null || typeof node !== "object") return;
+      const seg = rule.path[i]!;
+      const last = i === rule.path.length - 1;
+      if (seg === "*" || seg === "{}") {
+        if (seg === "*" ? !Array.isArray(node) : Array.isArray(node)) return;
+        const entries: [string | number, unknown][] = Array.isArray(node) ? node.map((v, k): [number, unknown] => [k, v]) : Object.entries(node);
+        for (const [k, v] of entries) visit(v, i + 1, [...at, k]);
+        return;
+      }
+      const value = (node as Record<string, unknown>)[seg];
+      if (!last) { visit(value, i + 1, [...at, seg]); return; }
+      if (value == null || (typeof value === "string" && rule.values.includes(value))) return;
+      const suggestion = typeof value === "string" ? snakeCase(value) : null;
+      const hint = suggestion && suggestion !== value && rule.values.includes(suggestion) ? ` Use "${suggestion}".` : "";
+      problems.push(lintIssue(
+        "error",
+        "enum_value_unknown",
+        `${seg} ${JSON.stringify(value)} is not a recognised value.${hint} Allowed: ${rule.values.join(", ")}.`,
+        jsonPointer([...at, seg]),
+      ));
+    };
+    visit(d, 0, []);
+  }
   return problems;
 }
 

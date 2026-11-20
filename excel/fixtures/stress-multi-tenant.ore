@@ -57,7 +57,7 @@
         "commencementDate": "2023-04-01",
         "expirationDate": "2028-03-31",
         "baseRent": {
-          "unit": "perSFPerMonth",
+          "unit": "per_sf_per_month",
           "schedule": [
             {
               "startDate": "2025-04-01",
@@ -79,7 +79,7 @@
           "frequencyMonths": 12
         },
         "reimbursement": {
-          "structure": "NNN",
+          "structure": "nnn",
           "adminFeePercent": 10,
           "excludedExpenses": [
             "E-CAM"
@@ -121,7 +121,7 @@
         "commencementDate": "2022-01-01",
         "expirationDate": "2027-12-31",
         "baseRent": {
-          "unit": "perSFPerMonth",
+          "unit": "per_sf_per_month",
           "schedule": [
             {
               "startDate": "2026-01-01",
@@ -133,7 +133,7 @@
           "type": "none"
         },
         "reimbursement": {
-          "structure": "MG",
+          "structure": "mg",
           "expenseStopPerSF": 5.0
         },
         "securityDeposit": {
@@ -155,7 +155,7 @@
         "commencementDate": "2025-11-01",
         "expirationDate": "2030-10-31",
         "baseRent": {
-          "unit": "perSFPerMonth",
+          "unit": "per_sf_per_month",
           "schedule": [
             {
               "startDate": "2025-11-01",
@@ -170,7 +170,7 @@
           "cpiCapPercent": 5.0
         },
         "reimbursement": {
-          "structure": "NNN",
+          "structure": "nnn",
           "proRataSharePercent": 27,
           "expenseCap": {
             "capPercent": 4,
@@ -209,7 +209,7 @@
         "commencementDate": "2026-10-01",
         "expirationDate": "2031-09-30",
         "baseRent": {
-          "unit": "perSFPerYear",
+          "unit": "per_sf_per_year",
           "schedule": [
             {
               "startDate": "2026-10-01",
@@ -223,7 +223,7 @@
           "cpiFloorPercent": 3.0
         },
         "reimbursement": {
-          "structure": "MG",
+          "structure": "mg",
           "baseYear": 2024
         },
         "freeRent": [
@@ -256,7 +256,7 @@
         "name": "Real Estate Taxes",
         "category": "real_estate_taxes",
         "amount": 198000,
-        "amountUnit": "totalPerYear",
+        "amountUnit": "total_per_year",
         "recoverable": true,
         "growthOverridePercent": 2.0
       },
@@ -265,7 +265,7 @@
         "name": "Insurance",
         "category": "insurance",
         "amount": 0.35,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": true
       },
       {
@@ -273,7 +273,7 @@
         "name": "Common Area Maintenance",
         "category": "cam",
         "amount": 0.72,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": true,
         "notes": "Landscaping, sweeping, lighting, fire/life-safety for the shared yard and parking field."
       },
@@ -282,7 +282,7 @@
         "name": "House Utilities",
         "category": "utilities",
         "amount": 0.12,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": true
       },
       {
@@ -290,7 +290,7 @@
         "name": "Management Fee",
         "category": "management_fee",
         "amount": 3.0,
-        "amountUnit": "percentOfEGR",
+        "amountUnit": "percent_of_egr",
         "recoverable": true
       },
       {
@@ -298,7 +298,7 @@
         "name": "Capital Reserves",
         "category": "reserves",
         "amount": 0.15,
-        "amountUnit": "perSFPerYear",
+        "amountUnit": "per_sf_per_year",
         "recoverable": false,
         "belowTheLine": true
       },
@@ -307,7 +307,7 @@
         "name": "Landscaping",
         "category": "cam",
         "amount": 9000,
-        "amountUnit": "totalPerYear",
+        "amountUnit": "total_per_year",
         "recoverable": true,
         "controllable": false
       }
@@ -357,7 +357,7 @@
       "small_bay": {
         "marketRent": {
           "amount": 1.5,
-          "unit": "perSFPerMonth"
+          "unit": "per_sf_per_month"
         },
         "termMonths": 48,
         "escalation": {
@@ -366,7 +366,7 @@
           "cpiFloorPercent": 2.5,
           "cpiCapPercent": 4.0
         },
-        "reimbursementStructure": "NNN",
+        "reimbursementStructure": "nnn",
         "downtimeMonths": 5,
         "renewalProbabilityPercent": 65,
         "newTenant": {
@@ -385,7 +385,7 @@
       "mg_suite": {
         "marketRent": {
           "amount": 16.0,
-          "unit": "perSFPerYear"
+          "unit": "per_sf_per_year"
         },
         "termMonths": 36,
         "escalation": {
@@ -393,7 +393,7 @@
           "amount": 0.5,
           "frequencyMonths": 12
         },
-        "reimbursementStructure": "MG",
+        "reimbursementStructure": "mg",
         "downtimeMonths": 0,
         "renewalProbabilityPercent": 100,
         "renewal": {
@@ -424,7 +424,7 @@
       "terminalValue": {
         "method": "direct_cap",
         "capRatePercent": 6.0,
-        "noiBasis": "trailingYear",
+        "noiBasis": "trailing_year",
         "sellingCostsPercent": 1.5,
         "deductUnfundedObligations": true,
         "notes": "Buyer-assumed-costs deduction covers any TI/LC/free rent on leases signed near the exit.",
