@@ -25,6 +25,14 @@ npm test         # build + schema validation + golden reproduction + lint fixtur
   obligations deducted at exit)
 - Debt: amortization schedule with IO period, DSCR, levered cash flows
 - Returns: unlevered/levered IRR, NPV vs price, equity multiples
+- Yield on cost, every year of the annual table (needs `purchasePrice`):
+  `yieldOnCostPercent` = that year's NOI ÷ total cost to date, and
+  `marketYieldOnCostPercent` = NOI with all space at market (the
+  `stabilized_at_market` calculation at the year's first month) ÷ the same
+  cost. Cost to date = price × (1 + acquisition costs %) + TI + LC through the
+  end of the year; recurring below-the-line reserves are excluded. A partial
+  final year has no actual figure (null). `returns.yieldOnCost` repeats the
+  year-1 pair as `year1Percent` / `year1MarketPercent`
 - Annual cash flow table, year-1 NOI bridge, 5×5 sensitivity grid
   (discount rate × exit cap)
 - **Warnings as a first-class output**: every estimate or simplification

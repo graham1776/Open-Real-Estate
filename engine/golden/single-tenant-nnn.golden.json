@@ -72,7 +72,9 @@
         "belowTheLine": -4512,
         "tiCosts": 0,
         "lcCosts": 0,
-        "cashFlow": 779416
+        "cashFlow": 779416,
+        "yieldOnCostPercent": 5.53,
+        "marketYieldOnCostPercent": 5.88
       },
       {
         "year": 2,
@@ -90,7 +92,9 @@
         "belowTheLine": -4647,
         "tiCosts": 0,
         "lcCosts": 0,
-        "cashFlow": 806732
+        "cashFlow": 806732,
+        "yieldOnCostPercent": 5.73,
+        "marketYieldOnCostPercent": 6.12
       },
       {
         "year": 3,
@@ -108,7 +112,9 @@
         "belowTheLine": -4787,
         "tiCosts": -56400,
         "lcCosts": -144078,
-        "cashFlow": 489843
+        "cashFlow": 489843,
+        "yieldOnCostPercent": 4.84,
+        "marketYieldOnCostPercent": 6.28
       },
       {
         "year": 4,
@@ -126,7 +132,9 @@
         "belowTheLine": -4930,
         "tiCosts": 0,
         "lcCosts": 0,
-        "cashFlow": 834411
+        "cashFlow": 834411,
+        "yieldOnCostPercent": 5.84,
+        "marketYieldOnCostPercent": 6.46
       },
       {
         "year": 5,
@@ -144,7 +152,9 @@
         "belowTheLine": -5078,
         "tiCosts": 0,
         "lcCosts": 0,
-        "cashFlow": 843859
+        "cashFlow": 843859,
+        "yieldOnCostPercent": 5.91,
+        "marketYieldOnCostPercent": 6.66
       },
       {
         "year": 6,
@@ -162,7 +172,9 @@
         "belowTheLine": -5231,
         "tiCosts": 0,
         "lcCosts": 0,
-        "cashFlow": 853639
+        "cashFlow": 853639,
+        "yieldOnCostPercent": 5.98,
+        "marketYieldOnCostPercent": 6.86
       },
       {
         "year": 7,
@@ -180,7 +192,9 @@
         "belowTheLine": -5388,
         "tiCosts": 0,
         "lcCosts": 0,
-        "cashFlow": 863762
+        "cashFlow": 863762,
+        "yieldOnCostPercent": 6.05,
+        "marketYieldOnCostPercent": 7.06
       },
       {
         "year": 8,
@@ -198,7 +212,9 @@
         "belowTheLine": -5549,
         "tiCosts": -56400,
         "lcCosts": -178455,
-        "cashFlow": 580581
+        "cashFlow": 580581,
+        "yieldOnCostPercent": 5.62,
+        "marketYieldOnCostPercent": 7.16
       },
       {
         "year": 9,
@@ -216,7 +232,9 @@
         "belowTheLine": -5716,
         "tiCosts": 0,
         "lcCosts": 0,
-        "cashFlow": 1022603
+        "cashFlow": 1022603,
+        "yieldOnCostPercent": 7.04,
+        "marketYieldOnCostPercent": 7.37
       },
       {
         "year": 10,
@@ -234,7 +252,9 @@
         "belowTheLine": -5887,
         "tiCosts": 0,
         "lcCosts": 0,
-        "cashFlow": 1058439
+        "cashFlow": 1058439,
+        "yieldOnCostPercent": 7.29,
+        "marketYieldOnCostPercent": 7.6
       }
     ]
   },
@@ -277,6 +297,10 @@
       "equityMultiple": 2.3,
       "initialEquity": 6493050,
       "totalProfit": 8426289
+    },
+    "yieldOnCost": {
+      "year1Percent": 5.53,
+      "year1MarketPercent": 5.88
     }
   },
   "sensitivity": {

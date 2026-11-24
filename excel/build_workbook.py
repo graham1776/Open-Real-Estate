@@ -1299,6 +1299,7 @@ def build_valuation(B):
         den = f'IF(1-IF({B["mgmtRec"]}=1,{B["stabNNN"]}*{B["mgmtPct"]},0)<=0,1,1-IF({B["mgmtRec"]}=1,{B["stabNNN"]}*{B["mgmtPct"]},0))'
         egr = f'(({rent}+{B["stabNNN"]}*{rec})/{den})'
         return f'IF({B["nProf"]}=0,"",({egr}*(1-{gvcl})-{abv}-{B["mgmtPct"]}*{egr})*12)'
+    B.stab = stab  # reused by the annual market yield-on-cost row
     line("stab0", "Stabilized-at-market NOI (annual, today)", stab("0"), bold=True)
     line("stabH", "Stabilized-at-market NOI (annual, at exit month H)", stab(H))
 
@@ -1492,6 +1493,20 @@ def build_annual(B):
             a, b = f"{y}*12", f"MIN({H},{y}*12+12)"
             f = f'=IF({y}*12<{H},{sign}*SUMPRODUCT(({M}>={a})*({M}<{b}),{rowrange(row, B)}),"")'
             put(ws, f"{c}{rr}", f, F_BOLD if bold else F_BASE, NF_NUM, border=B_TOP if bold else None)
+        rr += 1
+    # yield on cost (withYieldOnCost): NOI ÷ (price × (1 + acq %) + TI + LC through year end)
+    acq = f'{B["price"]}*(1+IF({B["acqPct"]}="",0,{B["acqPct"]})/100)'
+    for key, lab in (("yieldOnCostPercent", "Yield on cost"), ("marketYieldOnCostPercent", "Yield on cost, all space at market")):
+        put(ws, f"B{rr}", lab, F_BASE)
+        B.n["AN_row"][key] = rr
+        for y in range(NYR):
+            c = CL(3 + y)
+            b = f"MIN({H},{y}*12+12)"
+            cost = f'({acq}+SUMPRODUCT(({M}<{b}),{rowrange("TI", B)})+SUMPRODUCT(({M}<{b}),{rowrange("LC", B)}))'
+            noi = (f'IF({c}{r+1}<12,"",{c}{B.n["AN_row"]["noi"]})' if key == "yieldOnCostPercent"
+                   else B.stab(f"{y}*12"))
+            f = f'=IF(OR({y}*12>={H},N({B["price"]})=0),"",IF({cost}<=0,"",IF({noi}="","",{noi}/{cost})))'
+            put(ws, f"{c}{rr}", f, F_BASE, NF_PCT)
         rr += 1
     yl = CL(3 + NYR - 1)
     ws.conditional_formatting.add(f"C{r}:{yl}{r}", FormulaRule(formula=[f'C${r}<>""'], fill=FILL_HDR))
@@ -1970,6 +1985,9 @@ def build_check(B):
         c = CL(3 + y)
         for key, lab, _, _ in ANNUAL:
             add(f"Year {y+1}: {lab}", f"'Annual CF'!${c}${an[key]}", f"cashFlows.annual[{y}].{key}")
+        for key, lab in (("yieldOnCostPercent", "Yield on cost %"), ("marketYieldOnCostPercent", "Market yield on cost %")):
+            cell = f"'Annual CF'!${c}${an[key]}"
+            add(f"Year {y+1}: {lab}", f'IF({cell}="","",{cell}*100)', f"cashFlows.annual[{y}].{key}", 2)
     add("Direct cap: basis NOI", B["dcNOI"], "directCap.basisNOI")
     add("Direct cap: gross value", B["dcGross"], "directCap.grossValue")
     add("Direct cap: indicated value", B["dcValue"], "directCap.indicatedValue")
@@ -2000,6 +2018,9 @@ def build_check(B):
     add("Levered equity multiple", B["emL"], "returns.levered.equityMultiple", 2)
     add("Levered initial equity", B["equity0"], "returns.levered.initialEquity")
     add("Levered profit", B["profitL"], "returns.levered.totalProfit")
+    for key, path in (("yieldOnCostPercent", "year1Percent"), ("marketYieldOnCostPercent", "year1MarketPercent")):
+        cell = f"'Annual CF'!$C${an[key]}"
+        add(f"Yield on cost, year 1: {path}", f'IF({cell}="","",{cell}*100)', f"returns.yieldOnCost.{path}", 2)
     for i in range(5):
         for j in range(5):
             cellref = f"Valuation!${CL(3 + j)}${B['sensRow0'] + i}"

@@ -1082,6 +1082,22 @@ export function annualTable(model, H) {
     }
     return rows;
 }
+export function withYieldOnCost(deal, model, rows, warnings) {
+    const v = deal.valuation;
+    return rows.map((row) => {
+        if (!v?.purchasePrice)
+            return { ...row, yieldOnCostPercent: null, marketYieldOnCostPercent: null };
+        const a = (row.year - 1) * 12, b = a + row.months;
+        const cost = v.purchasePrice * (1 + (v.acquisitionCostsPercent ?? 0) / 100) + sum(model.ti, 0, b) + sum(model.lc, 0, b);
+        const market = stabilizedAnnualNOI(deal, a, warnings);
+        const pct = (noi) => (cost > 0 ? round2((noi / cost) * 100) : null);
+        return {
+            ...row,
+            yieldOnCostPercent: row.months === 12 ? pct(sum(model.noi, a, b)) : null,
+            marketYieldOnCostPercent: market != null ? pct(market) : null,
+        };
+    });
+}
 function computeLeaseMetrics(deal, start, ctx0) {
     let remRent = 0, totRent = 0, remSF = 0, totSF = 0, rollRent = 0, rollSF = 0;
     for (const lease of deal.rentRoll.leases) {
@@ -1157,6 +1173,7 @@ export function computeAll(deal) {
         }
     }
     const stabNOI = stabilizedAnnualNOI(deal, 0, warnings);
+    const annual = withYieldOnCost(deal, model, annualTable(model, H), warnings);
     return {
         engineVersion: ENGINE_VERSION,
         property: {
@@ -1189,12 +1206,16 @@ export function computeAll(deal) {
             stabilizedAtMarketNOI: stabNOI != null ? round0(stabNOI) : null,
         },
         noiBridgeYear1: annualTable(model, 12)[0],
-        cashFlows: { annual: annualTable(model, H) },
+        cashFlows: { annual },
         directCap, dcf, debt: debt ? {
             loanAmount: debt.loanAmount, netProceeds: debt.netProceeds,
             year1DebtService: debt.year1DebtService, dscrYear1: debt.dscrYear1,
         } : null,
-        returns, sensitivity,
+        returns: {
+            ...returns,
+            yieldOnCost: { year1Percent: annual[0]?.yieldOnCostPercent ?? null, year1MarketPercent: annual[0]?.marketYieldOnCostPercent ?? null },
+        },
+        sensitivity,
         concluded: { value: concludedValue != null ? round0(concludedValue) : null, source: concludedSource },
         warnings: warnings.list,
     };

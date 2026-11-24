@@ -72,7 +72,9 @@
         "belowTheLine": -11760,
         "tiCosts": -69085,
         "lcCosts": -91886,
-        "cashFlow": 845122
+        "cashFlow": 845122,
+        "yieldOnCostPercent": 4.74,
+        "marketYieldOnCostPercent": 6.29
       },
       {
         "year": 2,
@@ -90,7 +92,9 @@
         "belowTheLine": -12113,
         "tiCosts": -42450,
         "lcCosts": -67452,
-        "cashFlow": 1176514
+        "cashFlow": 1176514,
+        "yieldOnCostPercent": 6.02,
+        "marketYieldOnCostPercent": 6.48
       },
       {
         "year": 3,
@@ -108,7 +112,9 @@
         "belowTheLine": -12476,
         "tiCosts": -34440,
         "lcCosts": -42299,
-        "cashFlow": 1253078
+        "cashFlow": 1253078,
+        "yieldOnCostPercent": 6.2,
+        "marketYieldOnCostPercent": 6.68
       },
       {
         "year": 4,
@@ -126,7 +132,9 @@
         "belowTheLine": -12850,
         "tiCosts": 0,
         "lcCosts": 0,
-        "cashFlow": 1429320
+        "cashFlow": 1429320,
+        "yieldOnCostPercent": 6.66,
+        "marketYieldOnCostPercent": 6.91
       },
       {
         "year": 5,
@@ -144,7 +152,9 @@
         "belowTheLine": -13236,
         "tiCosts": -79530,
         "lcCosts": -140954,
-        "cashFlow": 1095220
+        "cashFlow": 1095220,
+        "yieldOnCostPercent": 6.08,
+        "marketYieldOnCostPercent": 7.08
       },
       {
         "year": 6,
@@ -162,7 +172,9 @@
         "belowTheLine": -13633,
         "tiCosts": -41153,
         "lcCosts": -74047,
-        "cashFlow": 1374202
+        "cashFlow": 1374202,
+        "yieldOnCostPercent": 6.84,
+        "marketYieldOnCostPercent": 7.29
       },
       {
         "year": 7,
@@ -180,7 +192,9 @@
         "belowTheLine": -14042,
         "tiCosts": -40036,
         "lcCosts": -63526,
-        "cashFlow": 1425908
+        "cashFlow": 1425908,
+        "yieldOnCostPercent": 6.99,
+        "marketYieldOnCostPercent": 7.51
       }
     ]
   },
@@ -234,7 +248,11 @@
       "equityMultiple": 1.67,
       "totalProfit": 14332372
     },
-    "levered": null
+    "levered": null,
+    "yieldOnCost": {
+      "year1Percent": 4.74,
+      "year1MarketPercent": 6.29
+    }
   },
   "sensitivity": {
     "discountRatesPercent": [
