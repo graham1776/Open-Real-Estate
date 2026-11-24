@@ -88,7 +88,7 @@
     <span class="mark">ORE</span>
     <nav>
       <a href="demo/">Viewer</a>
-      <a class="opt" href="https://github.com/graham1776/Open-Real-Estate/blob/main/spec/README.md">Spec</a>
+      <a class="opt" href="reference.html">Format reference</a>
       <a class="opt" href="#examples">Examples</a>
       <a class="opt" href="#excel">Excel</a>
       <a href="https://github.com/graham1776/Open-Real-Estate">GitHub</a>
@@ -129,7 +129,7 @@
 
   <section class="block" id="examples">
     <h2>Example deals</h2>
-    <p>Seven synthetic deals, each a single <code>.ore</code> file. Open one in the viewer, change a rent or a cap rate, and watch the value move.</p>
+    <p>Eight synthetic deals, each a single <code>.ore</code> file. Open one in the viewer, change a rent or a cap rate, and watch the value move.</p>
     <div class="grid3 exlist">
       <a class="card" href="demo/?example=multi-tenant-infill"><h3>Multi-tenant industrial park</h3><p>Four suites, one vacant. NNN, modified gross and CPI leases side by side.</p></a>
       <a class="card" href="demo/?example=single-tenant-nnn"><h3>Single-tenant NNN warehouse</h3><p>One lease, fixed escalations, a renewal option and amortizing debt.</p></a>
@@ -138,7 +138,8 @@
       <a class="card" href="demo/?example=corporate-net-lease"><h3>Corporate net lease</h3><p>Long lease with a fully stated rent schedule, including a step down.</p></a>
       <a class="card" href="demo/?example=covered-land-play"><h3>Covered land play</h3><p>Above-market rent on credit, with an exit to land value.</p></a>
       <a class="card" href="demo/?example=estate-mark-to-market"><h3>Seven-building estate</h3><p>Twenty-five leases across three rent tiers, patterned on an institutional buyer's model.</p></a>
-      <a class="card" href="demo/?example=all"><h3>All seven as a portfolio</h3><p>Drop several files and they roll up: totals, expirations, top tenants, blended returns.</p></a>
+      <a class="card" href="demo/?example=vacant-lease-up"><h3>Vacant bulk lease-up</h3><p>A new 502,000 SF building bought empty: lease-up terms, then general rollover terms.</p></a>
+      <a class="card" href="demo/?example=all"><h3>All eight as a portfolio</h3><p>Drop several files and they roll up: totals, expirations, top tenants, blended returns.</p></a>
     </div>
   </section>
 
@@ -155,7 +156,7 @@
       <a class="btn" href="excel/ORE-Workbook.xlsx" download>Download the workbook (.xlsx)</a>
       <a class="btn" href="excel/ORE-Workbook.xlsm" download>With Import button (.xlsm)</a>
     </div>
-    <p class="fine2">The workbook is tested against the engine on every example: 1,966 outputs, all matching. The macro version needs macros allowed on your machine; the plain version does not. <a href="https://github.com/graham1776/Open-Real-Estate/blob/main/excel/README.md">How it works</a>.</p>
+    <p class="fine2">The workbook is tested against the engine on every example and stress fixture: 2,351 outputs, all matching. The macro version needs macros allowed on your machine; the plain version does not. <a href="https://github.com/graham1776/Open-Real-Estate/blob/main/excel/README.md">How it works</a>.</p>
   </section>
 
   <section class="block">
@@ -181,6 +182,7 @@
       <tr><td><code>provenance</code></td><td>Who produced the file, when, and from what sources</td></tr>
     </table>
     <p>ORE is for every commercial property type. Version 0.1 is deepest on industrial, where the examples started; office, retail and multifamily files are accepted, and the engine says what it has not modeled yet. Every example deal has locked expected outputs, so any implementation of the engine can prove it computes the same answers.</p>
+    <p><strong>The whole format on one page.</strong> The <a href="reference.html">ORE format reference</a> has every field with its type and allowed values, the specification, the validation rules, every example deal and the JSON Schemas. A <code>.ore</code> file is JSON, so the reference is all a person or an AI assistant needs to read or write one. The same content is in <a href="llms.txt">llms.txt</a>.</p>
   </section>
 
   <div class="join">

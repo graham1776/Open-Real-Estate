@@ -6,6 +6,7 @@
   "type": "object",
   "required": ["interestRatePercent", "termMonths"],
   "additionalProperties": false,
+  "patternProperties": { "^x-": true },
   "oneOf": [
     { "required": ["loanAmount"], "not": { "required": ["ltvPercent"] } },
     { "required": ["ltvPercent"], "not": { "required": ["loanAmount"] } }

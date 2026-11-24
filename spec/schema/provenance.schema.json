@@ -6,6 +6,7 @@
   "type": "object",
   "required": ["generatedAt", "generatedBy"],
   "additionalProperties": false,
+  "patternProperties": { "^x-": true },
   "properties": {
     "generatedAt": {
       "type": "string",
@@ -16,6 +17,7 @@
       "type": "object",
       "required": ["name"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "The party responsible for the file's contents.",
       "properties": {
         "name": { "type": "string", "minLength": 1, "description": "Person or team name." },
@@ -32,6 +34,7 @@
     "software": {
       "type": "object",
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Tool that wrote the file, for conformance triage.",
       "properties": {
         "name": { "type": "string" },
@@ -45,6 +48,7 @@
         "type": "object",
         "required": ["name", "type"],
         "additionalProperties": false,
+        "patternProperties": { "^x-": true },
         "properties": {
           "name": { "type": "string", "minLength": 1, "description": "Document title, e.g. \"Lease Agreement dated 2021-08-15\"." },
           "type": {
@@ -74,6 +78,7 @@
         "type": "object",
         "required": ["name"],
         "additionalProperties": false,
+        "patternProperties": { "^x-": true },
         "properties": {
           "name": { "type": "string", "minLength": 1 },
           "organization": { "type": "string" },

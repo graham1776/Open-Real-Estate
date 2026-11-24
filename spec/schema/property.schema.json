@@ -6,6 +6,7 @@
   "type": "object",
   "required": ["name", "propertyType", "address", "physical"],
   "additionalProperties": false,
+  "patternProperties": { "^x-": true },
   "allOf": [
     {
       "if": { "properties": { "propertyType": { "const": "industrial" } }, "required": ["propertyType"] },
@@ -71,6 +72,7 @@
       "type": "object",
       "required": ["street1", "city", "state", "postalCode"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Situs address. US addresses only for now (see the international issue in the tracker).",
       "properties": {
         "street1": { "type": "string", "minLength": 1, "description": "Primary street address line." },
@@ -97,6 +99,7 @@
     "location": {
       "type": "object",
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Geographic and market context.",
       "properties": {
         "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
@@ -113,6 +116,7 @@
         "type": "object",
         "required": ["apn"],
         "additionalProperties": false,
+        "patternProperties": { "^x-": true },
         "properties": {
           "apn": { "type": "string", "minLength": 1, "description": "Assessor's parcel number, formatted as it appears on the assessor roll." },
           "landAcres": { "type": "number", "exclusiveMinimum": 0, "description": "Land area of this parcel in acres." },
@@ -129,6 +133,7 @@
       "type": "object",
       "required": ["buildingSF"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Physical and functional characteristics of the improvements.",
       "properties": {
         "buildingSF": {

@@ -139,6 +139,7 @@ export interface LeasingProfile {
   newTenant?: LeasingCosts;
   renewal?: LeasingCosts;
   renewalRentPercentOfMarket?: number;
+  rolloverProfile?: string;
   notes?: string;
 }
 

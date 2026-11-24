@@ -6,6 +6,7 @@
   "type": "object",
   "required": ["analysisStartDate", "methods"],
   "additionalProperties": false,
+  "patternProperties": { "^x-": true },
   "properties": {
     "analysisStartDate": {
       "type": "string",
@@ -83,6 +84,7 @@
       "type": "object",
       "required": ["discountRatePercent", "terminalValue"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "oneOf": [
         { "required": ["holdPeriodYears"], "not": { "required": ["holdPeriodMonths"] } },
         { "required": ["holdPeriodMonths"], "not": { "required": ["holdPeriodYears"] } }
@@ -130,6 +132,7 @@
       "type": "object",
       "required": ["method"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "How the gross reversion value is computed at the end of the hold.",
       "properties": {
         "method": {
@@ -203,6 +206,7 @@
       "type": "object",
       "required": ["capRatePercent", "noiBasis"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "properties": {
         "capRatePercent": {
           "type": "number",
@@ -237,6 +241,7 @@
           "type": "object",
           "required": ["periodMonths"],
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "description": "Deduction of near-term costs from the capitalized value — the conventional bridge from a stabilized capped value to an as-is value. Engines compute scheduled costs within the period from the rent roll and market assumptions.",
           "properties": {
             "periodMonths": {
@@ -276,6 +281,7 @@
           "type": "object",
           "required": ["discountRatePercent"],
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "description": "Leased-fee adjustment when capping a market-basis NOI: the present value of (contract − market) rent differentials on each lease through its expiration is added to (above-market) or deducted from (below-market) the capitalized value. Presence of this object enables the adjustment.",
           "properties": {
             "discountRatePercent": {
@@ -293,6 +299,7 @@
             "type": "object",
             "required": ["name", "type", "amount"],
             "additionalProperties": false,
+            "patternProperties": { "^x-": true },
             "properties": {
               "name": { "type": "string", "minLength": 1 },
               "type": { "type": "string", "enum": ["deduction", "addition"] },
@@ -318,6 +325,7 @@
       "type": "object",
       "required": ["unitBasis", "comparables", "concludedValuePerUnit"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "properties": {
         "unitBasis": {
           "type": "string",
@@ -346,11 +354,13 @@
       "type": "object",
       "required": ["salePrice", "saleDate"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "properties": {
         "name": { "type": "string", "description": "Identifier or address line for the comp." },
         "address": {
           "type": "object",
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "properties": {
             "street1": { "type": "string" },
             "city": { "type": "string" },
@@ -376,6 +386,7 @@
             "type": "object",
             "required": ["factor"],
             "additionalProperties": false,
+            "patternProperties": { "^x-": true },
             "oneOf": [
               { "required": ["percentAdjustment"], "not": { "required": ["amountPerUnitAdjustment"] } },
               { "required": ["amountPerUnitAdjustment"], "not": { "required": ["percentAdjustment"] } }
@@ -414,10 +425,12 @@
       "type": "object",
       "required": ["landValue", "improvements"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "properties": {
         "landValue": {
           "type": "object",
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "oneOf": [
             { "required": ["amount"], "not": { "required": ["perAcreAmount"] } },
             { "required": ["perAcreAmount"], "not": { "required": ["amount"] } }
@@ -432,6 +445,7 @@
                 "type": "object",
                 "required": ["salePrice", "saleDate", "landAcres"],
                 "additionalProperties": false,
+                "patternProperties": { "^x-": true },
                 "properties": {
                   "name": { "type": "string" },
                   "salePrice": { "type": "number", "exclusiveMinimum": 0 },
@@ -448,6 +462,7 @@
         "improvements": {
           "type": "object",
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "oneOf": [
             { "required": ["replacementCostNew"], "not": { "required": ["replacementCostNewPerSF"] } },
             { "required": ["replacementCostNewPerSF"], "not": { "required": ["replacementCostNew"] } }
@@ -470,6 +485,7 @@
         "depreciation": {
           "type": "object",
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "description": "Accrued depreciation on the improvements. Percent fields apply to replacement cost new (plus site improvements); the age-life inputs document how physical deterioration was derived.",
           "properties": {
             "physicalDeteriorationPercent": { "type": "number", "minimum": 0, "maximum": 100 },
@@ -492,6 +508,7 @@
       "type": "object",
       "required": ["concludedValue"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Final value conclusion across the approaches carried in this file.",
       "properties": {
         "concludedValue": { "type": "number", "exclusiveMinimum": 0, "description": "USD." },
@@ -505,6 +522,7 @@
     "taxReassessment": {
       "type": "object",
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Opt-in property-tax reassessment on transfer (e.g. California Proposition 13). Presence of this object enables it. Requires valuation.purchasePrice. Going-in: the reassessed property tax is set to the purchase price times the effective rate, in force from the analysis start. Reversion: the terminal cap is loaded by the tax rate so the hypothetical buyer's taxes reset to the sale price.",
       "properties": {
         "effectiveTaxRatePercent": {

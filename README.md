@@ -84,8 +84,11 @@ optional so a file carries exactly what its producer knows:
 | `provenance` | Who produced the file, when, from what sources |
 
 Full field-by-field reference: the [spec](spec/README.md) and
-[data dictionary](spec/data-dictionary.md). For LLMs and agents, the entire format
-is published as a single ingestible document: [`llms.txt`](llms.txt).
+[data dictionary](spec/data-dictionary.md). The entire format, with every field,
+every example and the schemas, is published as one page:
+[the format reference](https://graham1776.github.io/Open-Real-Estate/reference.html)
+(also as plain text, [`llms.txt`](llms.txt), for LLMs and agents). A `.ore` file is
+JSON; tools that refuse unknown extensions can use `.ore.json`.
 
 ## Status
 
@@ -96,8 +99,8 @@ is published as a single ingestible document: [`llms.txt`](llms.txt).
 | Format spec & JSON Schema | [`spec/`](spec/) | All v0.1 modules drafted |
 | Reference engine (TypeScript) | [`engine/`](engine/) | Working: full cash model, valuation, debt, returns, sensitivity; goldens locked (`npm test`) |
 | Viewer / demo | [`demo/`](demo/) | Working: drag `.ore` files → deal view or multi-file portfolio roll-up; watches files for live refresh; click any value to change it, see outputs move, and save the file back (`npm run demo`) |
-| Example deal files | [`examples/`](examples/) | Seven examples, all validating (`npm run validate`), one structured on a real underwrite and [benchmarked against an institutional model](docs/design/institutional-model-benchmark.md) |
-| LLM ingestible spec | [`llms.txt`](llms.txt) | Published |
+| Example deal files | [`examples/`](examples/) | Eight examples, all validating (`npm run validate`), one structured on a real underwrite and [benchmarked against an institutional model](docs/design/institutional-model-benchmark.md) |
+| Format reference | [`reference.html`](https://graham1776.github.io/Open-Real-Estate/reference.html), [`llms.txt`](llms.txt) | Published; generated from the spec (`npm run llms`) |
 | Validator CLI | [`validator/`](validator/) | Working: `validate` / `summarize` / `compute` / `tape` / `excel` (`npm run cli -- validate examples`) |
 | Excel workbook | [`excel/`](excel/) | Working: reader sheets + engine in native formulas; matches the engine on every example and stress fixture (`npm run excel:test`); Import button in the `.xlsm` |
 | Documentation site | [`docs/`](docs/) | Decision and design notes; site not started |

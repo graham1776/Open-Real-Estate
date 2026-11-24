@@ -11,6 +11,7 @@ import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { computeAll, computePortfolio } from "../dist/index.js";
+import { withExtensions } from "./extensions.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..", "..");
@@ -37,6 +38,13 @@ for (const f of readdirSync(examplesDir).filter((f) => f.endsWith(".ore")).sort(
   const e = JSON.stringify(expected, null, 2);
   if (a === e) {
     console.log(`PASS  ${f}`);
+    // extension policy: x- keys on every object change no output
+    if (JSON.stringify(computeAll(withExtensions(deal)), null, 2) === e) {
+      console.log(`PASS  ${f} with x- extension keys on every object`);
+    } else {
+      failures++;
+      console.error(`FAIL  ${f} with x- extension keys — outputs moved; engines must ignore x- keys`);
+    }
   } else {
     failures++;
     console.error(`FAIL  ${f} — output differs from ${basename(goldenPath)}`);

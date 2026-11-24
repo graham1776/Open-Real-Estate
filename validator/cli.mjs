@@ -35,6 +35,7 @@ function buildSchemaValidator() {
 }
 
 // Expand args to a flat list of .ore files (directories are scanned one level).
+// .ore.json is accepted too, for tools that refuse unknown extensions.
 function collectFiles(args) {
   const files = [];
   for (const a of args) {
@@ -45,7 +46,7 @@ function collectFiles(args) {
       fail(`No such file or directory: ${a}`);
     }
     if (st.isDirectory()) {
-      const found = readdirSync(a).filter((f) => f.endsWith(".ore")).sort();
+      const found = readdirSync(a).filter((f) => f.endsWith(".ore") || f.endsWith(".ore.json")).sort();
       if (found.length === 0) fail(`No .ore files in directory: ${a}`);
       files.push(...found.map((f) => join(a, f)));
     } else {
@@ -219,7 +220,7 @@ function cmdTape(paths, asJson, withEngine) {
 
 function cmdExcel(paths, out, withEngine) {
   if (paths.length !== 1) fail("excel takes exactly one .ore file.");
-  const target = out ?? basename(paths[0]).replace(/\.ore$/i, "") + ".xlsx";
+  const target = out ?? basename(paths[0]).replace(/\.ore(\.json)?$/i, "") + ".xlsx";
   const macro = /\.xlsm$/i.test(target);
   if (!macro && !/\.xlsx$/i.test(target)) fail("output file must end in .xlsx (or .xlsm for the macro-enabled workbook).");
   const template = join(root, "excel", macro ? "ORE-Workbook.xlsm" : "ORE-Workbook.xlsx");

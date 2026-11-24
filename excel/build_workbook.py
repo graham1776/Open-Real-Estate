@@ -376,7 +376,7 @@ PROF_FIELDS = [("amt", "marketRent.amount"), ("unit", "marketRent.unit"), ("term
                ("down", "downtimeMonths"), ("renProb", "renewalProbabilityPercent"),
                ("nTI", "newTenant.tiPerSF"), ("nLC", "newTenant.lcPercentOfRent"), ("nFree", "newTenant.freeRentMonths"),
                ("rTI", "renewal.tiPerSF"), ("rLC", "renewal.lcPercentOfRent"), ("rFree", "renewal.freeRentMonths"),
-               ("renPct", "renewalRentPercentOfMarket"), ("notes", "notes")]
+               ("renPct", "renewalRentPercentOfMarket"), ("roll", "rolloverProfile"), ("notes", "notes")]
 
 VAC_FIELDS = [("suite", "suite"), ("sf", "sf"), ("spaceType", "spaceType"), ("notes", "notes")]
 
@@ -669,6 +669,12 @@ def build_data(B):
 # =====================================================================
 # SpaceParams: one row per space (leases 1..NL, then vacant suites)
 # =====================================================================
+# Per-profile parameters SpaceParams derives twice: from the space's own profile,
+# which prices the first lease generated for the space, and (suffixed _r) from that
+# profile's rolloverProfile, which prices every rollover after it.
+PROF_PARAMS = ['mkt0', 'T', 'D', 'p', 'renPct', 'Fn', 'Fr', 'tiN', 'tiR', 'lcN', 'lcR', 'escR', 'freq', 'mktNNN', 'A']
+
+
 def build_space_params(B):
     ws = B.sheet("SpaceParams", "7F7F7F")
     SP = "SpaceParams"
@@ -681,9 +687,10 @@ def build_space_params(B):
         return cols.index(key)
 
     keys = [
-        "kind", "src", "exists", "isLease", "label", "sf", "spaceType", "prof", "hasProf",
-        # profile
-        "mkt0", "T", "D", "p", "renPct", "Fn", "Fr", "tiN", "tiR", "lcN", "lcR", "escR", "freq", "mktNNN", "A",
+        "kind", "src", "exists", "isLease", "label", "sf", "spaceType", "prof", "hasProf", "prof_r",
+        # profile: the space's own (first lease generated) and, suffixed _r, its rolloverProfile (every later rollover)
+    ] + PROF_PARAMS + [k + "_r" for k in PROF_PARAMS] + [
+        "s0",
         # in-place lease
         "mult", "commIdx", "expIdx", "c0", "expiry", "isIP", "t0", "fOK", "p0",
         "optJ", "ov", "mktT0", "optRent", "rate0", "T0", "esc0R", "Fr0", "A0",
@@ -741,24 +748,32 @@ def build_space_params(B):
         # unmatched key is a lint error, so the IFERROR fallback only serves invalid files.
         put_("prof", f'=IF(OR({P("exists")}=0,{B["nProf"]}=0),0,IF({P("spaceType")}="",1,IFERROR(MATCH({P("spaceType")},{B["profKeys"]},0),1)))')
         put_("hasProf", f'=IF({P("prof")}>0,1,0)')
+        # rolloverProfile (engine rolloverProfileOf): the named profile, else the space's own.
+        # An unknown key is a lint error, so the IFERROR fallback only serves invalid files.
+        roll = f'INDEX({B["P_roll"]},{P("prof")})'
+        put_("prof_r", f'=IF({P("hasProf")}=0,0,IF({roll}="",{P("prof")},IFERROR(MATCH({roll},{B["profKeys"]},0),{P("prof")})))')
+        for sfx, pk in (("", "prof"), ("_r", "prof_r")):
+            K = lambda k: k + sfx
+            Q = lambda k: P(k + sfx)
+            PF = lambda f: f'INDEX({B["P_" + f]},{P(pk)})'
+            PFn = lambda f, d: f'IF({P("hasProf")}=0,{d},IF({PF(f)}="",{d},{PF(f)}))'
+            put_(K("mkt0"), f'=IF({P("hasProf")}=0,0,IF({PF("unit")}="per_sf_per_month",{PF("amt")}*{P("sf")},{PF("amt")}*{P("sf")}/12))')
+            put_(K("T"), f'=MAX(1,{PFn("term", 1)})')
+            put_(K("D"), f'={PFn("down", 0)}')
+            put_(K("p"), f'={PFn("renProb", 0)}/100')
+            put_(K("renPct"), f'={PFn("renPct", 100)}/100')
+            put_(K("Fn"), f'=MIN({PFn("nFree", 0)},{Q("T")})')
+            put_(K("Fr"), f'=MIN({PFn("rFree", 0)},{Q("T")})')
+            put_(K("tiN"), f'={PFn("nTI", 0)}')
+            put_(K("tiR"), f'={PFn("rTI", 0)}')
+            put_(K("lcN"), f'={PFn("nLC", 0)}/100')
+            put_(K("lcR"), f'={PFn("rLC", 0)}/100')
+            cpi_p = f'MIN(IF({PF("cpiCap")}="",1E+300,{PF("cpiCap")}),MAX(IF({PF("cpiFloor")}="",-1E+300,{PF("cpiFloor")}),{B["cpiModel"]}))'
+            put_(K("escR"), f'=IF({P("hasProf")}=0,0,IF({PF("escType")}="fixed_percent",IF({PF("escRate")}="",0,{PF("escRate")})/100,IF({PF("escType")}="cpi",{cpi_p}/100,0)))')
+            put_(K("freq"), f'=MAX(1,{PFn("escFreq", 12)})')
+            put_(K("mktNNN"), f'=IF({P("hasProf")}=0,0,IF(OR({PF("struct")}="",{PF("struct")}="nnn",{PF("struct")}="nn"),1,0))')
+            put_(K("A"), "=" + ANNUITY(Q("T"), Q("escR"), Q("freq")))
         PF = lambda f: f'INDEX({B["P_" + f]},{P("prof")})'
-        PFn = lambda f, d: f'IF({P("hasProf")}=0,{d},IF({PF(f)}="",{d},{PF(f)}))'
-        put_("mkt0", f'=IF({P("hasProf")}=0,0,IF({PF("unit")}="per_sf_per_month",{PF("amt")}*{P("sf")},{PF("amt")}*{P("sf")}/12))')
-        put_("T", f'=MAX(1,{PFn("term", 1)})')
-        put_("D", f'={PFn("down", 0)}')
-        put_("p", f'={PFn("renProb", 0)}/100')
-        put_("renPct", f'={PFn("renPct", 100)}/100')
-        put_("Fn", f'=MIN({PFn("nFree", 0)},{P("T")})')
-        put_("Fr", f'=MIN({PFn("rFree", 0)},{P("T")})')
-        put_("tiN", f'={PFn("nTI", 0)}')
-        put_("tiR", f'={PFn("rTI", 0)}')
-        put_("lcN", f'={PFn("nLC", 0)}/100')
-        put_("lcR", f'={PFn("rLC", 0)}/100')
-        cpi_p = f'MIN(IF({PF("cpiCap")}="",1E+300,{PF("cpiCap")}),MAX(IF({PF("cpiFloor")}="",-1E+300,{PF("cpiFloor")}),{B["cpiModel"]}))'
-        put_("escR", f'=IF({P("hasProf")}=0,0,IF({PF("escType")}="fixed_percent",IF({PF("escRate")}="",0,{PF("escRate")})/100,IF({PF("escType")}="cpi",{cpi_p}/100,0)))')
-        put_("freq", f'=MAX(1,{PFn("escFreq", 12)})')
-        put_("mktNNN", f'=IF({P("hasProf")}=0,0,IF(OR({PF("struct")}="",{PF("struct")}="nnn",{PF("struct")}="nn"),1,0))')
-        put_("A", "=" + ANNUITY(P("T"), P("escR"), P("freq")))
         put_("feeS" if False else "isIP", f'=IF(AND({P("isLease")}=1,{P("exists")}=1,{B["feeSimple"]}=0),1,0)')
         if isL:
             put_("mult", f'=IF({L("unit")}="per_sf_per_month",{P("sf")},IF({L("unit")}="per_sf_per_year",{P("sf")}/12,IF({L("unit")}="total_per_month",1,1/12)))')
@@ -771,6 +786,7 @@ def build_space_params(B):
         put_("c0", f'=MAX(0,{P("commIdx")})')
         put_("expiry", f'={P("expIdx")}+1')
         put_("t0", f'=IF({P("isIP")}=1,{P("expiry")},0)')
+        put_("s0", f'={P("t0")}+{P("D")}')  # first new-tenant lease start (own profile's downtime)
         put_("fOK", f'=IF(AND({P("exists")}=1,{P("hasProf")}=1,{P("t0")}<{h}),1,0)')
         put_("p0", f'=IF({P("isLease")}=1,{P("p")},0)')
         put_("mktT0", f'=IF({P("fOK")}=1,{P("mkt0")}*INDEX({gm_row},{P("t0")}+1),0)')
@@ -863,16 +879,18 @@ def build_space_params(B):
 # =====================================================================
 # SpaceCalc: per-space monthly streams
 # =====================================================================
-BLOCK = ["EL", "N", "DN", "POTG", "FREEG", "OCCG", "R0P", "CR", "IP", "AB", "ABR", "RB", "CTRL", "CEIL",
+BLOCK = ["EL", "N", "DN", "DN0", "POTG", "FREEG", "OCCG", "R0P", "N0P", "CR", "IP", "AB", "ABR", "RB", "CTRL", "CEIL",
          "MGR", "POT", "SCHED", "FREE", "OCC", "RSF", "TI", "LC", "CVM"]
 BLOCK_DESC = {
     "EL": "rollover events after the first (probability mass)",
-    "N": "new-tenant lease starts (mass)",
-    "DN": "downtime months (mass)",
-    "POTG": "potential rent, rollover leases after the first event",
-    "FREEG": "free rent, rollover leases after the first event",
-    "OCCG": "occupancy mass, rollover leases after the first event",
+    "N": "new-tenant lease starts after the first event (mass)",
+    "DN": "downtime months after the first event (mass)",
+    "DN0": "downtime months at the first event (mass)",
+    "POTG": "potential rent, leases after the first generation",
+    "FREEG": "free rent, leases after the first generation",
+    "OCCG": "occupancy mass, leases after the first generation",
     "R0P": "first renewal branch rent (option or market)",
+    "N0P": "first new-tenant lease rent, unabated (mass-weighted)",
     "CR": "in-place contract rent (unabated)",
     "IP": "in-place lease active (1/0)",
     "AB": "abatement factor (1 = no free rent)",
@@ -957,24 +975,33 @@ def build_space_calc(B, sp_ws):
             cell = lambda k: f"{c}{rw[k]}"
             def W(k, f):
                 ws[f"{c}{rw[k]}"] = "=" + f
-            fOK, t0, T0, T, D, p, p0 = P("fOK"), P("t0"), P("T0"), P("T"), P("D"), P("p"), P("p0")
-            # rollover event recurrence: events after the first come T0 after the first renewal start,
-            # T after every later renewal start or new-tenant start
-            W("EL", f'IF({fOK}=1,IF({mm}={t0}+{T0},{p0},0)+IF({mm}-{T}>=0,{p}*INDEX({RR("EL")},{mm}-{T}+1)+INDEX({RR("N")},{mm}-{T}+1),0),0)')
-            W("N", f'IF({fOK}=1,IF({mm}-{D}>=0,(1-{p0})*IF({mm}-{D}={t0},1,0)+(1-{p})*INDEX({RR("EL")},{mm}-{D}+1),0),0)')
-            W("DN", f'IF(AND({fOK}=1,{D}>0),(1-{p0})*IF(AND({mm}>={t0},{mm}<{t0}+{D}),1,0)+(1-{p})*SUM(INDEX({RR("EL")},MAX(1,{mm}-{D}+2)):INDEX({RR("EL")},{mm}+1)),0)')
+            fOK, t0, T0, p0, s0 = P("fOK"), P("t0"), P("T0"), P("p0"), P("s0")
+            T1, D1 = P("T"), P("D")  # the space's own profile: the first generation
+            # every rollover after the first generation prices on the rolloverProfile (_r)
+            T, D, p = P("T_r"), P("D_r"), P("p_r")
+            # rollover event recurrence: the first generation ends T0 after the first renewal start
+            # or T1 after the first new-tenant start; later events come T after every later
+            # renewal start or new-tenant start
+            W("EL", (f'IF({fOK}=1,IF({mm}={t0}+{T0},{p0},0)+IF({mm}={s0}+{T1},1-{p0},0)'
+                     f'+IF({mm}-{T}>=0,{p}*INDEX({RR("EL")},{mm}-{T}+1)+INDEX({RR("N")},{mm}-{T}+1),0),0)'))
+            W("N", f'IF({fOK}=1,IF({mm}-{D}>=0,(1-{p})*INDEX({RR("EL")},{mm}-{D}+1),0),0)')
+            W("DN", f'IF(AND({fOK}=1,{D}>0),(1-{p})*SUM(INDEX({RR("EL")},MAX(1,{mm}-{D}+2)):INDEX({RR("EL")},{mm}+1)),0)')
+            W("DN0", f'IF(AND({fOK}=1,{mm}>={t0},{mm}<{s0}),1-{p0},0)')
             a = f"MAX(1,{mm}-{T}+2)"
             b = f"{mm}+1"
             win = lambda rowk, aa: f"INDEX({RR(rowk)},{aa}):INDEX({RR(rowk)},{b})"
             gmw = lambda aa: f"INDEX({GMR},{aa}):INDEX({GMR},{b})"
-            escw = lambda aa: f'(1+{P("escR")})^INT(({mm}-INDEX({MR},{aa}):INDEX({MR},{b}))/{P("freq")})'
-            W("POTG", f'IF({fOK}=1,{P("mkt0")}*SUMPRODUCT(({p}*{P("renPct")}*{win("EL", a)}+{win("N", a)})*{gmw(a)}*{escw(a)}),0)')
-            aR = f'MAX(1,{mm}-{P("Fr")}+2)'
-            aN = f'MAX(1,{mm}-{P("Fn")}+2)'
-            W("FREEG", f'IF({fOK}=1,{P("mkt0")}*(IF({P("Fr")}>0,{p}*{P("renPct")}*SUMPRODUCT({win("EL", aR)},{gmw(aR)},{escw(aR)}),0)'
-                       f'+IF({P("Fn")}>0,SUMPRODUCT({win("N", aN)},{gmw(aN)},{escw(aN)}),0)),0)')
+            escw = lambda aa: f'(1+{P("escR_r")})^INT(({mm}-INDEX({MR},{aa}):INDEX({MR},{b}))/{P("freq_r")})'
+            W("POTG", f'IF({fOK}=1,{P("mkt0_r")}*SUMPRODUCT(({p}*{P("renPct_r")}*{win("EL", a)}+{win("N", a)})*{gmw(a)}*{escw(a)}),0)')
+            aR = f'MAX(1,{mm}-{P("Fr_r")}+2)'
+            aN = f'MAX(1,{mm}-{P("Fn_r")}+2)'
+            W("FREEG", f'IF({fOK}=1,{P("mkt0_r")}*(IF({P("Fr_r")}>0,{p}*{P("renPct_r")}*SUMPRODUCT({win("EL", aR)},{gmw(aR)},{escw(aR)}),0)'
+                       f'+IF({P("Fn_r")}>0,SUMPRODUCT({win("N", aN)},{gmw(aN)},{escw(aN)}),0)),0)')
             W("OCCG", f'IF({fOK}=1,{p}*SUM({win("EL", a)})+SUM({win("N", a)}),0)')
             W("R0P", f'IF(AND({fOK}=1,{mm}>={t0},{mm}<{t0}+{T0}),{p0}*{P("rate0")}*(1+{P("esc0R")})^INT(({mm}-{t0})/{P("freq")}),0)')
+            # first new-tenant lease, on the space's own profile: market at its start, own escalation
+            W("N0P", (f'IF(AND({fOK}=1,{mm}>={s0},{mm}<{s0}+{T1}),(1-{p0})*{P("mkt0")}*INDEX({GMR},{s0}+1)'
+                      f'*(1+{P("escR")})^INT(({mm}-{s0})/{P("freq")}),0)'))
             if s < NL:
                 ssr = f'SpaceParams!${col["ss0"]}${spr}:${col[f"ss{MS-1}"]}${spr}'
                 sar = f'SpaceParams!${col["sa0"]}${spr}:${col[f"sa{MS-1}"]}${spr}'
@@ -1004,17 +1031,22 @@ def build_space_calc(B, sp_ws):
                 W("AB", "1")
                 rsf_ip = "0"
             o0 = f'IF(AND({fOK}=1,{mm}>={t0},{mm}<{t0}+{T0}),{p0},0)'
+            on0 = f'IF(AND({fOK}=1,{mm}>={s0},{mm}<{s0}+{T1}),1-{p0},0)'
             free0 = f'IF({mm}-{t0}<{P("Fr0")},{cell("R0P")},0)'
-            W("POT", f'{inH}*({cell("CR")}*{cell("IP")}+{cell("POTG")}+{cell("R0P")}+{cell("DN")}*{P("mkt0")}*{GM(c)})')
-            W("SCHED", f'{inH}*({cell("CR")}*{cell("AB")}*{cell("IP")}+{cell("POTG")}-{cell("FREEG")}+{cell("R0P")}-{free0})')
-            W("FREE", f'{inH}*({cell("CR")}*(1-{cell("AB")})*{cell("IP")}+{cell("FREEG")}+{free0})')
-            W("OCC", f'{inH}*{P("sf")}*({cell("IP")}+{cell("OCCG")}+{o0})')
-            W("RSF", f'{inH}*({rsf_ip}+{P("mktNNN")}*{P("sf")}*({cell("OCCG")}+{o0}))')
-            W("TI", (f'{inH}*({P("sf")}*({P("tiR")}*{p}*{cell("EL")}+{P("tiN")}*{cell("N")})'
+            freen0 = f'IF({mm}-{s0}<{P("Fn")},{cell("N0P")},0)'
+            W("POT", (f'{inH}*({cell("CR")}*{cell("IP")}+{cell("POTG")}+{cell("R0P")}+{cell("N0P")}'
+                      f'+({cell("DN0")}*{P("mkt0")}+{cell("DN")}*{P("mkt0_r")})*{GM(c)})'))
+            W("SCHED", f'{inH}*({cell("CR")}*{cell("AB")}*{cell("IP")}+{cell("POTG")}-{cell("FREEG")}+{cell("R0P")}-{free0}+{cell("N0P")}-{freen0})')
+            W("FREE", f'{inH}*({cell("CR")}*(1-{cell("AB")})*{cell("IP")}+{cell("FREEG")}+{free0}+{freen0})')
+            W("OCC", f'{inH}*{P("sf")}*({cell("IP")}+{cell("OCCG")}+{o0}+{on0})')
+            W("RSF", f'{inH}*({rsf_ip}+{P("sf")}*({P("mktNNN")}*({o0}+{on0})+{P("mktNNN_r")}*{cell("OCCG")}))')
+            W("TI", (f'{inH}*({P("sf")}*({P("tiR_r")}*{p}*{cell("EL")}+{P("tiN_r")}*{cell("N")})'
                      f'+IF(AND({fOK}=1,{mm}={t0}),{p0}*{P("tiR")}*{P("sf")},0)'
+                     f'+IF(AND({fOK}=1,{mm}={s0}),(1-{p0})*{P("tiN")}*{P("sf")},0)'
                      f'+IF(AND({P("tiAmt")}>0,{mm}={P("tiFm")}),{P("tiAmt")},0))'))
-            W("LC", (f'{inH}*({P("mkt0")}*{GM(c)}*{P("A")}*({P("lcR")}*{p}*{P("renPct")}*{cell("EL")}+{P("lcN")}*{cell("N")})'
+            W("LC", (f'{inH}*({P("mkt0_r")}*{GM(c)}*{P("A_r")}*({P("lcR_r")}*{p}*{P("renPct_r")}*{cell("EL")}+{P("lcN_r")}*{cell("N")})'
                      f'+IF(AND({fOK}=1,{mm}={t0}),{p0}*{P("lcR")}*{P("rate0")}*{P("A0")},0)'
+                     f'+IF(AND({fOK}=1,{mm}={s0}),(1-{p0})*{P("lcN")}*{P("mkt0")}*{GM(c)}*{P("A")},0)'
                      f'+IF(AND({P("lcAmt")}>0,{mm}={P("lcFm")}),{P("lcAmt")},0))'))
             W("CVM", f'{inH}*{cell("IP")}*{P("hasProf")}*({cell("CR")}-{P("mkt0")}*{GM(c)})')
     B.n["SC_last"] = row0 + NS * BH - 1
@@ -1777,7 +1809,8 @@ def build_assumptions(B):
               ("Downtime (months)", "down", "0"), ("Renewal probability %", "renProb", "0"),
               ("Renewal rent % of market", "renPct", "0"),
               ("New tenant: TI $/SF", "nTI", "0.00"), ("New tenant: LC %", "nLC", "0.00"), ("New tenant: free months", "nFree", "0"),
-              ("Renewal: TI $/SF", "rTI", "0.00"), ("Renewal: LC %", "rLC", "0.00"), ("Renewal: free months", "rFree", "0")]
+              ("Renewal: TI $/SF", "rTI", "0.00"), ("Renewal: LC %", "rLC", "0.00"), ("Renewal: free months", "rFree", "0"),
+              ("Later rollovers use", "roll", None)]
     put(ws, f"B{r}", "Profile", F_BOLD)
     pr0 = int(B["profKeys"].split("$")[2].split(":")[0])
     for k in range(NP):

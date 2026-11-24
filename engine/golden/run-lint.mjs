@@ -20,6 +20,7 @@ import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { lint, COMPUTED_ENUMS } from "../dist/index.js";
+import { withExtensions } from "./extensions.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..", "..");
@@ -77,6 +78,18 @@ for (const f of readdirSync(examplesDir).filter((f) => f.endsWith(".ore")).sort(
     failures++;
     console.error(`FAIL  example ${f}`);
     for (const p of errors) console.error(`      ${p.code}: ${p.path ?? ""} ${p.message}`);
+  }
+  // extension policy: x- keys are accepted on every object and lint the same
+  const ext = withExtensions(deal);
+  const extSchemaOk = validateSchema(ext) === true;
+  const extLintSame = JSON.stringify(project(lint(ext))) === JSON.stringify(project(lint(deal)));
+  if (extSchemaOk && extLintSame) {
+    console.log(`PASS  example ${f} with x- extension keys on every object`);
+  } else {
+    failures++;
+    console.error(`FAIL  example ${f} with x- extension keys`);
+    if (!extSchemaOk) console.error(`      schema rejects it: ${JSON.stringify(validateSchema.errors?.slice(0, 3))}`);
+    if (!extLintSame) console.error("      lint results differ from the file without extensions");
   }
 }
 

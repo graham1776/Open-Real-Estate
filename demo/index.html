@@ -112,7 +112,11 @@
   <input type="file" id="file" accept=".ore,.json" multiple hidden>
   <div id="examples">
     <div><strong>No file yet?</strong> Open a sample deal and see how it works.</div>
-    <div class="row"><button class="btn primary" data-x="multi-tenant-infill">Try an example deal</button> <button class="btn" id="newdeal" style="padding:9px 18px;font-size:14px">Start a new deal</button></div>
+    <div class="row"><button class="btn primary" data-x="multi-tenant-infill">Try an example deal</button> <button class="btn" id="newdeal" style="padding:9px 18px;font-size:14px">Start a new deal</button> <button class="btn" id="pastebtn" style="padding:9px 18px;font-size:14px">Paste JSON</button></div>
+    <div id="pastebox" hidden>
+      <textarea id="pastetext" rows="8" spellcheck="false" placeholder="Paste the contents of a .ore file (it is JSON), for example the output of an AI assistant." style="width:100%;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;margin-top:8px"></textarea>
+      <div class="row"><button class="btn primary" id="pasteopen">Open</button> <button class="btn" id="pastecancel">Cancel</button></div>
+    </div>
     <div class="row" id="example-chips"></div>
     <div id="examples-msg" class="muted"></div>
   </div>
@@ -650,14 +654,17 @@ function runOp(entry, op, a) {
         renewal: { tiPerSF: 0, lcPercentOfRent: 0, freeRentMonths: 0 },
       };
       delete profs[a.name].notes;
+      delete profs[a.name].rolloverProfile;
     } else if (op === "renameProfile") {
       // keep key order (the first profile is the fallback) and repoint every space
       const ma = d.marketAssumptions;
       ma.leasingProfiles = Object.fromEntries(Object.entries(ma.leasingProfiles).map(([k, v]) => [k === a.k ? a.name : k, v]));
       for (const sp of [...rr.leases, ...(rr.vacantSuites ?? [])]) if (sp.spaceType === a.k) sp.spaceType = a.name;
+      for (const p of Object.values(ma.leasingProfiles)) if (p.rolloverProfile === a.k) p.rolloverProfile = a.name;
     } else if (op === "rmProfile") {
       delete d.marketAssumptions.leasingProfiles[a.k];
       for (const sp of [...rr.leases, ...(rr.vacantSuites ?? [])]) if (sp.spaceType === a.k) delete sp.spaceType;
+      for (const p of Object.values(d.marketAssumptions.leasingProfiles)) if (p.rolloverProfile === a.k) delete p.rolloverProfile;
     } else if (op === "growthFlat") {
       // a stepped curve becomes a single rate (its first step)
       const g = d.marketAssumptions.growth[a.k];
@@ -757,7 +764,8 @@ function spaceTypeEd(deal, path, spaceType) {
   const terms = [rent, p.downtimeMonths != null ? `${fmtNum(p.downtimeMonths, 1)} mo downtime` : "", p.renewalProbabilityPercent != null ? `${fmtNum(p.renewalProbabilityPercent, 1)}% renewal` : ""].filter(Boolean).join(", ");
   const why = spaceType == null ? " (none chosen, so the first profile applies)"
     : !known ? ` ("${esc(spaceType)}" is not a profile in this file, so the first applies; the validator rejects this)` : "";
-  return `${edSel(path, spaceType, keys, { raw: true, blank: `— (uses ${keys[0]})` })} <span class="muted">uses <b>${esc(key)}</b>${why}: ${terms}</span>`;
+  const roll = p.rolloverProfile && Object.hasOwn(profs, p.rolloverProfile) ? `; later rollovers use <b>${esc(p.rolloverProfile)}</b>` : "";
+  return `${edSel(path, spaceType, keys, { raw: true, blank: `— (uses ${keys[0]})` })} <span class="muted">uses <b>${esc(key)}</b>${why}: ${terms}${roll}</span>`;
 }
 
 function renderRentRoll(deal, entry) {
@@ -824,13 +832,15 @@ function renderExpenses(deal) {
     ${deal.expenses.notes ? `<p class="muted">${esc(deal.expenses.notes)}</p>` : ""}`;
 }
 
-// The leases and vacant suites a profile prices, by the engine's matching rule.
+// The leases and vacant suites a profile prices, by the engine's matching rule,
+// and the profiles that roll into it (rolloverProfile).
 function spacesUsing(deal, key) {
-  const keys = Object.keys(deal.marketAssumptions?.leasingProfiles ?? {});
+  const profs = deal.marketAssumptions?.leasingProfiles ?? {}, keys = Object.keys(profs);
   const uses = (t) => (t != null && keys.includes(t) ? t : keys[0]) === key;
   return [
     ...deal.rentRoll.leases.filter((l) => uses(l.spaceType)).map((l) => l.tenant?.name || l.leaseId),
     ...(deal.rentRoll.vacantSuites ?? []).filter((v) => uses(v.spaceType)).map((v) => `vacant ${v.suite || fmtNum(v.sf, 0) + " SF"}`),
+    ...keys.filter((k) => k !== key && profs[k]?.rolloverProfile === key).map((k) => `later rollovers of ${k}`),
   ];
 }
 
@@ -855,6 +865,7 @@ function renderMarket(deal) {
       <tr><td>New tenant TI / LC / free</td><td>${edNum([...P, "newTenant", "tiPerSF"], p.newTenant?.tiPerSF, { w: 6, pre: "$", post: "/SF" })} · ${edNum([...P, "newTenant", "lcPercentOfRent"], p.newTenant?.lcPercentOfRent, { w: 5, post: "%" })} · ${edNum([...P, "newTenant", "freeRentMonths"], p.newTenant?.freeRentMonths, { w: 4, post: " mo" })}</td></tr>
       <tr><td>Renewal TI / LC / free</td><td>${edNum([...P, "renewal", "tiPerSF"], p.renewal?.tiPerSF, { w: 6, pre: "$", post: "/SF" })} · ${edNum([...P, "renewal", "lcPercentOfRent"], p.renewal?.lcPercentOfRent, { w: 5, post: "%" })} · ${edNum([...P, "renewal", "freeRentMonths"], p.renewal?.freeRentMonths, { w: 4, post: " mo" })}</td></tr>
       <tr><td>Structure / escalation</td><td>${edSel([...P, "reimbursementStructure"], p.reimbursementStructure, ENUMS.structure)} / ${edSel([...P, "escalation", "type"], p.escalation?.type, ENUMS.escalation)}${p.escalation?.type === "fixed_percent" ? ` ${edNum([...P, "escalation", "rate"], p.escalation.rate, { w: 5, post: "%" })}` : ""}</td></tr>
+      <tr><td>Later rollovers</td><td>${edSel([...P, "rolloverProfile"], p.rolloverProfile, Object.keys(ma.leasingProfiles).filter((o) => o !== k), { raw: true, blank: "— (this profile)" })} <span class="muted">${p.rolloverProfile ? `this profile prices the first lease of each space; every rollover after that uses ${esc(p.rolloverProfile)}` : "this profile prices every lease of each space"}</span></td></tr>
       ${p.notes ? `<tr><td>Notes</td><td class="muted">${esc(p.notes)}</td></tr>` : ""}
     </tbody></table>`;
   }).join("");
@@ -1218,7 +1229,7 @@ function renderPortfolio() {
   }
   let p;
   try {
-    p = computePortfolio(valid.map((f) => ({ label: f.name.replace(/\.ore$/, ""), deal: f.deal })));
+    p = computePortfolio(valid.map((f) => ({ label: f.name.replace(/\.ore(\.json)?$/, ""), deal: f.deal })));
   } catch (e) {
     $("portfolio").innerHTML = `<div class="errbox">Portfolio computation failed: <span class="code">${esc(e.message)}</span></div>`;
     return;
@@ -1290,6 +1301,18 @@ async function pickFiles() {
 
 $("drop").onclick = () => pickFiles();
 $("newdeal").onclick = (e) => { e.stopPropagation(); newDeal(); };
+// Paste: for JSON that exists only as text, e.g. an AI assistant's answer. Opens
+// like a new deal (in memory; Save As writes it). Malformed JSON opens in the editor.
+$("pastebtn").onclick = (e) => { e.stopPropagation(); $("pastebox").hidden = false; $("pastetext").focus(); };
+$("pastecancel").onclick = (e) => { e.stopPropagation(); $("pastebox").hidden = true; };
+$("pasteopen").onclick = (e) => {
+  e.stopPropagation();
+  const text = $("pastetext").value.trim();
+  if (!text) return;
+  addEntry(makeEntry("pasted.ore", text, { kind: "memory" }));
+  $("pastetext").value = "";
+  $("pastebox").hidden = true;
+};
 wireEditing();
 $("file").onchange = async (e) => { for (const f of e.target.files) await loadFile(f); e.target.value = ""; };
 
@@ -1321,6 +1344,7 @@ const EXAMPLE_LABELS = {
   "covered-land-play": "Covered land play",
   "estate-mark-to-market": "Seven-building estate",
   "small-multifamily": "12-unit apartment building",
+  "vacant-lease-up": "Vacant bulk lease-up",
 };
 const EXAMPLES = Object.keys(EXAMPLE_LABELS);
 const EXAMPLE_REMOTE = "https://raw.githubusercontent.com/graham1776/Open-Real-Estate/main/examples/";
@@ -1353,10 +1377,29 @@ $("examples").onclick = (e) => {
   if (b) loadExamples(b.dataset.x === "__all" ? EXAMPLES : [b.dataset.x]);
 };
 
-// deep links: ?example=<name> or ?example=all
-const wanted = new URLSearchParams(location.search).get("example");
+// Open a .ore file from a URL (?url=). The server must allow cross-origin reads:
+// raw.githubusercontent.com and gist raw links do. Held in memory, not polled.
+async function openUrl(u) {
+  $("examples-msg").textContent = "Loading…";
+  try {
+    const url = new URL(u, location.href);
+    if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error("only http and https links can be opened");
+    const r = await fetch(url, { cache: "no-store" });
+    if (!r.ok) throw new Error(`the server answered ${r.status}`);
+    const name = decodeURIComponent(url.pathname.split("/").pop() || "") || "deal.ore";
+    addEntry(makeEntry(name, await r.text(), { kind: "memory" }));
+    $("examples-msg").textContent = "";
+  } catch (e) {
+    $("examples-msg").textContent = `Couldn't open ${u}: ${e.message}. The file's server must allow cross-origin requests (raw GitHub and gist links do); otherwise download it and drop it here.`;
+  }
+}
+
+// deep links: ?example=<name>, ?example=all, or ?url=<link to a .ore file>
+const params = new URLSearchParams(location.search);
+const wanted = params.get("example");
 if (wanted === "all") loadExamples(EXAMPLES);
 else if (EXAMPLES.includes(wanted)) loadExamples([wanted]);
+else if (params.get("url")) openUrl(params.get("url"));
 </script>
 </body>
 </html>

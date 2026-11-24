@@ -1,0 +1,83 @@
+{
+  "formatVersion": "0.1.0",
+  "property": {
+    "name": "Lint fixture: unknown field",
+    "propertyType": "industrial",
+    "address": {
+      "street1": "1 Fixture St",
+      "city": "Santa Fe Springs",
+      "state": "CA",
+      "postalCode": "90670"
+    },
+    "physical": {
+      "buildingSF": 10000
+    }
+  },
+  "rentRoll": {
+    "asOfDate": "2026-01-01",
+    "leases": [
+      {
+        "leaseId": "L-2",
+        "tenant": {
+          "name": "Untyped Tenant"
+        },
+        "leasedSF": 4000,
+        "commencementDate": "2026-01-01",
+        "expirationDate": "2031-01-01",
+        "baseRent": {
+          "unit": "per_sf_per_year",
+          "schedule": [
+            {
+              "startDate": "2026-01-01",
+              "amount": 12
+            }
+          ]
+        },
+        "reimbursement": {
+          "structure": "nnn"
+        },
+        "rentPSF": 12,
+        "x-acme-leaseCode": "A-17"
+      }
+    ]
+  },
+  "expenses": {
+    "items": [
+      {
+        "expenseId": "E-TAX",
+        "name": "Real Estate Taxes",
+        "amount": 10000,
+        "amountUnit": "total_per_year",
+        "recoverable": true
+      }
+    ]
+  },
+  "marketAssumptions": {
+    "growth": {
+      "marketRent": 3,
+      "expenses": 3
+    },
+    "leasingProfiles": {
+      "small_bay": {
+        "marketRent": {
+          "amount": 12,
+          "unit": "per_sf_per_year"
+        },
+        "termMonths": 60,
+        "downtimeMonths": 3,
+        "renewalProbabilityPercent": 75
+      }
+    }
+  },
+  "valuation": {
+    "analysisStartDate": "2026-01-01",
+    "methods": [
+      "direct_cap"
+    ],
+    "directCap": {
+      "capRatePercent": 6,
+      "noiBasis": "year1"
+    }
+  },
+  "x-acme-dealCode": "D-2026-041"
+}
