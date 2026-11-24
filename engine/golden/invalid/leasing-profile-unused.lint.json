@@ -1,0 +1,10 @@
+{
+  "schemaValid": true,
+  "issues": [
+    {
+      "code": "leasing_profile_unused",
+      "severity": "warning",
+      "path": "/marketAssumptions/leasingProfiles/spare"
+    }
+  ]
+}

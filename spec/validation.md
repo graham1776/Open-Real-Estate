@@ -15,10 +15,11 @@ A result has:
 
 Results follow the file: structural checks, then each lease (required fields,
 duplicate `leaseId`, `spaceType`, `excludedExpenses`, options, rent steps), then vacant
-suites, then duplicate `expenseId`s, then `excludeExpenseIds`, then
+suites, then duplicate `expenseId`s, then each leasing profile's
+`rolloverProfile` (in profile order), then `excludeExpenseIds`, then
 `taxReassessment.expenseId`, then unrecognised enum values (in the order of
-the [enum table](#enum-values), and within a row in file order), then
-warning-level advice. Option fields on a
+the [enum table](#enum-values), and within a row in file order), then unused
+leasing profiles (in profile order), then warning-level advice. Option fields on a
 non-renewal are reported in the order `renewalTermMonths`, `renewalCount`,
 `rentBasis`, `fixedRent`, `percentOfMarket`, then `terminationFee` when that
 field is present on a non-termination.
@@ -48,6 +49,9 @@ error either: it defaults to the `real_estate_taxes` item.
 | `expense_id_duplicate` | error | `expenseId` repeats an earlier expense item. The pointer is the later occurrence. |
 | `option_field_mismatch` | error | A renewal-only field (`renewalTermMonths`, `renewalCount`, `rentBasis`, `fixedRent`, `percentOfMarket`) is set on an option whose `type` is not `renewal`, or `terminationFee` is set on an option whose `type` is not `termination`. |
 | `option_rent_incomplete` | error | A renewal option has `rentBasis` `fixed` without `fixedRent`, or `percent_of_market` without `percentOfMarket`. The pointer is the missing field. Not reported when `rentBasis` itself is illegal for the option type. |
+| `rollover_profile_unknown` | error | A leasing profile's `rolloverProfile` is not a key of `marketAssumptions.leasingProfiles`. |
+| `rollover_profile_chain` | error | A leasing profile's `rolloverProfile` names a profile that sets `rolloverProfile` itself (including a profile naming itself). The rollover profile applies to every later rollover, so it is one step: no chains, and therefore no cycles. |
+| `leasing_profile_unused` | warning | A leasing profile prices no space: no lease or vacant suite has its key as `spaceType` (or, for the first profile, omits `spaceType`), and no profile in use names it as `rolloverProfile`. It changes no number, which usually means a missing `spaceType` or `rolloverProfile`. Not reported when the file has one profile. |
 | `rent_steps_unordered` | error | A `baseRent.schedule[]` step's `startDate` is not after the latest earlier step's `startDate` (steps must be in strictly ascending order; a repeated date is ambiguous). The pointer is each offending step's `startDate`. The ordering itself is stated in the rent-roll schema and data dictionary; JSON Schema cannot compare array items. |
 
 ## Enum values

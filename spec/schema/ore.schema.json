@@ -6,6 +6,7 @@
   "type": "object",
   "required": ["formatVersion", "property", "rentRoll"],
   "additionalProperties": false,
+  "patternProperties": { "^x-": true },
   "properties": {
     "$schema": {
       "type": "string",

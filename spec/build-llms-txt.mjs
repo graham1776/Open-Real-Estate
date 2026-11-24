@@ -43,6 +43,15 @@ JSON-based format for commercial real estate underwriting data, for any property
    (\`3.5\` = 3.5%) except ratios documented as decimals. Areas are square feet; land is acres.
 5. The file carries INPUTS ONLY. Outputs (NOI, DCF, IRR) are never stored in the
    file; they are produced by a conforming engine from the inputs.
+6. A field the schema does not define is an ERROR: never invent a field name.
+   If you need to keep something the format has no field for, put it in a key
+   starting with \`x-\` (e.g. \`"x-acme-dealCode": "D-41"\`) on the object it
+   describes. Every reader ignores \`x-\` keys, so they never change a number; if
+   the value should change the math, say so in \`notes\` instead.
+7. Lease-up and later rollovers can use different leasing profiles. A space's
+   profile prices the first lease generated for it; set \`rolloverProfile\` on that
+   profile to name the profile for every expiry after that (e.g. a 24-month
+   \`lease_up\` profile rolling into a 9-month \`general\` one).
 
 ## Calculation
 

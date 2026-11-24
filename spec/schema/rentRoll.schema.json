@@ -6,6 +6,7 @@
   "type": "object",
   "required": ["asOfDate", "leases"],
   "additionalProperties": false,
+  "patternProperties": { "^x-": true },
   "properties": {
     "asOfDate": {
       "type": "string",
@@ -24,6 +25,7 @@
         "type": "object",
         "required": ["sf"],
         "additionalProperties": false,
+        "patternProperties": { "^x-": true },
         "properties": {
           "suite": { "type": "string", "description": "Suite or unit identifier." },
           "sf": { "type": "number", "exclusiveMinimum": 0, "description": "Vacant area in square feet." },
@@ -42,6 +44,7 @@
       "type": "object",
       "required": ["leaseId", "tenant", "leasedSF", "commencementDate", "expirationDate", "baseRent", "reimbursement"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "properties": {
         "leaseId": {
           "type": "string",
@@ -82,6 +85,7 @@
             "type": "object",
             "required": ["startDate", "endDate"],
             "additionalProperties": false,
+            "patternProperties": { "^x-": true },
             "properties": {
               "startDate": { "type": "string", "format": "date" },
               "endDate": { "type": "string", "format": "date", "description": "Inclusive last day of the abatement period." },
@@ -103,6 +107,7 @@
         "tenantImprovements": {
           "type": "object",
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "description": "Unfunded landlord TI obligations remaining as of asOfDate. Provide exactly one of amountPerSF or totalAmount.",
           "oneOf": [
             { "required": ["amountPerSF"] },
@@ -117,6 +122,7 @@
         "leasingCommissions": {
           "type": "object",
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "description": "Unpaid leasing commissions remaining as of asOfDate. Provide exactly one of amountPerSF, totalAmount, or percentOfTotalRent.",
           "oneOf": [
             { "required": ["amountPerSF"] },
@@ -138,6 +144,7 @@
         "securityDeposit": {
           "type": "object",
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "required": ["amount"],
           "properties": {
             "amount": { "type": "number", "minimum": 0, "description": "USD held as of asOfDate." },
@@ -158,6 +165,7 @@
       "type": "object",
       "required": ["name"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "properties": {
         "name": { "type": "string", "minLength": 1, "description": "Legal name of the tenant entity on the lease." },
         "dba": { "type": "string", "description": "Trade name, if different from the legal name." },
@@ -170,6 +178,7 @@
       "type": "object",
       "required": ["schedule", "unit"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Contractual base rent as a stepped schedule. Each step applies from its startDate until the next step's startDate, or until expirationDate for the last step. Steps must be in ascending startDate order. Historical steps before asOfDate may be omitted.",
       "properties": {
         "unit": {
@@ -184,6 +193,7 @@
             "type": "object",
             "required": ["startDate", "amount"],
             "additionalProperties": false,
+            "patternProperties": { "^x-": true },
             "properties": {
               "startDate": { "type": "string", "format": "date", "description": "First day this rent amount applies." },
               "amount": { "type": "number", "minimum": 0, "description": "Rent in the unit declared by baseRent.unit." }
@@ -196,6 +206,7 @@
       "type": "object",
       "required": ["type"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Rule for generating rent steps not explicitly enumerated in baseRent.schedule. If the schedule already enumerates every step through expiration, set type to \"none\" or omit this object. When present with a non-none type, engines apply the rule starting one frequency-interval after the last enumerated step's startDate, through expiration. Enumerated steps are always authoritative over generated ones.",
       "properties": {
         "type": {
@@ -224,6 +235,7 @@
       "type": "object",
       "required": ["structure"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "How operating expenses are recovered from the tenant. Expense-level recoverability flags live in the expenses module; this object describes the lease's side of the bargain.",
       "properties": {
         "structure": {
@@ -267,6 +279,7 @@
           "type": "object",
           "required": ["capPercent"],
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "description": "Annual cap on the growth of the controllable recoverable expenses billed to the tenant (NNN/NN leases). Non-controllable expenses (taxes, insurance, …) are uncapped. The cap is measured off a base-year controllable level.",
           "properties": {
             "capPercent": {
@@ -294,6 +307,7 @@
       "type": "object",
       "required": ["type"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Tenant option. Renewal-only fields (renewalTermMonths, renewalCount, rentBasis, fixedRent, percentOfMarket) are rejected on any other type, and terminationFee is rejected except on termination. fixedRent is required when rentBasis is fixed; percentOfMarket is required when rentBasis is percent_of_market.",
       "properties": {
         "type": {

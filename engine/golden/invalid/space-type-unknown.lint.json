@@ -10,6 +10,11 @@
       "code": "space_type_unknown",
       "severity": "error",
       "path": "/rentRoll/vacantSuites/0/spaceType"
+    },
+    {
+      "code": "leasing_profile_unused",
+      "severity": "warning",
+      "path": "/marketAssumptions/leasingProfiles/bulk"
     }
   ]
 }

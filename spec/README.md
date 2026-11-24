@@ -49,6 +49,36 @@ document, never separate files.
 - Calculation assumptions travel with the data so any conforming engine reproduces
   identical outputs from the same file.
 
+## Unknown fields and extensions
+
+**A field the schema does not define is an error.** Every object in the schema
+is closed (`additionalProperties: false`), so a misspelled or invented field
+fails validation instead of being silently ignored. A reader can trust that
+every field in a valid file means what the data dictionary says.
+
+**Extensions go in `x-` keys.** Any object except a keyed map may carry extra
+keys whose names start with `x-`, with any JSON value. Use them for data the
+format has no field for yet: an internal deal code, a CRM id, a note a producer
+wants to keep next to the value it describes.
+
+```json
+"leases": [{ "leaseId": "L-100", "x-acme-crmId": "T-4471", "...": "..." }]
+```
+
+The rules:
+
+- **Readers ignore them.** Validators accept them; engines never read them. An
+  `x-` key cannot change any computed number, and the conformance tests check
+  this by adding one to every object in every example.
+- **Name them after the producer**, `x-<producer>-<name>`, so two producers'
+  extensions do not collide.
+- **Keep them on save.** A tool that edits a file should write back the `x-`
+  keys it read, unchanged.
+- **Not in keyed maps.** The keys of `marketAssumptions.leasingProfiles` are
+  profile names, so an `x-` key there is rejected; put it inside a profile.
+- **Not a way to change the math.** If an extension would need to change how a
+  number is computed, it is a format proposal: open an issue.
+
 ## Documents
 
 - [`data-dictionary.md`](data-dictionary.md) — every field defined, typed, and documented

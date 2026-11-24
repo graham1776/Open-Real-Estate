@@ -9,7 +9,8 @@ free rent, signed-not-yet-commenced leases, fixed-amount and CPI escalations,
 CPI and MG market profiles, percent-of-rent commissions,
 annual and mid-period discounting, every terminal-value method, trailing and
 in-place NOI bases, custom NOI, direct-cap exclusions and lump-sum adjustments,
-derived-rate tax reassessment, LTV debt with amortization, and growth curves.
+derived-rate tax reassessment, LTV debt with amortization, growth curves, and
+rollover profiles (first-generation terms that differ from later rollovers).
 
 They are test inputs, not examples: values are arbitrary and unrealistic in
 places on purpose, but every fixture must pass `ore validate`: there is no
@@ -142,5 +143,39 @@ lease["leasingCommissions"] = {"amountPerSF": 1.25}
 d["rentRoll"]["leases"][0]["leasedSF"] = 50000
 d["rentRoll"]["vacantSuites"] = [{"suite": "B", "sf": 12000}]
 save("stress-value-add", d)
+
+
+# 5. Rollover profiles: a vacant suite leases up on lease_up terms, then rolls on
+#    small_bay; two in-place leases roll first on "expiring" terms (gross, a
+#    two-year escalation step, one with a percent-of-market renewal option),
+#    then on small_bay (NNN). L-100 has no spaceType and stays on the first profile.
+d = load("multi-tenant-infill")
+general = d["marketAssumptions"]["leasingProfiles"]["small_bay"]
+d["marketAssumptions"]["leasingProfiles"] = {
+    "small_bay": general,
+    "lease_up": {
+        "marketRent": {"amount": 1.4, "unit": "per_sf_per_month"}, "termMonths": 60,
+        "escalation": {"type": "fixed_percent", "rate": 3.0, "frequencyMonths": 12},
+        "reimbursementStructure": "nnn", "downtimeMonths": 18, "renewalProbabilityPercent": 0,
+        "newTenant": {"tiPerSF": 12, "lcPercentOfRent": 7, "freeRentMonths": 4},
+        "rolloverProfile": "small_bay",
+    },
+    "expiring": {
+        "marketRent": {"amount": 1.55, "unit": "per_sf_per_month"}, "termMonths": 36,
+        "escalation": {"type": "fixed_percent", "rate": 2.5, "frequencyMonths": 24},
+        "reimbursementStructure": "gross", "downtimeMonths": 8, "renewalProbabilityPercent": 80,
+        "newTenant": {"tiPerSF": 6, "lcPercentOfRent": 5, "freeRentMonths": 2},
+        "renewal": {"tiPerSF": 2, "lcPercentOfRent": 2, "freeRentMonths": 1},
+        "renewalRentPercentOfMarket": 92,
+        "rolloverProfile": "small_bay",
+    },
+}
+L100, L200, L300 = d["rentRoll"]["leases"]
+L200["spaceType"] = "expiring"
+L300["spaceType"] = "expiring"
+L300["options"] = [{"type": "renewal", "noticeMonths": 6, "renewalTermMonths": 30,
+                    "rentBasis": "percent_of_market", "percentOfMarket": 90}]
+d["rentRoll"]["vacantSuites"] = [{"suite": "400", "sf": 14200, "spaceType": "lease_up"}]
+save("stress-rollover-profile", d)
 
 print("wrote", sorted(f for f in os.listdir(HERE) if f.endswith(".ore")))

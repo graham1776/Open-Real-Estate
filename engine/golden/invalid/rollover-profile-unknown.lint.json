@@ -1,0 +1,10 @@
+{
+  "schemaValid": true,
+  "issues": [
+    {
+      "code": "rollover_profile_unknown",
+      "severity": "error",
+      "path": "/marketAssumptions/leasingProfiles/lease_up/rolloverProfile"
+    }
+  ]
+}

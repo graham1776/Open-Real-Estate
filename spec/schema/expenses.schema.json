@@ -6,6 +6,7 @@
   "type": "object",
   "required": ["items"],
   "additionalProperties": false,
+  "patternProperties": { "^x-": true },
   "properties": {
     "items": {
       "type": "array",
@@ -22,6 +23,7 @@
       "type": "object",
       "required": ["expenseId", "name", "amount", "amountUnit", "recoverable"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "properties": {
         "expenseId": {
           "type": "string",

@@ -169,6 +169,21 @@ function profileFor(ctx, spaceType) {
     }
     return profiles[keys[0]];
 }
+/**
+ * The profile for every rollover after the first lease a profile generates.
+ * A profile's own terms price the first lease generated for a space (lease-up
+ * of a vacant suite, or the first rollover of an in-place lease); from the
+ * expiry of that lease on, its rolloverProfile applies. One step only: the
+ * named profile may not itself name a rolloverProfile (lint
+ * rollover_profile_chain), and an unknown key is a lint error, so the
+ * fallbacks here serve invalid files only.
+ */
+function rolloverProfileOf(ctx, profile) {
+    const key = profile.rolloverProfile;
+    if (!key)
+        return profile;
+    return ctx.deal.marketAssumptions?.leasingProfiles?.[key] ?? profile;
+}
 function marketRate(profile, sf, m, ctx) {
     const base = monthlyTotal(profile.marketRent.amount, profile.marketRent.unit, sf);
     return base * growthFactor(ctx.deal.marketAssumptions?.growth.marketRent, m);
@@ -207,14 +222,18 @@ function blendedMarketMonthlyRent(ctx, m) {
  * Both branches recurse into the next rollover with full two-branch blending.
  */
 function rolloverStreams(t, sf, profile, ctx, memo) {
-    const cached = memo.get(t);
+    let byMonth = memo.get(profile);
+    if (!byMonth)
+        memo.set(profile, (byMonth = new Map()));
+    const cached = byMonth.get(t);
     if (cached)
         return cached;
     const h = ctx.horizon;
     const out = emptyStreams(h);
-    memo.set(t, out); // set before recursing (cycles impossible: t strictly increases)
+    byMonth.set(t, out); // set before recursing (cycles impossible: t strictly increases)
     if (t >= h)
         return out;
+    const next = rolloverProfileOf(ctx, profile);
     const p = (profile.renewalProbabilityPercent ?? 0) / 100;
     const T = profile.termMonths;
     const D = profile.downtimeMonths ?? 0;
@@ -230,7 +249,7 @@ function rolloverStreams(t, sf, profile, ctx, memo) {
         leaseSegment(br, t, T, rate0, Fr, nnn, sf, profile.escalation, ctx);
         br.ti[t] += (profile.renewal?.tiPerSF ?? 0) * sf;
         br.lc[t] += ((profile.renewal?.lcPercentOfRent ?? 0) / 100) * termRentTotal(rate0, profile.escalation, T, ctx);
-        addInto(br, rolloverStreams(t + T, sf, profile, ctx, memo), 1, h);
+        addInto(br, rolloverStreams(t + T, sf, next, ctx, memo), 1, h);
         addInto(out, br, p, h);
     }
     // new-tenant branch (weight 1-p)
@@ -247,7 +266,7 @@ function rolloverStreams(t, sf, profile, ctx, memo) {
                 bn.ti[s] += (profile.newTenant?.tiPerSF ?? 0) * sf;
                 bn.lc[s] += ((profile.newTenant?.lcPercentOfRent ?? 0) / 100) * termRentTotal(rate0, profile.escalation, T, ctx);
             }
-            addInto(bn, rolloverStreams(s + T, sf, profile, ctx, memo), 1, h);
+            addInto(bn, rolloverStreams(s + T, sf, next, ctx, memo), 1, h);
         }
         addInto(out, bn, 1 - p, h);
     }
@@ -297,6 +316,7 @@ function rolloverWithRenewalOption(t, sf, profile, ctx, memo, ov) {
     const out = emptyStreams(h);
     if (t >= h)
         return out;
+    const next = rolloverProfileOf(ctx, profile);
     const p = (profile.renewalProbabilityPercent ?? 0) / 100;
     const T = profile.termMonths;
     const D = profile.downtimeMonths ?? 0;
@@ -309,7 +329,7 @@ function rolloverWithRenewalOption(t, sf, profile, ctx, memo, ov) {
         leaseSegment(br, t, ov.termMonths, ov.rate0, Fr, nnn, sf, esc, ctx);
         br.ti[t] += (profile.renewal?.tiPerSF ?? 0) * sf;
         br.lc[t] += ((profile.renewal?.lcPercentOfRent ?? 0) / 100) * termRentTotal(ov.rate0, esc, ov.termMonths, ctx);
-        addInto(br, rolloverStreams(t + ov.termMonths, sf, profile, ctx, memo), 1, h);
+        addInto(br, rolloverStreams(t + ov.termMonths, sf, next, ctx, memo), 1, h);
         addInto(out, br, p, h);
     }
     // new-tenant branch (weight 1-p): tenant declines — market re-let (unchanged)
@@ -325,7 +345,7 @@ function rolloverWithRenewalOption(t, sf, profile, ctx, memo, ov) {
             bn.ti[s] += (profile.newTenant?.tiPerSF ?? 0) * sf;
             bn.lc[s] += ((profile.newTenant?.lcPercentOfRent ?? 0) / 100) * termRentTotal(rate0, profile.escalation, T, ctx);
         }
-        addInto(bn, rolloverStreams(s + T, sf, profile, ctx, memo), 1, h);
+        addInto(bn, rolloverStreams(s + T, sf, next, ctx, memo), 1, h);
         addInto(out, bn, 1 - p, h);
     }
     if (ov.belowMarket && p < 1) {
@@ -642,7 +662,7 @@ export function buildModel(deal, horizon, warnings) {
             bn.ti[s] += (profile.newTenant?.tiPerSF ?? 0) * suite.sf;
             bn.lc[s] += ((profile.newTenant?.lcPercentOfRent ?? 0) / 100) * termRentTotal(rate0, profile.escalation, profile.termMonths, ctx);
         }
-        addInto(bn, rolloverStreams(s + profile.termMonths, suite.sf, profile, ctx, memo), 1, horizon);
+        addInto(bn, rolloverStreams(s + profile.termMonths, suite.sf, rolloverProfileOf(ctx, profile), ctx, memo), 1, horizon);
         addInto(total, bn, 1, horizon);
     }
     // --- monthly economics
@@ -1542,6 +1562,7 @@ export function lint(deal) {
             }
         });
     }
+    problems.push(...rolloverProfileIssues(profiles));
     const excludeExpenseIds = d.valuation?.directCap?.excludeExpenseIds;
     if (Array.isArray(excludeExpenseIds)) {
         excludeExpenseIds.forEach((id, i) => {
@@ -1555,6 +1576,7 @@ export function lint(deal) {
         problems.push(lintIssue("error", "expense_ref_unknown", `taxReassessment.expenseId "${taxExpenseId}" does not match an expenses.items expenseId.`, "/valuation/taxReassessment/expenseId"));
     }
     problems.push(...enumIssues(d));
+    problems.push(...unusedProfileIssues(d, profiles));
     if (!d.marketAssumptions)
         problems.push(lintIssue("warning", "advice", "No marketAssumptions: rollover, lease-up, and stabilized values cannot be modeled.", "/marketAssumptions"));
     if (!d.valuation)
@@ -1625,6 +1647,62 @@ function enumIssues(d) {
 }
 // With no leasing profiles a spaceType prices nothing (the engine already warns
 // no_market_profile / vacant_no_profile), so it is descriptive: warning, not error.
+// A profile's rolloverProfile must name another profile that does not itself
+// name one: the step from first-generation to general rollover terms is one
+// step, so a reader never has to follow a chain (and a cycle cannot exist).
+function rolloverProfileIssues(profiles) {
+    const out = [];
+    if (profiles == null)
+        return out;
+    for (const [key, prof] of Object.entries(profiles)) {
+        const target = prof?.rolloverProfile;
+        if (typeof target !== "string")
+            continue;
+        const path = jsonPointer(["marketAssumptions", "leasingProfiles", key, "rolloverProfile"]);
+        if (!Object.hasOwn(profiles, target)) {
+            out.push(lintIssue("error", "rollover_profile_unknown", `rolloverProfile "${target}" is not a key of marketAssumptions.leasingProfiles. Profiles in this file: ${Object.keys(profiles).join(", ")}.`, path));
+            continue;
+        }
+        const onward = profiles[target]?.rolloverProfile;
+        if (typeof onward === "string") {
+            out.push(lintIssue("error", "rollover_profile_chain", `rolloverProfile "${target}" itself names a rolloverProfile ("${onward}"). The rollover profile must be one that applies to every later rollover; remove rolloverProfile from "${target}".`, path));
+        }
+    }
+    return out;
+}
+// A leasing profile that no space prices from and no profile rolls into
+// changes no number. Usually that is a mistake: the field test that led to
+// rolloverProfile had a general rollover profile sitting unused while the
+// lease-up profile priced every expiry.
+function unusedProfileIssues(d, profiles) {
+    if (profiles == null)
+        return [];
+    const keys = Object.keys(profiles);
+    if (keys.length < 2)
+        return [];
+    const used = new Set();
+    const spaces = [
+        ...(Array.isArray(d.rentRoll?.leases) ? d.rentRoll.leases : []),
+        ...(Array.isArray(d.rentRoll?.vacantSuites) ? d.rentRoll.vacantSuites : []),
+    ];
+    for (const sp of spaces) {
+        if (sp == null || typeof sp !== "object")
+            continue;
+        const st = sp.spaceType;
+        if (typeof st === "string") {
+            if (Object.hasOwn(profiles, st))
+                used.add(st);
+        }
+        else
+            used.add(keys[0]); // no spaceType: the first profile
+    }
+    for (const k of [...used]) {
+        const target = profiles[k]?.rolloverProfile;
+        if (typeof target === "string")
+            used.add(target);
+    }
+    return keys.filter((k) => !used.has(k)).map((k) => lintIssue("warning", "leasing_profile_unused", `Leasing profile "${k}" is not used: no lease or vacant suite has spaceType "${k}", and no profile in use names it as its rolloverProfile.`, jsonPointer(["marketAssumptions", "leasingProfiles", k])));
+}
 function spaceTypeIssue(spaceType, profiles, path) {
     if (profiles == null) {
         return lintIssue("warning", "space_type_without_profiles", `Space type "${spaceType}" cannot be matched: the file has no marketAssumptions.leasingProfiles, so it is descriptive only.`, path);

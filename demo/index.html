@@ -650,14 +650,17 @@ function runOp(entry, op, a) {
         renewal: { tiPerSF: 0, lcPercentOfRent: 0, freeRentMonths: 0 },
       };
       delete profs[a.name].notes;
+      delete profs[a.name].rolloverProfile;
     } else if (op === "renameProfile") {
       // keep key order (the first profile is the fallback) and repoint every space
       const ma = d.marketAssumptions;
       ma.leasingProfiles = Object.fromEntries(Object.entries(ma.leasingProfiles).map(([k, v]) => [k === a.k ? a.name : k, v]));
       for (const sp of [...rr.leases, ...(rr.vacantSuites ?? [])]) if (sp.spaceType === a.k) sp.spaceType = a.name;
+      for (const p of Object.values(ma.leasingProfiles)) if (p.rolloverProfile === a.k) p.rolloverProfile = a.name;
     } else if (op === "rmProfile") {
       delete d.marketAssumptions.leasingProfiles[a.k];
       for (const sp of [...rr.leases, ...(rr.vacantSuites ?? [])]) if (sp.spaceType === a.k) delete sp.spaceType;
+      for (const p of Object.values(d.marketAssumptions.leasingProfiles)) if (p.rolloverProfile === a.k) delete p.rolloverProfile;
     } else if (op === "growthFlat") {
       // a stepped curve becomes a single rate (its first step)
       const g = d.marketAssumptions.growth[a.k];
@@ -757,7 +760,8 @@ function spaceTypeEd(deal, path, spaceType) {
   const terms = [rent, p.downtimeMonths != null ? `${fmtNum(p.downtimeMonths, 1)} mo downtime` : "", p.renewalProbabilityPercent != null ? `${fmtNum(p.renewalProbabilityPercent, 1)}% renewal` : ""].filter(Boolean).join(", ");
   const why = spaceType == null ? " (none chosen, so the first profile applies)"
     : !known ? ` ("${esc(spaceType)}" is not a profile in this file, so the first applies; the validator rejects this)` : "";
-  return `${edSel(path, spaceType, keys, { raw: true, blank: `— (uses ${keys[0]})` })} <span class="muted">uses <b>${esc(key)}</b>${why}: ${terms}</span>`;
+  const roll = p.rolloverProfile && Object.hasOwn(profs, p.rolloverProfile) ? `; later rollovers use <b>${esc(p.rolloverProfile)}</b>` : "";
+  return `${edSel(path, spaceType, keys, { raw: true, blank: `— (uses ${keys[0]})` })} <span class="muted">uses <b>${esc(key)}</b>${why}: ${terms}${roll}</span>`;
 }
 
 function renderRentRoll(deal, entry) {
@@ -824,13 +828,15 @@ function renderExpenses(deal) {
     ${deal.expenses.notes ? `<p class="muted">${esc(deal.expenses.notes)}</p>` : ""}`;
 }
 
-// The leases and vacant suites a profile prices, by the engine's matching rule.
+// The leases and vacant suites a profile prices, by the engine's matching rule,
+// and the profiles that roll into it (rolloverProfile).
 function spacesUsing(deal, key) {
-  const keys = Object.keys(deal.marketAssumptions?.leasingProfiles ?? {});
+  const profs = deal.marketAssumptions?.leasingProfiles ?? {}, keys = Object.keys(profs);
   const uses = (t) => (t != null && keys.includes(t) ? t : keys[0]) === key;
   return [
     ...deal.rentRoll.leases.filter((l) => uses(l.spaceType)).map((l) => l.tenant?.name || l.leaseId),
     ...(deal.rentRoll.vacantSuites ?? []).filter((v) => uses(v.spaceType)).map((v) => `vacant ${v.suite || fmtNum(v.sf, 0) + " SF"}`),
+    ...keys.filter((k) => k !== key && profs[k]?.rolloverProfile === key).map((k) => `later rollovers of ${k}`),
   ];
 }
 
@@ -855,6 +861,7 @@ function renderMarket(deal) {
       <tr><td>New tenant TI / LC / free</td><td>${edNum([...P, "newTenant", "tiPerSF"], p.newTenant?.tiPerSF, { w: 6, pre: "$", post: "/SF" })} · ${edNum([...P, "newTenant", "lcPercentOfRent"], p.newTenant?.lcPercentOfRent, { w: 5, post: "%" })} · ${edNum([...P, "newTenant", "freeRentMonths"], p.newTenant?.freeRentMonths, { w: 4, post: " mo" })}</td></tr>
       <tr><td>Renewal TI / LC / free</td><td>${edNum([...P, "renewal", "tiPerSF"], p.renewal?.tiPerSF, { w: 6, pre: "$", post: "/SF" })} · ${edNum([...P, "renewal", "lcPercentOfRent"], p.renewal?.lcPercentOfRent, { w: 5, post: "%" })} · ${edNum([...P, "renewal", "freeRentMonths"], p.renewal?.freeRentMonths, { w: 4, post: " mo" })}</td></tr>
       <tr><td>Structure / escalation</td><td>${edSel([...P, "reimbursementStructure"], p.reimbursementStructure, ENUMS.structure)} / ${edSel([...P, "escalation", "type"], p.escalation?.type, ENUMS.escalation)}${p.escalation?.type === "fixed_percent" ? ` ${edNum([...P, "escalation", "rate"], p.escalation.rate, { w: 5, post: "%" })}` : ""}</td></tr>
+      <tr><td>Later rollovers</td><td>${edSel([...P, "rolloverProfile"], p.rolloverProfile, Object.keys(ma.leasingProfiles).filter((o) => o !== k), { raw: true, blank: "— (this profile)" })} <span class="muted">${p.rolloverProfile ? `this profile prices the first lease of each space; every rollover after that uses ${esc(p.rolloverProfile)}` : "this profile prices every lease of each space"}</span></td></tr>
       ${p.notes ? `<tr><td>Notes</td><td class="muted">${esc(p.notes)}</td></tr>` : ""}
     </tbody></table>`;
   }).join("");

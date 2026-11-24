@@ -6,6 +6,10 @@ are listed as JSON paths from the file root. **(R)** marks required fields.
 Cross-field checks — references, unique ids, option fields — are in
 [`validation.md`](validation.md). JSON Schema does not enforce them.
 
+A field not listed here is an error, except a key starting with `x-`, which any
+object other than a keyed map may carry and every reader ignores. See
+"Unknown fields and extensions" in the [spec README](README.md).
+
 ## Root
 
 | Field | Type | Definition |
@@ -242,6 +246,25 @@ compounds annually on each anniversary of the analysis start.
 At each lease expiration, engines blend the renewal and new-tenant outcomes by
 `renewalProbabilityPercent`.
 
+A space's profile (its `spaceType`, or the first profile) prices the **first
+lease generated** for that space: the lease-up of a vacant suite, or the first
+rollover of an in-place lease (both of its outcomes). If that profile sets
+`rolloverProfile`, every rollover after that first generated lease uses the named
+profile instead. Underwriters usually keep these apart: a lease-up profile with
+long downtime and first-generation TI and LC, and a general profile for every
+expiry after that.
+
+```json
+"leasingProfiles": {
+  "lease_up": { "downtimeMonths": 24, "renewalProbabilityPercent": 0, "rolloverProfile": "general", "...": "..." },
+  "general":  { "downtimeMonths": 9,  "renewalProbabilityPercent": 75, "...": "..." }
+}
+```
+
+Without `rolloverProfile`, a vacant suite on `lease_up` would take 24 months of
+downtime at every later expiry too, and `general` would never be used (lint warns:
+`leasing_profile_unused`).
+
 | Field | Type | Definition |
 |---|---|---|
 | `marketRent` **(R)** | object | `amount` **(R)** + `unit` **(R)** (`per_sf_per_month` or `per_sf_per_year`). As of `asOfDate`, grown by `growth.marketRent` thereafter. |
@@ -252,6 +275,7 @@ At each lease expiration, engines blend the renewal and new-tenant outcomes by
 | `renewalProbabilityPercent` **(R)** | number | 0–100. 100 disables new-tenant outcomes; 0 disables renewals. |
 | `newTenant` / `renewal` | object | Leasing costs per outcome: `tiPerSF`, `lcPercentOfRent`, `freeRentMonths` — all default 0. |
 | `renewalRentPercentOfMarket` | number | Renewal rent as percent of market, default 100. |
+| `rolloverProfile` | string | Key of the profile used at every rollover after the first lease this profile generates (see above). Must name another profile, and that profile must not set `rolloverProfile` itself: one step, no chains. Omitted: this profile applies at every rollover. |
 
 ## `valuation`
 

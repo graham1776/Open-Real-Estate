@@ -157,6 +157,8 @@ thoroughly and **recovery income** and **lease optionality** crudely.
 | Market rent by space type; stepped rent & expense growth; CPI assumption | ✅ | ✅ | | |
 | General vacancy, credit loss | ✅ | ✅ | | de-duplicated against explicit downtime |
 | Renewal probability, downtime, market TI / LC / free rent | ✅ | ✅ | | |
+| Lease-up terms distinct from later rollovers | ✅ | ✅ | done (#60) | `leasingProfiles.<key>.rolloverProfile`: the space's profile prices the first generated lease, the named profile every rollover after it |
+| Per-lease rollover overrides (renewal probability, vacate flag) | ✗ | — | v0.x | #26; today a dedicated profile per tenant, now with `rolloverProfile` back to the general one |
 | Absorption curve for large vacant blocks | ◐ | ◐ | v0.x | single downtime only; no multi-suite lease-up schedule |
 
 ## 7. Valuation

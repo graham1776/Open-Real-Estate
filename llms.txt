@@ -27,6 +27,15 @@ JSON-based format for commercial real estate underwriting data, for any property
    (`3.5` = 3.5%) except ratios documented as decimals. Areas are square feet; land is acres.
 5. The file carries INPUTS ONLY. Outputs (NOI, DCF, IRR) are never stored in the
    file; they are produced by a conforming engine from the inputs.
+6. A field the schema does not define is an ERROR: never invent a field name.
+   If you need to keep something the format has no field for, put it in a key
+   starting with `x-` (e.g. `"x-acme-dealCode": "D-41"`) on the object it
+   describes. Every reader ignores `x-` keys, so they never change a number; if
+   the value should change the math, say so in `notes` instead.
+7. Lease-up and later rollovers can use different leasing profiles. A space's
+   profile prices the first lease generated for it; set `rolloverProfile` on that
+   profile to name the profile for every expiry after that (e.g. a 24-month
+   `lease_up` profile rolling into a 9-month `general` one).
 
 ## Calculation
 
@@ -146,6 +155,36 @@ document, never separate files.
 - Calculation assumptions travel with the data so any conforming engine reproduces
   identical outputs from the same file.
 
+## Unknown fields and extensions
+
+**A field the schema does not define is an error.** Every object in the schema
+is closed (`additionalProperties: false`), so a misspelled or invented field
+fails validation instead of being silently ignored. A reader can trust that
+every field in a valid file means what the data dictionary says.
+
+**Extensions go in `x-` keys.** Any object except a keyed map may carry extra
+keys whose names start with `x-`, with any JSON value. Use them for data the
+format has no field for yet: an internal deal code, a CRM id, a note a producer
+wants to keep next to the value it describes.
+
+```json
+"leases": [{ "leaseId": "L-100", "x-acme-crmId": "T-4471", "...": "..." }]
+```
+
+The rules:
+
+- **Readers ignore them.** Validators accept them; engines never read them. An
+  `x-` key cannot change any computed number, and the conformance tests check
+  this by adding one to every object in every example.
+- **Name them after the producer**, `x-<producer>-<name>`, so two producers'
+  extensions do not collide.
+- **Keep them on save.** A tool that edits a file should write back the `x-`
+  keys it read, unchanged.
+- **Not in keyed maps.** The keys of `marketAssumptions.leasingProfiles` are
+  profile names, so an `x-` key there is rejected; put it inside a profile.
+- **Not a way to change the math.** If an extension would need to change how a
+  number is computed, it is a format proposal: open an issue.
+
 ## Documents
 
 - [`data-dictionary.md`](data-dictionary.md) — every field defined, typed, and documented
@@ -172,6 +211,10 @@ dictionary restates them for human readers and adds interpretation guidance. Fie
 are listed as JSON paths from the file root. **(R)** marks required fields.
 Cross-field checks — references, unique ids, option fields — are in
 [`validation.md`](validation.md). JSON Schema does not enforce them.
+
+A field not listed here is an error, except a key starting with `x-`, which any
+object other than a keyed map may carry and every reader ignores. See
+"Unknown fields and extensions" in the [spec README](README.md).
 
 ## Root
 
@@ -409,6 +452,25 @@ compounds annually on each anniversary of the analysis start.
 At each lease expiration, engines blend the renewal and new-tenant outcomes by
 `renewalProbabilityPercent`.
 
+A space's profile (its `spaceType`, or the first profile) prices the **first
+lease generated** for that space: the lease-up of a vacant suite, or the first
+rollover of an in-place lease (both of its outcomes). If that profile sets
+`rolloverProfile`, every rollover after that first generated lease uses the named
+profile instead. Underwriters usually keep these apart: a lease-up profile with
+long downtime and first-generation TI and LC, and a general profile for every
+expiry after that.
+
+```json
+"leasingProfiles": {
+  "lease_up": { "downtimeMonths": 24, "renewalProbabilityPercent": 0, "rolloverProfile": "general", "...": "..." },
+  "general":  { "downtimeMonths": 9,  "renewalProbabilityPercent": 75, "...": "..." }
+}
+```
+
+Without `rolloverProfile`, a vacant suite on `lease_up` would take 24 months of
+downtime at every later expiry too, and `general` would never be used (lint warns:
+`leasing_profile_unused`).
+
 | Field | Type | Definition |
 |---|---|---|
 | `marketRent` **(R)** | object | `amount` **(R)** + `unit` **(R)** (`per_sf_per_month` or `per_sf_per_year`). As of `asOfDate`, grown by `growth.marketRent` thereafter. |
@@ -419,6 +481,7 @@ At each lease expiration, engines blend the renewal and new-tenant outcomes by
 | `renewalProbabilityPercent` **(R)** | number | 0–100. 100 disables new-tenant outcomes; 0 disables renewals. |
 | `newTenant` / `renewal` | object | Leasing costs per outcome: `tiPerSF`, `lcPercentOfRent`, `freeRentMonths` — all default 0. |
 | `renewalRentPercentOfMarket` | number | Renewal rent as percent of market, default 100. |
+| `rolloverProfile` | string | Key of the profile used at every rollover after the first lease this profile generates (see above). Must name another profile, and that profile must not set `rolloverProfile` itself: one step, no chains. Omitted: this profile applies at every rollover. |
 
 ## `valuation`
 
@@ -574,10 +637,11 @@ A result has:
 
 Results follow the file: structural checks, then each lease (required fields,
 duplicate `leaseId`, `spaceType`, `excludedExpenses`, options, rent steps), then vacant
-suites, then duplicate `expenseId`s, then `excludeExpenseIds`, then
+suites, then duplicate `expenseId`s, then each leasing profile's
+`rolloverProfile` (in profile order), then `excludeExpenseIds`, then
 `taxReassessment.expenseId`, then unrecognised enum values (in the order of
-the [enum table](#enum-values), and within a row in file order), then
-warning-level advice. Option fields on a
+the [enum table](#enum-values), and within a row in file order), then unused
+leasing profiles (in profile order), then warning-level advice. Option fields on a
 non-renewal are reported in the order `renewalTermMonths`, `renewalCount`,
 `rentBasis`, `fixedRent`, `percentOfMarket`, then `terminationFee` when that
 field is present on a non-termination.
@@ -607,6 +671,9 @@ error either: it defaults to the `real_estate_taxes` item.
 | `expense_id_duplicate` | error | `expenseId` repeats an earlier expense item. The pointer is the later occurrence. |
 | `option_field_mismatch` | error | A renewal-only field (`renewalTermMonths`, `renewalCount`, `rentBasis`, `fixedRent`, `percentOfMarket`) is set on an option whose `type` is not `renewal`, or `terminationFee` is set on an option whose `type` is not `termination`. |
 | `option_rent_incomplete` | error | A renewal option has `rentBasis` `fixed` without `fixedRent`, or `percent_of_market` without `percentOfMarket`. The pointer is the missing field. Not reported when `rentBasis` itself is illegal for the option type. |
+| `rollover_profile_unknown` | error | A leasing profile's `rolloverProfile` is not a key of `marketAssumptions.leasingProfiles`. |
+| `rollover_profile_chain` | error | A leasing profile's `rolloverProfile` names a profile that sets `rolloverProfile` itself (including a profile naming itself). The rollover profile applies to every later rollover, so it is one step: no chains, and therefore no cycles. |
+| `leasing_profile_unused` | warning | A leasing profile prices no space: no lease or vacant suite has its key as `spaceType` (or, for the first profile, omits `spaceType`), and no profile in use names it as `rolloverProfile`. It changes no number, which usually means a missing `spaceType` or `rolloverProfile`. Not reported when the file has one profile. |
 | `rent_steps_unordered` | error | A `baseRent.schedule[]` step's `startDate` is not after the latest earlier step's `startDate` (steps must be in strictly ascending order; a repeated date is ambiguous). The pointer is each offending step's `startDate`. The ordering itself is stated in the rent-roll schema and data dictionary; JSON Schema cannot compare array items. |
 
 ## Enum values
@@ -677,6 +744,7 @@ These are authoritative; prose above is explanatory.
   "type": "object",
   "required": ["formatVersion", "property", "rentRoll"],
   "additionalProperties": false,
+  "patternProperties": { "^x-": true },
   "properties": {
     "$schema": {
       "type": "string",
@@ -710,6 +778,7 @@ These are authoritative; prose above is explanatory.
   "type": "object",
   "required": ["interestRatePercent", "termMonths"],
   "additionalProperties": false,
+  "patternProperties": { "^x-": true },
   "oneOf": [
     { "required": ["loanAmount"], "not": { "required": ["ltvPercent"] } },
     { "required": ["ltvPercent"], "not": { "required": ["loanAmount"] } }
@@ -779,6 +848,7 @@ These are authoritative; prose above is explanatory.
   "type": "object",
   "required": ["items"],
   "additionalProperties": false,
+  "patternProperties": { "^x-": true },
   "properties": {
     "items": {
       "type": "array",
@@ -795,6 +865,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["expenseId", "name", "amount", "amountUnit", "recoverable"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "properties": {
         "expenseId": {
           "type": "string",
@@ -866,6 +937,7 @@ These are authoritative; prose above is explanatory.
   "type": "object",
   "required": ["growth", "leasingProfiles"],
   "additionalProperties": false,
+  "patternProperties": { "^x-": true },
   "properties": {
     "asOfDate": {
       "type": "string",
@@ -876,6 +948,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["marketRent", "expenses"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Annual growth assumptions. Growth compounds annually on each anniversary of the analysis start.",
       "properties": {
         "marketRent": { "$ref": "#/$defs/growthCurve", "description": "Market rent growth." },
@@ -901,6 +974,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "minProperties": 1,
       "description": "Leasing profiles keyed by space type. Keys are matched by rentRoll.leases[].spaceType and rentRoll.vacantSuites[].spaceType; spaces without a spaceType use the file's first profile.",
+      "propertyNames": { "not": { "pattern": "^x-" } },
       "additionalProperties": { "$ref": "#/$defs/leasingProfile" }
     },
     "notes": { "type": "string" }
@@ -917,6 +991,7 @@ These are authoritative; prose above is explanatory.
             "type": "object",
             "required": ["fromYear", "annualPercent"],
             "additionalProperties": false,
+            "patternProperties": { "^x-": true },
             "properties": {
               "fromYear": { "type": "integer", "minimum": 1 },
               "annualPercent": { "type": "number" }
@@ -929,12 +1004,14 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["marketRent", "termMonths", "downtimeMonths", "renewalProbabilityPercent"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Assumptions for a new market lease of this space type, used for vacant-suite lease-up and lease rollover. At each lease expiration, engines blend renewal and new-tenant outcomes by renewalProbabilityPercent.",
       "properties": {
         "marketRent": {
           "type": "object",
           "required": ["amount", "unit"],
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "properties": {
             "amount": { "type": "number", "exclusiveMinimum": 0, "description": "Market rent as of marketAssumptions.asOfDate, grown by growth.marketRent thereafter." },
             "unit": {
@@ -974,12 +1051,18 @@ These are authoritative; prose above is explanatory.
           "default": 100,
           "description": "Renewal rent as a percent of market rent, e.g. 95."
         },
+        "rolloverProfile": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Key of the leasing profile that applies at every rollover after the first lease this profile generates. This profile's own terms price that first lease: the lease-up of a vacant suite, or the first rollover of an in-place lease. From that lease's expiry on, every renewal and new-tenant outcome uses the named profile. Typical use: a lease-up profile with long downtime and first-generation TI and LC, rolling into a general profile. The named profile must exist and must not itself set rolloverProfile. Omitted: this profile applies at every rollover."
+        },
         "notes": { "type": "string" }
       }
     },
     "leasingCosts": {
       "type": "object",
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "properties": {
         "tiPerSF": { "type": "number", "minimum": 0, "default": 0, "description": "Tenant improvement allowance, USD per SF." },
         "lcPercentOfRent": { "type": "number", "minimum": 0, "maximum": 100, "default": 0, "description": "Leasing commission as a percent of total scheduled base rent over the lease term." },
@@ -1001,6 +1084,7 @@ These are authoritative; prose above is explanatory.
   "type": "object",
   "required": ["name", "propertyType", "address", "physical"],
   "additionalProperties": false,
+  "patternProperties": { "^x-": true },
   "allOf": [
     {
       "if": { "properties": { "propertyType": { "const": "industrial" } }, "required": ["propertyType"] },
@@ -1066,6 +1150,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["street1", "city", "state", "postalCode"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Situs address. US addresses only for now (see the international issue in the tracker).",
       "properties": {
         "street1": { "type": "string", "minLength": 1, "description": "Primary street address line." },
@@ -1092,6 +1177,7 @@ These are authoritative; prose above is explanatory.
     "location": {
       "type": "object",
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Geographic and market context.",
       "properties": {
         "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
@@ -1108,6 +1194,7 @@ These are authoritative; prose above is explanatory.
         "type": "object",
         "required": ["apn"],
         "additionalProperties": false,
+        "patternProperties": { "^x-": true },
         "properties": {
           "apn": { "type": "string", "minLength": 1, "description": "Assessor's parcel number, formatted as it appears on the assessor roll." },
           "landAcres": { "type": "number", "exclusiveMinimum": 0, "description": "Land area of this parcel in acres." },
@@ -1124,6 +1211,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["buildingSF"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Physical and functional characteristics of the improvements.",
       "properties": {
         "buildingSF": {
@@ -1201,6 +1289,7 @@ These are authoritative; prose above is explanatory.
   "type": "object",
   "required": ["generatedAt", "generatedBy"],
   "additionalProperties": false,
+  "patternProperties": { "^x-": true },
   "properties": {
     "generatedAt": {
       "type": "string",
@@ -1211,6 +1300,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["name"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "The party responsible for the file's contents.",
       "properties": {
         "name": { "type": "string", "minLength": 1, "description": "Person or team name." },
@@ -1227,6 +1317,7 @@ These are authoritative; prose above is explanatory.
     "software": {
       "type": "object",
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Tool that wrote the file, for conformance triage.",
       "properties": {
         "name": { "type": "string" },
@@ -1240,6 +1331,7 @@ These are authoritative; prose above is explanatory.
         "type": "object",
         "required": ["name", "type"],
         "additionalProperties": false,
+        "patternProperties": { "^x-": true },
         "properties": {
           "name": { "type": "string", "minLength": 1, "description": "Document title, e.g. \"Lease Agreement dated 2021-08-15\"." },
           "type": {
@@ -1269,6 +1361,7 @@ These are authoritative; prose above is explanatory.
         "type": "object",
         "required": ["name"],
         "additionalProperties": false,
+        "patternProperties": { "^x-": true },
         "properties": {
           "name": { "type": "string", "minLength": 1 },
           "organization": { "type": "string" },
@@ -1298,6 +1391,7 @@ These are authoritative; prose above is explanatory.
   "type": "object",
   "required": ["asOfDate", "leases"],
   "additionalProperties": false,
+  "patternProperties": { "^x-": true },
   "properties": {
     "asOfDate": {
       "type": "string",
@@ -1316,6 +1410,7 @@ These are authoritative; prose above is explanatory.
         "type": "object",
         "required": ["sf"],
         "additionalProperties": false,
+        "patternProperties": { "^x-": true },
         "properties": {
           "suite": { "type": "string", "description": "Suite or unit identifier." },
           "sf": { "type": "number", "exclusiveMinimum": 0, "description": "Vacant area in square feet." },
@@ -1334,6 +1429,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["leaseId", "tenant", "leasedSF", "commencementDate", "expirationDate", "baseRent", "reimbursement"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "properties": {
         "leaseId": {
           "type": "string",
@@ -1374,6 +1470,7 @@ These are authoritative; prose above is explanatory.
             "type": "object",
             "required": ["startDate", "endDate"],
             "additionalProperties": false,
+            "patternProperties": { "^x-": true },
             "properties": {
               "startDate": { "type": "string", "format": "date" },
               "endDate": { "type": "string", "format": "date", "description": "Inclusive last day of the abatement period." },
@@ -1395,6 +1492,7 @@ These are authoritative; prose above is explanatory.
         "tenantImprovements": {
           "type": "object",
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "description": "Unfunded landlord TI obligations remaining as of asOfDate. Provide exactly one of amountPerSF or totalAmount.",
           "oneOf": [
             { "required": ["amountPerSF"] },
@@ -1409,6 +1507,7 @@ These are authoritative; prose above is explanatory.
         "leasingCommissions": {
           "type": "object",
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "description": "Unpaid leasing commissions remaining as of asOfDate. Provide exactly one of amountPerSF, totalAmount, or percentOfTotalRent.",
           "oneOf": [
             { "required": ["amountPerSF"] },
@@ -1430,6 +1529,7 @@ These are authoritative; prose above is explanatory.
         "securityDeposit": {
           "type": "object",
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "required": ["amount"],
           "properties": {
             "amount": { "type": "number", "minimum": 0, "description": "USD held as of asOfDate." },
@@ -1450,6 +1550,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["name"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "properties": {
         "name": { "type": "string", "minLength": 1, "description": "Legal name of the tenant entity on the lease." },
         "dba": { "type": "string", "description": "Trade name, if different from the legal name." },
@@ -1462,6 +1563,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["schedule", "unit"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Contractual base rent as a stepped schedule. Each step applies from its startDate until the next step's startDate, or until expirationDate for the last step. Steps must be in ascending startDate order. Historical steps before asOfDate may be omitted.",
       "properties": {
         "unit": {
@@ -1476,6 +1578,7 @@ These are authoritative; prose above is explanatory.
             "type": "object",
             "required": ["startDate", "amount"],
             "additionalProperties": false,
+            "patternProperties": { "^x-": true },
             "properties": {
               "startDate": { "type": "string", "format": "date", "description": "First day this rent amount applies." },
               "amount": { "type": "number", "minimum": 0, "description": "Rent in the unit declared by baseRent.unit." }
@@ -1488,6 +1591,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["type"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Rule for generating rent steps not explicitly enumerated in baseRent.schedule. If the schedule already enumerates every step through expiration, set type to \"none\" or omit this object. When present with a non-none type, engines apply the rule starting one frequency-interval after the last enumerated step's startDate, through expiration. Enumerated steps are always authoritative over generated ones.",
       "properties": {
         "type": {
@@ -1516,6 +1620,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["structure"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "How operating expenses are recovered from the tenant. Expense-level recoverability flags live in the expenses module; this object describes the lease's side of the bargain.",
       "properties": {
         "structure": {
@@ -1559,6 +1664,7 @@ These are authoritative; prose above is explanatory.
           "type": "object",
           "required": ["capPercent"],
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "description": "Annual cap on the growth of the controllable recoverable expenses billed to the tenant (NNN/NN leases). Non-controllable expenses (taxes, insurance, …) are uncapped. The cap is measured off a base-year controllable level.",
           "properties": {
             "capPercent": {
@@ -1586,6 +1692,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["type"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Tenant option. Renewal-only fields (renewalTermMonths, renewalCount, rentBasis, fixedRent, percentOfMarket) are rejected on any other type, and terminationFee is rejected except on termination. fixedRent is required when rentBasis is fixed; percentOfMarket is required when rentBasis is percent_of_market.",
       "properties": {
         "type": {
@@ -1667,6 +1774,7 @@ These are authoritative; prose above is explanatory.
   "type": "object",
   "required": ["analysisStartDate", "methods"],
   "additionalProperties": false,
+  "patternProperties": { "^x-": true },
   "properties": {
     "analysisStartDate": {
       "type": "string",
@@ -1744,6 +1852,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["discountRatePercent", "terminalValue"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "oneOf": [
         { "required": ["holdPeriodYears"], "not": { "required": ["holdPeriodMonths"] } },
         { "required": ["holdPeriodMonths"], "not": { "required": ["holdPeriodYears"] } }
@@ -1791,6 +1900,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["method"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "How the gross reversion value is computed at the end of the hold.",
       "properties": {
         "method": {
@@ -1864,6 +1974,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["capRatePercent", "noiBasis"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "properties": {
         "capRatePercent": {
           "type": "number",
@@ -1898,6 +2009,7 @@ These are authoritative; prose above is explanatory.
           "type": "object",
           "required": ["periodMonths"],
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "description": "Deduction of near-term costs from the capitalized value — the conventional bridge from a stabilized capped value to an as-is value. Engines compute scheduled costs within the period from the rent roll and market assumptions.",
           "properties": {
             "periodMonths": {
@@ -1937,6 +2049,7 @@ These are authoritative; prose above is explanatory.
           "type": "object",
           "required": ["discountRatePercent"],
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "description": "Leased-fee adjustment when capping a market-basis NOI: the present value of (contract − market) rent differentials on each lease through its expiration is added to (above-market) or deducted from (below-market) the capitalized value. Presence of this object enables the adjustment.",
           "properties": {
             "discountRatePercent": {
@@ -1954,6 +2067,7 @@ These are authoritative; prose above is explanatory.
             "type": "object",
             "required": ["name", "type", "amount"],
             "additionalProperties": false,
+            "patternProperties": { "^x-": true },
             "properties": {
               "name": { "type": "string", "minLength": 1 },
               "type": { "type": "string", "enum": ["deduction", "addition"] },
@@ -1979,6 +2093,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["unitBasis", "comparables", "concludedValuePerUnit"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "properties": {
         "unitBasis": {
           "type": "string",
@@ -2007,11 +2122,13 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["salePrice", "saleDate"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "properties": {
         "name": { "type": "string", "description": "Identifier or address line for the comp." },
         "address": {
           "type": "object",
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "properties": {
             "street1": { "type": "string" },
             "city": { "type": "string" },
@@ -2037,6 +2154,7 @@ These are authoritative; prose above is explanatory.
             "type": "object",
             "required": ["factor"],
             "additionalProperties": false,
+            "patternProperties": { "^x-": true },
             "oneOf": [
               { "required": ["percentAdjustment"], "not": { "required": ["amountPerUnitAdjustment"] } },
               { "required": ["amountPerUnitAdjustment"], "not": { "required": ["percentAdjustment"] } }
@@ -2075,10 +2193,12 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["landValue", "improvements"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "properties": {
         "landValue": {
           "type": "object",
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "oneOf": [
             { "required": ["amount"], "not": { "required": ["perAcreAmount"] } },
             { "required": ["perAcreAmount"], "not": { "required": ["amount"] } }
@@ -2093,6 +2213,7 @@ These are authoritative; prose above is explanatory.
                 "type": "object",
                 "required": ["salePrice", "saleDate", "landAcres"],
                 "additionalProperties": false,
+                "patternProperties": { "^x-": true },
                 "properties": {
                   "name": { "type": "string" },
                   "salePrice": { "type": "number", "exclusiveMinimum": 0 },
@@ -2109,6 +2230,7 @@ These are authoritative; prose above is explanatory.
         "improvements": {
           "type": "object",
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "oneOf": [
             { "required": ["replacementCostNew"], "not": { "required": ["replacementCostNewPerSF"] } },
             { "required": ["replacementCostNewPerSF"], "not": { "required": ["replacementCostNew"] } }
@@ -2131,6 +2253,7 @@ These are authoritative; prose above is explanatory.
         "depreciation": {
           "type": "object",
           "additionalProperties": false,
+          "patternProperties": { "^x-": true },
           "description": "Accrued depreciation on the improvements. Percent fields apply to replacement cost new (plus site improvements); the age-life inputs document how physical deterioration was derived.",
           "properties": {
             "physicalDeteriorationPercent": { "type": "number", "minimum": 0, "maximum": 100 },
@@ -2153,6 +2276,7 @@ These are authoritative; prose above is explanatory.
       "type": "object",
       "required": ["concludedValue"],
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Final value conclusion across the approaches carried in this file.",
       "properties": {
         "concludedValue": { "type": "number", "exclusiveMinimum": 0, "description": "USD." },
@@ -2166,6 +2290,7 @@ These are authoritative; prose above is explanatory.
     "taxReassessment": {
       "type": "object",
       "additionalProperties": false,
+      "patternProperties": { "^x-": true },
       "description": "Opt-in property-tax reassessment on transfer (e.g. California Proposition 13). Presence of this object enables it. Requires valuation.purchasePrice. Going-in: the reassessed property tax is set to the purchase price times the effective rate, in force from the analysis start. Reversion: the terminal cap is loaded by the tax rate so the hypothetical buyer's taxes reset to the sale price.",
       "properties": {
         "effectiveTaxRatePercent": {
