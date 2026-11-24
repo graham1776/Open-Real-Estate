@@ -1,12 +1,22 @@
 #!/usr/bin/env node
-// Assembles /llms.txt — the entire ORE format as a single LLM-ingestible
-// document: an authoring guide, the human spec, the full data dictionary, the
-// normative JSON Schemas, and one annotated example. Regenerate after any spec
-// change:  node spec/build-llms-txt.mjs   (wired to `npm run llms`).
+// Assembles the entire ORE format as one document, in two forms:
+//
+//   /llms.txt        Markdown: authoring guide, every-field table, human spec,
+//                    data dictionary, validation rules, normative JSON Schemas,
+//                    one annotated example.
+//   /reference.html  The same content as a static HTML page, plus every example
+//                    inline. Linked from the home page so search engines index
+//                    it: AI tools that can only fetch indexed pages reach the
+//                    whole format from this one URL (issue 61).
+//
+// Regenerate after any spec change:  node spec/build-llms-txt.mjs
+// (wired to `npm run llms`; CI fails if the committed outputs are stale).
 
 import { readFileSync, writeFileSync, readdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, posix } from "node:path";
 import { fileURLToPath } from "node:url";
+import { marked } from "marked";
+import { fieldTableMarkdown } from "./field-table.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..");
@@ -116,12 +126,35 @@ file you authored from a source document, do all four:
 ---
 `;
 
+const REPO = "https://github.com/graham1776/Open-Real-Estate";
+const SITE = "https://graham1776.github.io/Open-Real-Estate";
+
+const fieldsSection =
+  "# Every field\n\n" +
+  "Generated from the JSON Schemas: every path a file can carry. `[]` is an array item; " +
+  "`<key>` is a key you choose (a leasing profile name). **Req.** means required whenever its " +
+  "parent object is present. A field not in this table is an error, except keys starting " +
+  "with `x-` (see \"Unknown fields and extensions\" in the spec below). The JSON Schemas at " +
+  "the end are authoritative.\n\n" +
+  fieldTableMarkdown();
+
+// Relative links in a repo document, rewritten to absolute GitHub URLs so they
+// still work when the text is read anywhere else.
+function absolutize(md, docPath) {
+  const dir = posix.dirname(docPath);
+  return md.replace(/\]\((?!https?:|#|mailto:)([^)\s]+)\)/g, (_, link) => {
+    const target = posix.normalize(posix.join(dir, link));
+    return `](${REPO}/blob/main/${target})`;
+  });
+}
+const doc = (p) => absolutize(read(p), p);
+
 const sections = [];
 sections.push(preamble);
-
-sections.push("# Human specification\n\n" + read("spec/README.md"));
-sections.push("# Data dictionary\n\n" + read("spec/data-dictionary.md"));
-sections.push("# Validation rules\n\n" + read("spec/validation.md"));
+sections.push(fieldsSection);
+sections.push("# Human specification\n\n" + doc("spec/README.md"));
+sections.push("# Data dictionary\n\n" + doc("spec/data-dictionary.md"));
+sections.push("# Validation rules\n\n" + doc("spec/validation.md"));
 
 // Normative schemas, ordered with the root first.
 const schemaDir = "spec/schema";
@@ -130,7 +163,8 @@ schemaFiles.sort((a, b) => (a === "ore.schema.json" ? -1 : b === "ore.schema.jso
 const schemaBlocks = schemaFiles
   .map((f) => `### ${f}\n\n\`\`\`json\n${read(join(schemaDir, f))}\n\`\`\``)
   .join("\n\n");
-sections.push("# Normative JSON Schemas (draft 2020-12)\n\nThese are authoritative; prose above is explanatory.\n\n" + schemaBlocks);
+const schemaSection = "# Normative JSON Schemas (draft 2020-12)\n\nThese are authoritative; prose above is explanatory.\n\n" + schemaBlocks;
+sections.push(schemaSection);
 
 // One fully populated example.
 sections.push(
@@ -144,3 +178,91 @@ const out = sections.join("\n\n---\n\n") + "\n";
 writeFileSync(join(root, "llms.txt"), out);
 const kb = Math.round(Buffer.byteLength(out) / 1024);
 console.log(`Wrote llms.txt (${kb} KB, ${out.split("\n").length} lines).`);
+
+// ---- reference.html: the same content, every example inline, schemas last.
+const exampleFiles = readdirSync(join(root, "examples")).filter((f) => f.endsWith(".ore")).sort();
+const examplesSection =
+  "# Examples\n\n" +
+  "Every example deal in the repository, inline. All data is synthetic. Each validates " +
+  "against the schemas below and has locked engine outputs. " +
+  `Open any of them in the [viewer](${SITE}/demo/) to see the computed deal.\n\n` +
+  absolutize(read("examples/README.md").replace(/^# .*\n/, ""), "examples/README.md") + "\n\n" +
+  exampleFiles.map((f) => `## ${f}\n\n\`\`\`json\n${read(join("examples", f))}\n\`\`\``).join("\n\n");
+
+const htmlSections = [
+  ["guide", preamble.replace(/\n---\n*$/, "")],
+  ["fields", fieldsSection],
+  ["spec", sections[2]],
+  ["dictionary", sections[3]],
+  ["validation", sections[4]],
+  ["examples", examplesSection],
+  ["schemas", schemaSection],
+];
+const toc = [
+  ["guide", "How to read and write a .ore file"],
+  ["fields", "Every field"],
+  ["spec", "Specification"],
+  ["dictionary", "Data dictionary"],
+  ["validation", "Validation rules"],
+  ["examples", "Examples"],
+  ["schemas", "JSON Schemas"],
+];
+const escapeHtml = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const body = htmlSections
+  .map(([id, md]) => `<section id="${id}">\n${marked.parse(md, { gfm: true })}</section>`)
+  .join("\n<hr>\n");
+
+const html = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ORE format reference</title>
+<meta name="description" content="The complete ORE (Open Real Estate) file format on one page: how to read and write a .ore file, every field with its type and allowed values, the specification, data dictionary, validation rules, every example deal, and the JSON Schemas.">
+<link rel="canonical" href="${SITE}/reference.html">
+<link rel="alternate" type="text/plain" href="${SITE}/llms.txt" title="Same content as plain text">
+<style>
+  :root { --ink: #1a2433; --muted: #5b6b80; --line: #dfe5ec; --bg: #f6f8fa; --card: #ffffff; --accent: #0b5fff; --code-bg: #eef2f6; }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #e3e9f1; --muted: #9aa8ba; --line: #2b3646; --bg: #11161d; --card: #171e27; --accent: #7cb0ff; --code-bg: #1d2633; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.55 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--ink); background: var(--bg); }
+  header, main { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header { padding-top: 28px; }
+  header p { color: var(--muted); margin: 6px 0; }
+  nav.toc { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; margin: 16px 0 8px; }
+  nav.toc { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+  nav.toc a { white-space: nowrap; }
+  a { color: var(--accent); }
+  h1 { font-size: 28px; line-height: 1.2; margin: 28px 0 10px; }
+  h2 { font-size: 21px; margin: 26px 0 8px; }
+  h3 { font-size: 17px; margin: 20px 0 6px; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 36px 0; }
+  code { font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg); padding: 1px 4px; border-radius: 4px; overflow-wrap: anywhere; }
+  pre { background: var(--code-bg); padding: 12px 14px; border-radius: 8px; overflow-x: auto; }
+  pre code { padding: 0; background: none; overflow-wrap: normal; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; font-size: 14px; margin: 12px 0; }
+  th, td { border: 1px solid var(--line); padding: 5px 8px; vertical-align: top; text-align: left; }
+  th { background: var(--card); }
+  #fields { overflow-x: auto; }
+  #fields table { display: table; width: 100%; min-width: 860px; table-layout: fixed; }
+  #fields th:nth-child(1) { width: 25%; } #fields th:nth-child(2) { width: 8%; } #fields th:nth-child(3) { width: 5%; }
+  #fields th:nth-child(4) { width: 20%; } #fields th:nth-child(5) { width: 7%; } #fields th:nth-child(6) { width: 35%; }
+</style>
+</head>
+<body>
+<header>
+  <h1 style="margin-top:0">ORE format reference</h1>
+  <p>The complete ORE (Open Real Estate) file format, version ${FORMAT_VERSION}, on one page. A <code>.ore</code> file is a JSON document; this page is everything needed to read one, write one, and check it, with no other file or tool. Generated from the repository by <code>npm run llms</code>; the same content is at <a href="llms.txt">llms.txt</a>.</p>
+  <p><a href="./">ORE home</a> · <a href="demo/">Viewer</a> · <a href="${REPO}">GitHub</a></p>
+  <nav class="toc">${toc.map(([id, t]) => `<a href="#${id}">${escapeHtml(t)}</a>`).join("")}</nav>
+</header>
+<main>
+${body}
+</main>
+</body>
+</html>
+`;
+writeFileSync(join(root, "reference.html"), html);
+console.log(`Wrote reference.html (${Math.round(Buffer.byteLength(html) / 1024)} KB).`);

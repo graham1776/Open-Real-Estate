@@ -114,11 +114,11 @@ not Excel's `ROUND`. Both are mirrored, and commented where they occur.
 npm run excel:test
 ```
 
-recalculates the workbook in LibreOffice for every example deal plus four stress
+recalculates the workbook in LibreOffice for every example deal plus five stress
 fixtures ([`fixtures/`](fixtures/), built to reach every branch: fee-simple
 basis, expense stops, non-cumulative caps, CPI and MG market profiles, annual
 mid-period discounting, every exit method, and more) and requires every Check row
-to pass. Today: 11 files, 1,966 outputs, all passing. Two land on a `PASS*`: the
+to pass. Today: 13 files, 2,351 outputs, all passing. Two land on a `PASS*`: the
 unrounded values agree to 1e-14 but sit exactly on a half-unit, where spreadsheet
 and JavaScript floating point round to neighbouring cents. The Check sheet labels
 those rather than hiding them.

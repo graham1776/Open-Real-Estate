@@ -1,0 +1,241 @@
+{
+  "$schema": "https://oreformat.org/schema/0.1.0/ore.schema.json",
+  "formatVersion": "0.1.0",
+  "property": {
+    "name": "Mesa Ridge Logistics Center",
+    "propertyType": "industrial",
+    "propertySubtype": "warehouse_distribution",
+    "tenancy": "single",
+    "description": "Synthetic example: a newly completed bulk distribution building bought fully vacant. The deal is the lease-up. All data in this file is fictional.",
+    "address": {
+      "street1": "1000 Mesa Ridge Pkwy",
+      "city": "Perris",
+      "state": "CA",
+      "postalCode": "92571",
+      "county": "Riverside",
+      "country": "US"
+    },
+    "location": {
+      "market": "Inland Empire",
+      "submarket": "Inland Empire East"
+    },
+    "parcels": [
+      {
+        "apn": "300-120-045",
+        "landAcres": 24.1,
+        "zoning": "LI (Light Industrial)"
+      }
+    ],
+    "siteAreaAcres": 24.1,
+    "physical": {
+      "buildingSF": 502000,
+      "officeSF": 6000,
+      "clearHeightFt": 40,
+      "dockHighDoors": 72,
+      "gradeLevelDoors": 4,
+      "yearBuilt": 2026,
+      "stories": 1,
+      "construction": "tilt_up",
+      "sprinkler": "esfr",
+      "powerAmps": 4000,
+      "powerVolts": "277/480V 3-phase",
+      "autoParkingStalls": 310,
+      "trailerParkingStalls": 140,
+      "truckCourtDepthFt": 185,
+      "coverageRatio": 0.48
+    },
+    "notes": "Shell complete with certificate of occupancy; speculative construction, no pre-lease."
+  },
+  "rentRoll": {
+    "asOfDate": "2026-12-01",
+    "leases": [],
+    "vacantSuites": [
+      {
+        "suite": "Building",
+        "sf": 502000,
+        "spaceType": "lease_up",
+        "notes": "Whole building, marketed to a single user. Demisable to two tenants, but underwritten as one."
+      }
+    ],
+    "notes": "Fully vacant at acquisition. Lease-up terms are in the lease_up profile; every expiry after the first lease uses the bulk profile."
+  },
+  "expenses": {
+    "items": [
+      {
+        "expenseId": "E-TAX",
+        "name": "Real Estate Taxes",
+        "category": "real_estate_taxes",
+        "amount": 1290000,
+        "amountUnit": "total_per_year",
+        "recoverable": true,
+        "growthOverridePercent": 2.0,
+        "notes": "Reassessed to purchase price; see valuation.taxReassessment."
+      },
+      {
+        "expenseId": "E-INS",
+        "name": "Insurance",
+        "category": "insurance",
+        "amount": 0.28,
+        "amountUnit": "per_sf_per_year",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-CAM",
+        "name": "Common Area Maintenance",
+        "category": "cam",
+        "amount": 0.35,
+        "amountUnit": "per_sf_per_year",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-MGMT",
+        "name": "Management Fee",
+        "category": "management_fee",
+        "amount": 1.5,
+        "amountUnit": "percent_of_egr",
+        "recoverable": true
+      },
+      {
+        "expenseId": "E-RES",
+        "name": "Capital Reserves",
+        "category": "reserves",
+        "amount": 0.08,
+        "amountUnit": "per_sf_per_year",
+        "recoverable": false,
+        "belowTheLine": true
+      }
+    ]
+  },
+  "marketAssumptions": {
+    "asOfDate": "2026-12-01",
+    "growth": {
+      "marketRent": [
+        {
+          "fromYear": 1,
+          "annualPercent": 2.0
+        },
+        {
+          "fromYear": 3,
+          "annualPercent": 3.5
+        }
+      ],
+      "expenses": 3.0
+    },
+    "generalVacancyPercent": 2.0,
+    "creditLossPercent": 0.5,
+    "leasingProfiles": {
+      "lease_up": {
+        "marketRent": {
+          "amount": 1.1,
+          "unit": "per_sf_per_month"
+        },
+        "termMonths": 60,
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 4.0,
+          "frequencyMonths": 12
+        },
+        "reimbursementStructure": "nnn",
+        "downtimeMonths": 12,
+        "renewalProbabilityPercent": 0,
+        "newTenant": {
+          "tiPerSF": 4.0,
+          "lcPercentOfRent": 6.0,
+          "freeRentMonths": 6
+        },
+        "rolloverProfile": "bulk",
+        "notes": "First-generation lease of the vacant building: 12 months to sign and commence, first-generation TI and commissions, six months free. Renewal does not apply to a lease-up."
+      },
+      "bulk": {
+        "marketRent": {
+          "amount": 1.1,
+          "unit": "per_sf_per_month"
+        },
+        "termMonths": 84,
+        "escalation": {
+          "type": "fixed_percent",
+          "rate": 4.0,
+          "frequencyMonths": 12
+        },
+        "reimbursementStructure": "nnn",
+        "downtimeMonths": 9,
+        "renewalProbabilityPercent": 70,
+        "newTenant": {
+          "tiPerSF": 3.0,
+          "lcPercentOfRent": 5.0,
+          "freeRentMonths": 3
+        },
+        "renewal": {
+          "tiPerSF": 1.0,
+          "lcPercentOfRent": 2.5,
+          "freeRentMonths": 1
+        },
+        "renewalRentPercentOfMarket": 100,
+        "notes": "General rollover for every expiry after the first lease: shorter downtime, second-generation costs, 70% renewal."
+      }
+    },
+    "notes": "Two leasing profiles on purpose: without rolloverProfile, the 12-month lease-up downtime would repeat at every later expiry."
+  },
+  "valuation": {
+    "analysisStartDate": "2026-12-01",
+    "methods": [
+      "dcf",
+      "direct_cap"
+    ],
+    "interestAppraised": "leased_fee",
+    "valuePremise": "as_is",
+    "purpose": "acquisition",
+    "purchasePrice": 112000000,
+    "acquisitionCostsPercent": 1.0,
+    "taxReassessment": {
+      "effectiveTaxRatePercent": 1.15
+    },
+    "dcf": {
+      "holdPeriodYears": 10,
+      "discountRatePercent": 7.0,
+      "discountTiming": "monthly",
+      "periodConvention": "end",
+      "terminalValue": {
+        "method": "direct_cap",
+        "capRatePercent": 5.0,
+        "noiBasis": "forward_year",
+        "sellingCostsPercent": 1.5,
+        "deductUnfundedObligations": true
+      },
+      "notes": "Ten-year hold. The first lease expires in year 6 and rolls on the bulk profile; the exit is capitalized on year-11 NOI."
+    },
+    "directCap": {
+      "capRatePercent": 4.75,
+      "noiBasis": "stabilized_at_market",
+      "applyGeneralVacancy": true,
+      "nearTermAdjustments": {
+        "periodMonths": 24,
+        "includeDowntimeLostRent": true,
+        "includeFreeRent": true,
+        "includeTI": true,
+        "includeLC": true,
+        "discountRatePercent": 7.0,
+        "notes": "Lease-up costs taken at present value: 12 months vacant, six months free, first-generation TI and commissions."
+      },
+      "notes": "Stabilized value at market, walked back to as-is through the lease-up costs."
+    }
+  },
+  "provenance": {
+    "generatedAt": "2026-11-24T17:00:00Z",
+    "generatedBy": {
+      "name": "ORE Project Examples",
+      "organization": "ORE (Open Real Estate)",
+      "role": "other",
+      "email": "examples@oreformat.org"
+    },
+    "sourceDocuments": [
+      {
+        "name": "Synthetic investment committee memo",
+        "type": "other",
+        "date": "2026-11-15"
+      }
+    ],
+    "confidentiality": "None — fully synthetic example data published with the ORE specification.",
+    "notes": "All parties, documents, and figures are fictional. Shaped on the vacant bulk acquisition from the November 2026 field test (issue 60)."
+  }
+}

@@ -102,18 +102,387 @@ file you authored from a source document, do all four:
 
 ---
 
+# Every field
+
+Generated from the JSON Schemas: every path a file can carry. `[]` is an array item; `<key>` is a key you choose (a leasing profile name). **Req.** means required whenever its parent object is present. A field not in this table is an error, except keys starting with `x-` (see "Unknown fields and extensions" in the spec below). The JSON Schemas at the end are authoritative.
+
+| Path | Type | Req. | Allowed values | Default | Definition |
+|---|---|---|---|---|---|
+| `$schema` | uri |  |  |  | Optional URL of the published ORE JSON Schema this file conforms to, e.g. https://oreformat.org/schema/0.1.0/ore.schema.json. Carrying it lets any reader — editor, validator, or LLM — resolve field definitions from the file alone. |
+| `formatVersion` | string | yes |  |  | ORE format version this file conforms to (semver). This schema validates 0.1.x files. |
+| `property` | object | yes |  |  | Identity, location, and physical characteristics of the property. Any commercial property type; the examples and the reference engine's deepest coverage are industrial (see spec/coverage.md for coverage by type). |
+| `property.name` | string | yes |  |  | Display name of the property, e.g. "4250 Valley Blvd" or "Gateway Logistics Center". |
+| `property.propertyType` | string | yes | `industrial`, `office`, `medical_office`, `life_science`, `retail`, `multifamily`, `student_housing`, `senior_housing`, `manufactured_housing`, `self_storage`, `data_center`, `hospitality`, `mixed_use`, `land`, `other` |  | Asset class. The format carries any of these; how much of each the reference engine models is listed by type in spec/coverage.md, and the engine names any gap for a given file in a `property_type_coverage` warning. Use "mixed_use" when no single use dominates, and "other" with a note in `description` if none fit. |
+| `property.propertySubtype` | string |  | when `propertyType` is `industrial`: `warehouse_distribution`, `manufacturing`, `flex`, `cold_storage`, `truck_terminal`, `industrial_outdoor_storage`, `other` |  | Subtype within the asset class, lowercase snake_case. Industrial files use one of: warehouse_distribution, manufacturing, flex, cold_storage, truck_terminal, industrial_outdoor_storage, other. Other asset classes are open text until their lists are settled, e.g. "garden", "mid_rise", "grocery_anchored", "suburban". |
+| `property.tenancy` | string |  | `single`, `multi` |  | Single-tenant or multi-tenant configuration as currently operated. |
+| `property.description` | string |  |  |  | Free-text narrative description of the property. |
+| `property.address` | object | yes |  |  | Situs address. US addresses only for now (see the international issue in the tracker). |
+| `property.address.street1` | string | yes |  |  | Primary street address line. |
+| `property.address.street2` | string |  |  |  | Secondary address line (suite, building, etc.). |
+| `property.address.city` | string | yes |  |  |  |
+| `property.address.state` | string | yes |  |  | Two-letter USPS state code, e.g. "CA". |
+| `property.address.postalCode` | string | yes |  |  | 5-digit ZIP or ZIP+4. |
+| `property.address.county` | string |  |  |  | County name, without the word "County". |
+| `property.address.country` | const |  | `US` | `US` | ISO 3166-1 alpha-2. v0.1 is US-only. |
+| `property.location` | object |  |  |  | Geographic and market context. |
+| `property.location.latitude` | number |  |  |  |  |
+| `property.location.longitude` | number |  |  |  |  |
+| `property.location.market` | string |  |  |  | Metro market name, e.g. "Los Angeles". |
+| `property.location.submarket` | string |  |  |  | Submarket name, e.g. "San Gabriel Valley". |
+| `property.parcels` | array |  |  |  | Assessor parcels comprising the property. |
+| `property.parcels[]` | object |  |  |  |  |
+| `property.parcels[].apn` | string | yes |  |  | Assessor's parcel number, formatted as it appears on the assessor roll. |
+| `property.parcels[].landAcres` | number |  |  |  | Land area of this parcel in acres. |
+| `property.parcels[].zoning` | string |  |  |  | Zoning designation, e.g. "M-1". |
+| `property.siteAreaAcres` | number |  |  |  | Total site area in acres across all parcels. If `parcels[].landAcres` are provided, this should equal their sum. |
+| `property.physical` | object | yes |  |  | Physical and functional characteristics of the improvements. |
+| `property.physical.buildingSF` | number | yes |  |  | Total rentable building area in square feet. The denominator for per-SF metrics and pro-rata shares unless a lease overrides it. |
+| `property.physical.unitCount` | integer |  |  |  | Number of rentable units, for property counted in units (apartments, storage units, pads, beds). The denominator for per-unit metrics. |
+| `property.physical.officeSF` | number |  |  |  | Office build-out area in square feet, included within buildingSF. |
+| `property.physical.mezzanineSF` | number |  |  |  | Mezzanine area in square feet. State whether included in buildingSF via `notes` if ambiguous. |
+| `property.physical.clearHeightFt` | number |  |  |  | Minimum clear height in feet, measured at the first interior column line or lowest hanging obstruction per market convention. |
+| `property.physical.dockHighDoors` | integer |  |  |  | Count of dock-high loading doors. |
+| `property.physical.gradeLevelDoors` | integer |  |  |  | Count of grade-level (drive-in) doors. |
+| `property.physical.railServed` | boolean |  |  |  | Whether the property has active rail service. |
+| `property.physical.yearBuilt` | integer |  |  |  |  |
+| `property.physical.yearRenovated` | integer |  |  |  |  |
+| `property.physical.stories` | integer |  |  | `1` |  |
+| `property.physical.construction` | string |  | `tilt_up`, `masonry`, `metal`, `wood_frame`, `other` |  | Primary construction type. |
+| `property.physical.sprinkler` | string |  | `esfr`, `wet`, `dry`, `none` |  | Fire sprinkler system type. "wet" covers calculated/ordinary wet systems that are not ESFR. |
+| `property.physical.powerAmps` | number |  |  |  | Electrical service in amps. |
+| `property.physical.powerVolts` | string |  |  |  | Electrical service voltage/phase, e.g. "277/480V 3-phase". |
+| `property.physical.truckCourtDepthFt` | number |  |  |  | Truck court depth in feet at the primary loading position. |
+| `property.physical.trailerParkingStalls` | integer |  |  |  |  |
+| `property.physical.autoParkingStalls` | integer |  |  |  |  |
+| `property.physical.coverageRatio` | number |  |  |  | Building footprint divided by site area (floor-area ratio for single-story industrial), expressed as a decimal, e.g. 0.45. |
+| `property.physical.fencedYard` | boolean |  |  |  | Whether the property has a secured/fenced yard area. |
+| `property.physical.yardAcres` | number |  |  |  | Usable yard area in acres, if a meaningful component of value (IOS or excess land). |
+| `property.notes` | string |  |  |  | Free-text notes on measurement conventions, pending entitlements, or anything else a reader needs to interpret this module correctly. |
+| `rentRoll` | object | yes |  |  | The in-place rent roll: every lease encumbering the property as of `asOfDate`, plus vacant suites available for lease-up. Covers NNN, NN, modified gross, and gross structures. Unit-based property (apartments, storage) can be written one unit per lease today; a compact unit mix is proposed. |
+| `rentRoll.asOfDate` | date | yes |  |  | Date the rent roll was struck (ISO 8601, YYYY-MM-DD). All leases and vacancies reflect this date. |
+| `rentRoll.leases` | array | yes |  |  | All leases in place as of asOfDate. Empty array means the property is fully vacant (list the space under vacantSuites). |
+| `rentRoll.leases[]` | object |  |  |  |  |
+| `rentRoll.leases[].leaseId` | string | yes |  |  | Stable identifier for this lease, unique within the file. Referenced by calculation outputs and other modules. |
+| `rentRoll.leases[].tenant` | object | yes |  |  |  |
+| `rentRoll.leases[].tenant.name` | string | yes |  |  | Legal name of the tenant entity on the lease. |
+| `rentRoll.leases[].tenant.dba` | string |  |  |  | Trade name, if different from the legal name. |
+| `rentRoll.leases[].tenant.parentCompany` | string |  |  |  | Parent or credit entity, if rent is supported above the lease entity. |
+| `rentRoll.leases[].tenant.industry` | string |  |  |  | Tenant's business / use of the space, e.g. "third-party logistics". |
+| `rentRoll.leases[].tenant.creditNotes` | string |  |  |  | Free-text credit color: public/private, rating if any, years in occupancy. |
+| `rentRoll.leases[].suite` | string |  |  |  | Suite or unit identifier. Optional for single-tenant properties. |
+| `rentRoll.leases[].spaceType` | string |  |  |  | Space type key matching an entry in marketAssumptions.leasingProfiles, used to price this space at rollover (market rent, downtime, renewal terms). Omit when a single profile applies to the whole property. |
+| `rentRoll.leases[].leasedSF` | number | yes |  |  | Leased area in square feet. The denominator for this lease's per-SF rent and the numerator for its pro-rata share. |
+| `rentRoll.leases[].commencementDate` | date | yes |  |  | Lease commencement date (ISO 8601). May be later than rentRoll.asOfDate for a signed-but-not-yet-commenced lease: the space produces no rent, occupancy, or recoveries before commencement. |
+| `rentRoll.leases[].expirationDate` | date | yes |  |  | Current lease expiration date (ISO 8601), reflecting any executed amendments or exercised options. |
+| `rentRoll.leases[].baseRent` | object | yes |  |  | Contractual base rent as a stepped schedule. Each step applies from its startDate until the next step's startDate, or until expirationDate for the last step. Steps must be in ascending startDate order. Historical steps before asOfDate may be omitted. |
+| `rentRoll.leases[].baseRent.unit` | string | yes | `per_sf_per_month`, `per_sf_per_year`, `total_per_month`, `total_per_year` |  | Unit for every `amount` in the schedule. Per-SF units are multiplied by leasedSF. Annual units are divided by 12 for monthly cash flows. |
+| `rentRoll.leases[].baseRent.schedule` | array | yes |  |  |  |
+| `rentRoll.leases[].baseRent.schedule[]` | object |  |  |  |  |
+| `rentRoll.leases[].baseRent.schedule[].startDate` | date | yes |  |  | First day this rent amount applies. |
+| `rentRoll.leases[].baseRent.schedule[].amount` | number | yes |  |  | Rent in the unit declared by baseRent.unit. |
+| `rentRoll.leases[].escalation` | object |  |  |  | Rule for generating rent steps not explicitly enumerated in baseRent.schedule. If the schedule already enumerates every step through expiration, set type to "none" or omit this object. When present with a non-none type, engines apply the rule starting one frequency-interval after the last enumerated step's startDate, through expiration. Enumerated steps are always authoritative over generated ones. |
+| `rentRoll.leases[].escalation.type` | string | yes | `fixed_percent`, `fixed_amount`, `cpi`, `none` |  | fixed_percent: rent grows by `rate` percent each interval. fixed_amount: rent grows by `amount` (in baseRent.unit) each interval. cpi: rent grows with CPI, subject to floor/cap; engines use the CPI growth assumption from marketAssumptions. |
+| `rentRoll.leases[].escalation.rate` | number |  |  |  | Escalation rate in percent per interval, e.g. 3.5 for 3.5%. Required when type is fixed_percent. |
+| `rentRoll.leases[].escalation.amount` | number |  |  |  | Escalation amount per interval, in baseRent.unit. Required when type is fixed_amount. |
+| `rentRoll.leases[].escalation.frequencyMonths` | integer |  |  | `12` | Months between escalations. |
+| `rentRoll.leases[].escalation.cpiFloorPercent` | number |  |  |  | Minimum CPI escalation in percent per interval. Only meaningful when type is cpi. |
+| `rentRoll.leases[].escalation.cpiCapPercent` | number |  |  |  | Maximum CPI escalation in percent per interval. Only meaningful when type is cpi. |
+| `rentRoll.leases[].reimbursement` | object | yes |  |  | How operating expenses are recovered from the tenant. Expense-level recoverability flags live in the expenses module; this object describes the lease's side of the bargain. |
+| `rentRoll.leases[].reimbursement.structure` | string | yes | `nnn`, `nn`, `mg`, `gross` |  | nnn (triple net): tenant reimburses its pro-rata share of all recoverable expenses (taxes, insurance, CAM). nn (double net): as nnn except landlord retains responsibility for roof/structure (capital items). mg (modified gross): tenant reimburses recoverable expense increases over a base year or expense stop. gross: no reimbursement. |
+| `rentRoll.leases[].reimbursement.proRataSharePercent` | number |  |  |  | Tenant's share of recoverable expenses in percent. Defaults to leasedSF / property.physical.buildingSF × 100 when omitted. |
+| `rentRoll.leases[].reimbursement.baseYear` | integer |  |  |  | Base year for MG leases: tenant pays its share of expense increases over this calendar year's expenses. Provide baseYear or expenseStopPerSF for MG, not both. |
+| `rentRoll.leases[].reimbursement.baseYearExpenseAmount` | number |  |  |  | Actual building-level annual recoverable operating expenses in the base year (USD). Optional companion to baseYear: when present the engine uses it as the MG base instead of estimating by deflating current expenses. Should reflect the same recoverable expense set in force now (i.e. net of this lease's excludedExpenses). |
+| `rentRoll.leases[].reimbursement.expenseStopPerSF` | number |  |  |  | Expense stop in USD per SF per year for MG leases: tenant pays its share of expenses above this amount. |
+| `rentRoll.leases[].reimbursement.adminFeePercent` | number |  |  |  | Administrative/management fee markup on recoverable expenses, in percent, if the lease allows one. |
+| `rentRoll.leases[].reimbursement.excludedExpenses` | array |  |  |  | expenseIds from the expenses module that this lease excludes from recovery, overriding the expense-level recoverable flag. |
+| `rentRoll.leases[].reimbursement.excludedExpenses[]` | string |  |  |  |  |
+| `rentRoll.leases[].reimbursement.expenseCap` | object |  |  |  | Annual cap on the growth of the controllable recoverable expenses billed to the tenant (NNN/NN leases). Non-controllable expenses (taxes, insurance, …) are uncapped. The cap is measured off a base-year controllable level. |
+| `rentRoll.leases[].reimbursement.expenseCap.capPercent` | number | yes |  |  | Annual cap on controllable-expense growth, in percent (e.g. 5 = 5% per year). |
+| `rentRoll.leases[].reimbursement.expenseCap.basis` | string |  | `non_cumulative`, `cumulative`, `cumulative_compounded` | `cumulative_compounded` | cumulative_compounded: ceiling = base × (1+cap)^(year−1) (unused room carries forward and compounds). cumulative: ceiling = base × (1 + cap×(year−1)) (linear, unused room carries forward). non_cumulative: ceiling = prior year's billed controllable × (1+cap) (no carry-forward — a low year lowers the future ceiling). |
+| `rentRoll.leases[].reimbursement.expenseCap.baseYearControllableAmount` | number |  |  |  | Actual building-level annual controllable recoverable expenses in the base year. When omitted, the engine uses the controllable recoverable level at the analysis start as the base (year 1). |
+| `rentRoll.leases[].reimbursement.notes` | string |  |  |  |  |
+| `rentRoll.leases[].freeRent` | array |  |  |  | Abatement periods remaining as of asOfDate (historical burned-off free rent is omitted). |
+| `rentRoll.leases[].freeRent[]` | object |  |  |  |  |
+| `rentRoll.leases[].freeRent[].startDate` | date | yes |  |  |  |
+| `rentRoll.leases[].freeRent[].endDate` | date | yes |  |  | Inclusive last day of the abatement period. |
+| `rentRoll.leases[].freeRent[].percentAbated` | number |  |  | `100` | Percentage of base rent abated during the period. 100 = fully free. |
+| `rentRoll.leases[].freeRent[].abatesReimbursements` | boolean |  |  | `false` | Whether expense reimbursements are also abated during the period. |
+| `rentRoll.leases[].tenantImprovements` | object |  |  |  | Unfunded landlord TI obligations remaining as of asOfDate. Provide exactly one of amountPerSF or totalAmount. |
+| `rentRoll.leases[].tenantImprovements.amountPerSF` | number |  |  |  | USD per leased square foot. |
+| `rentRoll.leases[].tenantImprovements.totalAmount` | number |  |  |  | Total USD. |
+| `rentRoll.leases[].tenantImprovements.fundingDate` | date |  |  |  | Date the obligation is assumed to be funded. Engines default to the month after asOfDate if omitted. |
+| `rentRoll.leases[].leasingCommissions` | object |  |  |  | Unpaid leasing commissions remaining as of asOfDate. Provide exactly one of amountPerSF, totalAmount, or percentOfTotalRent. |
+| `rentRoll.leases[].leasingCommissions.amountPerSF` | number |  |  |  | USD per leased square foot. |
+| `rentRoll.leases[].leasingCommissions.totalAmount` | number |  |  |  | Total USD. |
+| `rentRoll.leases[].leasingCommissions.percentOfTotalRent` | number |  |  |  | Percentage of total scheduled base rent over the lease term. |
+| `rentRoll.leases[].leasingCommissions.fundingDate` | date |  |  |  | Date the obligation is assumed to be paid. Engines default to the month after asOfDate if omitted. |
+| `rentRoll.leases[].options` | array |  |  |  | Tenant options under the lease. |
+| `rentRoll.leases[].options[]` | object |  |  |  | Tenant option. Renewal-only fields (renewalTermMonths, renewalCount, rentBasis, fixedRent, percentOfMarket) are rejected on any other type, and terminationFee is rejected except on termination. fixedRent is required when rentBasis is fixed; percentOfMarket is required when rentBasis is percent_of_market. |
+| `rentRoll.leases[].options[].type` | string | yes | `renewal`, `termination`, `purchase`, `expansion`, `right_of_first_refusal`, `right_of_first_offer` |  | Option type. Renewal options carry economic terms engines can model; the others are disclosed for diligence. |
+| `rentRoll.leases[].options[].noticeMonths` | number |  |  |  | Required notice period in months before the option date. |
+| `rentRoll.leases[].options[].earliestExerciseDate` | date |  |  |  | Earliest date the option may take effect (e.g. termination effective date). |
+| `rentRoll.leases[].options[].renewalTermMonths` | integer |  |  |  | Length of the renewal term in months. Renewal options only. |
+| `rentRoll.leases[].options[].renewalCount` | integer |  |  | `1` | Number of successive renewal options on these terms. |
+| `rentRoll.leases[].options[].rentBasis` | string |  | `market`, `fixed`, `percent_of_market` |  | How renewal rent is set. market: fair market rent. fixed: the amount in fixedRent. percent_of_market: percentOfMarket × fair market rent. |
+| `rentRoll.leases[].options[].fixedRent` | number |  |  |  | Renewal rent when rentBasis is fixed, in the lease's baseRent.unit. |
+| `rentRoll.leases[].options[].percentOfMarket` | number |  |  |  | Percent of fair market rent when rentBasis is percent_of_market, e.g. 95. |
+| `rentRoll.leases[].options[].terminationFee` | number |  |  |  | Fee payable on exercise of a termination option, in USD. |
+| `rentRoll.leases[].options[].notes` | string |  |  |  | Terms the structured fields cannot carry (e.g. expansion premises description, ROFR trigger). |
+| `rentRoll.leases[].securityDeposit` | object |  |  |  |  |
+| `rentRoll.leases[].securityDeposit.amount` | number | yes |  |  | USD held as of asOfDate. |
+| `rentRoll.leases[].securityDeposit.form` | string |  | `cash`, `letter_of_credit` | `cash` |  |
+| `rentRoll.leases[].guarantor` | string |  |  |  | Name of any lease guarantor, if different from the tenant entity. |
+| `rentRoll.leases[].notes` | string |  |  |  | Free-text notes: co-tenancy quirks, pending amendments, anything a re-underwriter must know that the structured fields cannot carry. |
+| `rentRoll.vacantSuites` | array |  |  |  | Suites vacant as of asOfDate, available for lease-up at market assumptions. |
+| `rentRoll.vacantSuites[]` | object |  |  |  |  |
+| `rentRoll.vacantSuites[].suite` | string |  |  |  | Suite or unit identifier. |
+| `rentRoll.vacantSuites[].sf` | number | yes |  |  | Vacant area in square feet. |
+| `rentRoll.vacantSuites[].spaceType` | string |  |  |  | Space type key matching an entry in marketAssumptions.leasingProfiles, used to price lease-up. Omit when a single profile applies to the whole property. |
+| `rentRoll.vacantSuites[].notes` | string |  |  |  |  |
+| `rentRoll.notes` | string |  |  |  | Free-text notes on the rent roll as a whole (estoppel status, pending amendments, etc.). |
+| `expenses` | object |  |  |  | Operating expense schedule with recoverability flags. Amounts are annualized as of rentRoll.asOfDate and grow per the expense growth assumption in marketAssumptions unless an item carries its own growth override. |
+| `expenses.items` | array | yes |  |  |  |
+| `expenses.items[]` | object |  |  |  |  |
+| `expenses.items[].expenseId` | string | yes |  |  | Stable identifier, unique within the file. Referenced by leases' reimbursement.excludedExpenses. |
+| `expenses.items[].name` | string | yes |  |  | Display name, e.g. "Real Estate Taxes". |
+| `expenses.items[].category` | string |  | `real_estate_taxes`, `insurance`, `cam`, `repairs_maintenance`, `utilities`, `management_fee`, `administrative`, `reserves`, `other` |  | Standard category for cross-file comparability and standards mapping. Use the name field for the shop-specific label. |
+| `expenses.items[].amount` | number | yes |  |  | Annual amount in the unit declared by amountUnit, as of rentRoll.asOfDate. |
+| `expenses.items[].amountUnit` | string | yes | `total_per_year`, `per_sf_per_year`, `percent_of_egr` |  | total_per_year: USD per year. per_sf_per_year: USD per SF of property.physical.buildingSF per year. percent_of_egr: percent of effective gross revenue (the conventional management fee basis) — amount is the percent value, e.g. 2.5. |
+| `expenses.items[].recoverable` | boolean | yes |  |  | Whether the expense is recoverable from tenants, subject to each lease's reimbursement structure and exclusions. |
+| `expenses.items[].controllable` | boolean |  |  |  | Whether the expense is a controllable expense, subject to a lease's controllable-expense cap (reimbursement.expenseCap). When omitted, the engine defaults by category: real_estate_taxes, insurance, and utilities are non-controllable; all others are controllable. Only matters when a recovering lease carries an expenseCap. |
+| `expenses.items[].belowTheLine` | boolean |  |  | `false` | True for items excluded from NOI but included in cash flow (conventionally capital reserves). |
+| `expenses.items[].growthOverridePercent` | number |  |  |  | Annual growth rate in percent for this item only, overriding marketAssumptions.growth.expenses. Has no effect on percent_of_egr items, which float with revenue. |
+| `expenses.items[].notes` | string |  |  |  |  |
+| `expenses.notes` | string |  |  |  | Free-text notes on the expense schedule as a whole (source statements, normalization adjustments). |
+| `marketAssumptions` | object |  |  |  | Market rent, growth, and rollover assumptions. These travel with the file so any conforming engine reproduces identical lease-up and rollover cash flows. |
+| `marketAssumptions.asOfDate` | date |  |  |  | Date the market assumptions were struck. Defaults to rentRoll.asOfDate. |
+| `marketAssumptions.growth` | object | yes |  |  | Annual growth assumptions. Growth compounds annually on each anniversary of the analysis start. |
+| `marketAssumptions.growth.marketRent` | number or array | yes |  |  | Market rent growth. |
+| `marketAssumptions.growth.marketRent[]` | object |  |  |  |  |
+| `marketAssumptions.growth.marketRent[].fromYear` | integer | yes |  |  |  |
+| `marketAssumptions.growth.marketRent[].annualPercent` | number | yes |  |  |  |
+| `marketAssumptions.growth.expenses` | number or array | yes |  |  | Operating expense growth (items may carry their own override). |
+| `marketAssumptions.growth.expenses[]` | object |  |  |  |  |
+| `marketAssumptions.growth.expenses[].fromYear` | integer | yes |  |  |  |
+| `marketAssumptions.growth.expenses[].annualPercent` | number | yes |  |  |  |
+| `marketAssumptions.growth.cpi` | number or array |  |  |  | CPI assumption used by leases with cpi escalations. Required if any lease escalates on CPI. |
+| `marketAssumptions.growth.cpi[]` | object |  |  |  |  |
+| `marketAssumptions.growth.cpi[].fromYear` | integer | yes |  |  |  |
+| `marketAssumptions.growth.cpi[].annualPercent` | number | yes |  |  |  |
+| `marketAssumptions.generalVacancyPercent` | number |  |  | `0` | General vacancy allowance as a percent of potential gross revenue, applied in addition to explicit downtime. Engines must not double-count: months absorbed by explicit downtime are excluded from the general vacancy base. |
+| `marketAssumptions.creditLossPercent` | number |  |  | `0` | Credit loss allowance as a percent of scheduled revenue. |
+| `marketAssumptions.leasingProfiles` | map | yes |  |  | Leasing profiles keyed by space type. Keys are matched by rentRoll.leases[].spaceType and rentRoll.vacantSuites[].spaceType; spaces without a spaceType use the file's first profile. |
+| `marketAssumptions.leasingProfiles.<key>` | object |  |  |  | Assumptions for a new market lease of this space type, used for vacant-suite lease-up and lease rollover. At each lease expiration, engines blend renewal and new-tenant outcomes by renewalProbabilityPercent. |
+| `marketAssumptions.leasingProfiles.<key>.marketRent` | object | yes |  |  |  |
+| `marketAssumptions.leasingProfiles.<key>.marketRent.amount` | number | yes |  |  | Market rent as of marketAssumptions.asOfDate, grown by growth.marketRent thereafter. |
+| `marketAssumptions.leasingProfiles.<key>.marketRent.unit` | string | yes | `per_sf_per_month`, `per_sf_per_year` |  | Unit for amount. Declared explicitly — never inferred from market convention. |
+| `marketAssumptions.leasingProfiles.<key>.termMonths` | integer | yes |  |  | Market lease term in months. |
+| `marketAssumptions.leasingProfiles.<key>.escalation` | object |  |  |  | Escalation pattern for market leases. Defaults to none. |
+| `marketAssumptions.leasingProfiles.<key>.escalation.type` | string | yes | `fixed_percent`, `fixed_amount`, `cpi`, `none` |  | fixed_percent: rent grows by `rate` percent each interval. fixed_amount: rent grows by `amount` (in baseRent.unit) each interval. cpi: rent grows with CPI, subject to floor/cap; engines use the CPI growth assumption from marketAssumptions. |
+| `marketAssumptions.leasingProfiles.<key>.escalation.rate` | number |  |  |  | Escalation rate in percent per interval, e.g. 3.5 for 3.5%. Required when type is fixed_percent. |
+| `marketAssumptions.leasingProfiles.<key>.escalation.amount` | number |  |  |  | Escalation amount per interval, in baseRent.unit. Required when type is fixed_amount. |
+| `marketAssumptions.leasingProfiles.<key>.escalation.frequencyMonths` | integer |  |  | `12` | Months between escalations. |
+| `marketAssumptions.leasingProfiles.<key>.escalation.cpiFloorPercent` | number |  |  |  | Minimum CPI escalation in percent per interval. Only meaningful when type is cpi. |
+| `marketAssumptions.leasingProfiles.<key>.escalation.cpiCapPercent` | number |  |  |  | Maximum CPI escalation in percent per interval. Only meaningful when type is cpi. |
+| `marketAssumptions.leasingProfiles.<key>.reimbursementStructure` | string |  | `nnn`, `nn`, `mg`, `gross` | `nnn` | Reimbursement structure for market leases. MG market leases use the first calendar year of the new lease as the base year. |
+| `marketAssumptions.leasingProfiles.<key>.downtimeMonths` | number | yes |  |  | Vacant months before a new-tenant lease commences (after expiration, or from analysis start for vacant suites). Not applied to renewals. |
+| `marketAssumptions.leasingProfiles.<key>.renewalProbabilityPercent` | number | yes |  |  | Probability an expiring tenant renews. 100 disables new-tenant outcomes; 0 disables renewals. |
+| `marketAssumptions.leasingProfiles.<key>.newTenant` | object |  |  |  | Leasing costs for the new-tenant outcome. Omitted fields default to 0. |
+| `marketAssumptions.leasingProfiles.<key>.newTenant.tiPerSF` | number |  |  | `0` | Tenant improvement allowance, USD per SF. |
+| `marketAssumptions.leasingProfiles.<key>.newTenant.lcPercentOfRent` | number |  |  | `0` | Leasing commission as a percent of total scheduled base rent over the lease term. |
+| `marketAssumptions.leasingProfiles.<key>.newTenant.freeRentMonths` | number |  |  | `0` | Months of full base rent abatement at lease start. |
+| `marketAssumptions.leasingProfiles.<key>.renewal` | object |  |  |  | Leasing costs for the renewal outcome. Omitted fields default to 0. Renewal rent is market rent unless renewalRentPercentOfMarket is set. |
+| `marketAssumptions.leasingProfiles.<key>.renewal.tiPerSF` | number |  |  | `0` | Tenant improvement allowance, USD per SF. |
+| `marketAssumptions.leasingProfiles.<key>.renewal.lcPercentOfRent` | number |  |  | `0` | Leasing commission as a percent of total scheduled base rent over the lease term. |
+| `marketAssumptions.leasingProfiles.<key>.renewal.freeRentMonths` | number |  |  | `0` | Months of full base rent abatement at lease start. |
+| `marketAssumptions.leasingProfiles.<key>.renewalRentPercentOfMarket` | number |  |  | `100` | Renewal rent as a percent of market rent, e.g. 95. |
+| `marketAssumptions.leasingProfiles.<key>.rolloverProfile` | string |  |  |  | Key of the leasing profile that applies at every rollover after the first lease this profile generates. This profile's own terms price that first lease: the lease-up of a vacant suite, or the first rollover of an in-place lease. From that lease's expiry on, every renewal and new-tenant outcome uses the named profile. Typical use: a lease-up profile with long downtime and first-generation TI and LC, rolling into a general profile. The named profile must exist and must not itself set rolloverProfile. Omitted: this profile applies at every rollover. |
+| `marketAssumptions.leasingProfiles.<key>.notes` | string |  |  |  |  |
+| `marketAssumptions.notes` | string |  |  |  |  |
+| `valuation` | object |  |  |  | Valuation method parameters across the income (DCF and direct capitalization), sales comparison, and cost approaches. Each method listed in `methods` must have its parameter object present. The schema carries inputs for all four approaches; reference engine v0.1 computes DCF and direct cap, and carries the others as structured disclosure. |
+| `valuation.analysisStartDate` | date | yes |  |  | First day of analysis month 1. Conventionally equals rentRoll.asOfDate; all growth, downtime, and discounting measure from this date. |
+| `valuation.valueDate` | date |  |  |  | Effective date of value, if different from analysisStartDate (e.g. a retrospective or prospective appraisal). |
+| `valuation.interestAppraised` | string |  | `fee_simple`, `leased_fee`, `leasehold` | `leased_fee` | Property interest being valued. leased_fee: subject to in-place leases (the default for income-producing property). fee_simple: unencumbered, all space at market — engines value as if every lease rolled to market terms at the analysis start. leasehold: the tenant's interest. |
+| `valuation.valuePremise` | string |  | `as_is`, `as_stabilized`, `as_complete` | `as_is` | Premise of value. as_stabilized and as_complete values should state their assumed dates and conditions in notes. |
+| `valuation.purpose` | string |  | `acquisition`, `disposition`, `financing`, `appraisal`, `internal`, `other` |  | Why the valuation was prepared. Recipients weight assumptions differently by purpose. |
+| `valuation.methods` | array | yes |  |  | Valuation methods this file carries inputs for. Each listed method's parameter object is required. |
+| `valuation.methods[]` | string |  | `dcf`, `direct_cap`, `sales_comparison`, `cost` |  |  |
+| `valuation.purchasePrice` | number |  |  |  | Assumed or actual purchase price, USD. Optional: when present, engines report IRR/NPV against it; when absent, engines report concluded value only. |
+| `valuation.acquisitionCostsPercent` | number |  |  | `0` | Closing costs at acquisition as a percent of purchase price, added to the initial outflow. |
+| `valuation.dcf` | object |  |  |  | Exactly one of `holdPeriodYears`, `holdPeriodMonths`. |
+| `valuation.dcf.holdPeriodYears` | integer |  |  |  | Hold period in whole years from analysisStartDate. Provide this or holdPeriodMonths, not both. |
+| `valuation.dcf.holdPeriodMonths` | integer |  |  |  | Hold period in months from analysisStartDate, for partial-year holds (e.g. exit timed to a lease event). |
+| `valuation.dcf.discountRatePercent` | number | yes |  |  | Annual discount rate applied to unlevered operating cash flows, in percent. |
+| `valuation.dcf.reversionDiscountRatePercent` | number |  |  |  | Separate annual discount rate for the reversion, where the shop rates terminal value risk differently. Defaults to discountRatePercent. |
+| `valuation.dcf.discountTiming` | string |  | `monthly`, `annual` | `monthly` | monthly: end/mid-month cash flows discounted at the equivalent monthly rate ((1+r)^(1/12)-1). annual: end/mid-year aggregated cash flows discounted annually. Declared explicitly so every engine produces the identical NPV. |
+| `valuation.dcf.periodConvention` | string |  | `end`, `mid` | `end` | Whether cash flows are discounted as received at period end or mid-period (common in appraisal DCF). The reversion is always discounted from the end of the final period. |
+| `valuation.dcf.terminalValue` | object | yes |  |  | How the gross reversion value is computed at the end of the hold. |
+| `valuation.dcf.terminalValue.method` | string | yes | `direct_cap`, `exit_price_psf`, `fixed_value`, `grown_purchase_price` |  | direct_cap: capitalize terminal NOI per noiBasis at capRatePercent. exit_price_psf: exitPricePerSF × property.physical.buildingSF. fixed_value: the stated fixedValue. grown_purchase_price: purchasePrice compounded at annualAppreciationPercent over the hold (purchasePrice required). |
+| `valuation.dcf.terminalValue.capRatePercent` | number |  |  |  | Terminal (reversion) cap rate, in percent. Required when method is direct_cap. |
+| `valuation.dcf.terminalValue.noiBasis` | string |  | `forward_year`, `trailing_year`, `stabilized_at_market` | `forward_year` | NOI capitalized at exit. forward_year: the 12 months following sale (hold + 1), per the full assumption set. trailing_year: the 12 months preceding sale. stabilized_at_market: all space at market rent and structure as of the exit date — a fee-simple-style exit that strips any residual below-market leases out of the terminal NOI. |
+| `valuation.dcf.terminalValue.deductBelowTheLineItems` | boolean |  |  | `false` | Capitalize NOI net of below-the-line items (conventionally capital reserves). Some buyers cap NOI after reserves; declared so engines agree. |
+| `valuation.dcf.terminalValue.exitPricePerSF` | number |  |  |  | Gross exit value per building SF. Required when method is exit_price_psf. |
+| `valuation.dcf.terminalValue.fixedValue` | number |  |  |  | Stated gross reversion value, USD. Required when method is fixed_value. |
+| `valuation.dcf.terminalValue.annualAppreciationPercent` | number |  |  |  | Annual appreciation applied to purchasePrice. Required when method is grown_purchase_price. |
+| `valuation.dcf.terminalValue.sellingCostsPercent` | number |  |  | `0` | Costs of sale as a percent of gross reversion value, deducted to reach net reversion. |
+| `valuation.dcf.terminalValue.deductUnfundedObligations` | boolean |  |  | `false` | Deduct outstanding TI/LC and the value of remaining free rent on leases extending past the sale date from the gross reversion — the buyer-assumed-costs adjustment. |
+| `valuation.dcf.terminalValue.notes` | string |  |  |  |  |
+| `valuation.dcf.notes` | string |  |  |  |  |
+| `valuation.directCap` | object |  |  |  |  |
+| `valuation.directCap.capRatePercent` | number | yes |  |  | Overall capitalization rate, in percent. |
+| `valuation.directCap.noiBasis` | string | yes | `year1`, `in_place`, `stabilized_at_market`, `trailing12`, `custom` |  | NOI to capitalize. year1: forward 12 months from analysisStartDate per the full assumption set. in_place: annualized contractual rent in force at analysisStartDate less annualized expenses, ignoring rollover and lease-up. stabilized_at_market: all space leased at market rent and structure — the fee-simple / lease-to-market basis, typically paired with markToMarket and nearTermAdjustments to walk back to leased-fee as-is value. trailing12: not computable from this file alone; provide customNOI alongside. custom: the stated customNOI. |
+| `valuation.directCap.customNOI` | number |  |  |  | Stated annual NOI, USD. Required when noiBasis is custom or trailing12. |
+| `valuation.directCap.applyGeneralVacancy` | boolean |  |  | `true` | Whether marketAssumptions.generalVacancyPercent and creditLossPercent are applied in the basis NOI. |
+| `valuation.directCap.deductBelowTheLineItems` | boolean |  |  | `false` | Capitalize NOI net of below-the-line items (conventionally capital reserves). |
+| `valuation.directCap.excludeExpenseIds` | array |  |  |  | expenseIds excluded from the capped NOI (e.g. an owner-specific expense a buyer would not inherit). |
+| `valuation.directCap.excludeExpenseIds[]` | string |  |  |  |  |
+| `valuation.directCap.nearTermAdjustments` | object |  |  |  | Deduction of near-term costs from the capitalized value — the conventional bridge from a stabilized capped value to an as-is value. Engines compute scheduled costs within the period from the rent roll and market assumptions. |
+| `valuation.directCap.nearTermAdjustments.periodMonths` | integer | yes |  |  | Horizon over which near-term costs are deducted, in months from analysisStartDate (e.g. 18). |
+| `valuation.directCap.nearTermAdjustments.includeDowntimeLostRent` | boolean |  |  | `true` | Deduct gross rent (and recoveries) lost to vacancy and downtime within the period. |
+| `valuation.directCap.nearTermAdjustments.includeFreeRent` | boolean |  |  | `true` | Deduct scheduled and modeled free rent within the period. |
+| `valuation.directCap.nearTermAdjustments.includeTI` | boolean |  |  | `true` | Deduct unfunded and modeled tenant improvement costs within the period. |
+| `valuation.directCap.nearTermAdjustments.includeLC` | boolean |  |  | `true` | Deduct unpaid and modeled leasing commissions within the period. |
+| `valuation.directCap.nearTermAdjustments.discountRatePercent` | number |  |  |  | When present, deductions are taken at present value discounted at this annual rate; when omitted, at face value. |
+| `valuation.directCap.nearTermAdjustments.notes` | string |  |  |  |  |
+| `valuation.directCap.markToMarket` | object |  |  |  | Leased-fee adjustment when capping a market-basis NOI: the present value of (contract − market) rent differentials on each lease through its expiration is added to (above-market) or deducted from (below-market) the capitalized value. Presence of this object enables the adjustment. |
+| `valuation.directCap.markToMarket.discountRatePercent` | number | yes |  |  | Annual rate at which rent differentials are discounted. |
+| `valuation.directCap.markToMarket.notes` | string |  |  |  |  |
+| `valuation.directCap.adjustments` | array |  |  |  | Explicit lump-sum additions or deductions to the capitalized value: deferred maintenance, capital projects, excess land, entitlement value. |
+| `valuation.directCap.adjustments[]` | object |  |  |  |  |
+| `valuation.directCap.adjustments[].name` | string | yes |  |  |  |
+| `valuation.directCap.adjustments[].type` | string | yes | `deduction`, `addition` |  |  |
+| `valuation.directCap.adjustments[].amount` | number | yes |  |  | USD, always positive; type carries the sign. |
+| `valuation.directCap.adjustments[].category` | string |  | `deferred_maintenance`, `capital_costs`, `leasing_costs`, `excess_land`, `entitlements`, `other` |  |  |
+| `valuation.directCap.adjustments[].notes` | string |  |  |  |  |
+| `valuation.directCap.notes` | string |  |  |  |  |
+| `valuation.salesComparison` | object |  |  |  |  |
+| `valuation.salesComparison.unitBasis` | string | yes | `building_sf`, `land_sf`, `land_acre` |  | Unit of comparison. building_sf for improved property; land_sf or land_acre for land-driven product (e.g. industrial outdoor storage). |
+| `valuation.salesComparison.comparables` | array | yes |  |  |  |
+| `valuation.salesComparison.comparables[]` | object |  |  |  |  |
+| `valuation.salesComparison.comparables[].name` | string |  |  |  | Identifier or address line for the comp. |
+| `valuation.salesComparison.comparables[].address` | object |  |  |  |  |
+| `valuation.salesComparison.comparables[].address.street1` | string |  |  |  |  |
+| `valuation.salesComparison.comparables[].address.city` | string |  |  |  |  |
+| `valuation.salesComparison.comparables[].address.state` | string |  |  |  |  |
+| `valuation.salesComparison.comparables[].salePrice` | number | yes |  |  | USD. |
+| `valuation.salesComparison.comparables[].saleDate` | date | yes |  |  |  |
+| `valuation.salesComparison.comparables[].buildingSF` | number |  |  |  |  |
+| `valuation.salesComparison.comparables[].landAcres` | number |  |  |  |  |
+| `valuation.salesComparison.comparables[].pricePerUnit` | number |  |  |  | Unadjusted price per the parent unitBasis. Stated for self-checking; derivable from salePrice and size. |
+| `valuation.salesComparison.comparables[].capRatePercent` | number |  |  |  | Going-in cap rate at sale, if known — supports cap rate extraction for the income approach. |
+| `valuation.salesComparison.comparables[].occupancyPercentAtSale` | number |  |  |  |  |
+| `valuation.salesComparison.comparables[].yearBuilt` | integer |  |  |  |  |
+| `valuation.salesComparison.comparables[].clearHeightFt` | number |  |  |  |  |
+| `valuation.salesComparison.comparables[].condition` | string |  |  |  | Free-text condition/quality note. |
+| `valuation.salesComparison.comparables[].propertyRights` | string |  | `fee_simple`, `leased_fee`, `leasehold` |  | Interest conveyed in the comp sale. |
+| `valuation.salesComparison.comparables[].financingNotes` | string |  |  |  | Non-market financing or other conditions-of-sale color. |
+| `valuation.salesComparison.comparables[].adjustments` | array |  |  |  | Adjustments to the comp toward the subject, applied in listed order. Use either percent or amount per adjustment, not both. |
+| `valuation.salesComparison.comparables[].adjustments[]` | object |  |  |  | Exactly one of `percentAdjustment`, `amountPerUnitAdjustment`. |
+| `valuation.salesComparison.comparables[].adjustments[].factor` | string | yes | `property_rights`, `financing`, `conditions_of_sale`, `market_conditions`, `location`, `size`, `age_condition`, `clear_height`, `loading`, `site_coverage`, `yard`, `other` |  | Element of comparison. market_conditions is the time adjustment. |
+| `valuation.salesComparison.comparables[].adjustments[].percentAdjustment` | number |  |  |  | Signed percent, e.g. -5 adjusts the comp down 5%. |
+| `valuation.salesComparison.comparables[].adjustments[].amountPerUnitAdjustment` | number |  |  |  | Signed USD per unitBasis unit. |
+| `valuation.salesComparison.comparables[].adjustments[].rationale` | string |  |  |  |  |
+| `valuation.salesComparison.comparables[].adjustedPricePerUnit` | number |  |  |  | Price per unit after adjustments. Stated for self-checking. |
+| `valuation.salesComparison.comparables[].source` | string |  |  |  | Verification source, e.g. "public record", "buyer's broker (confirmed)". |
+| `valuation.salesComparison.comparables[].notes` | string |  |  |  |  |
+| `valuation.salesComparison.concludedValuePerUnit` | number | yes |  |  | Concluded value per unitBasis unit after reconciling the adjusted comparables. |
+| `valuation.salesComparison.indicatedValue` | number |  |  |  | Concluded value × subject units. Stated explicitly so files are self-checking; engines verify against concludedValuePerUnit. |
+| `valuation.salesComparison.notes` | string |  |  |  | Reconciliation narrative: which comps were weighted and why. |
+| `valuation.costApproach` | object |  |  |  |  |
+| `valuation.costApproach.landValue` | object | yes |  |  | Exactly one of `amount`, `perAcreAmount`. |
+| `valuation.costApproach.landValue.amount` | number |  |  |  | Land value as if vacant, USD. Provide this or perAcreAmount, not both. |
+| `valuation.costApproach.landValue.perAcreAmount` | number |  |  |  | USD per acre, applied to property.siteAreaAcres. |
+| `valuation.costApproach.landValue.landComparables` | array |  |  |  | Land sales supporting the conclusion. |
+| `valuation.costApproach.landValue.landComparables[]` | object |  |  |  |  |
+| `valuation.costApproach.landValue.landComparables[].name` | string |  |  |  |  |
+| `valuation.costApproach.landValue.landComparables[].salePrice` | number | yes |  |  |  |
+| `valuation.costApproach.landValue.landComparables[].saleDate` | date | yes |  |  |  |
+| `valuation.costApproach.landValue.landComparables[].landAcres` | number | yes |  |  |  |
+| `valuation.costApproach.landValue.landComparables[].zoning` | string |  |  |  |  |
+| `valuation.costApproach.landValue.landComparables[].notes` | string |  |  |  |  |
+| `valuation.costApproach.landValue.notes` | string |  |  |  |  |
+| `valuation.costApproach.improvements` | object | yes |  |  | Exactly one of `replacementCostNew`, `replacementCostNewPerSF`. |
+| `valuation.costApproach.improvements.replacementCostNew` | number |  |  |  | Direct cost of improvements, USD. Provide this or replacementCostNewPerSF, not both. |
+| `valuation.costApproach.improvements.replacementCostNewPerSF` | number |  |  |  | USD per building SF, applied to property.physical.buildingSF. |
+| `valuation.costApproach.improvements.costBasis` | string |  | `replacement`, `reproduction` | `replacement` | Replacement (modern equivalent utility) or reproduction (exact replica) cost. |
+| `valuation.costApproach.improvements.costSource` | string |  |  |  | Basis of the cost estimate, e.g. a published cost service and section, or contractor budget. |
+| `valuation.costApproach.improvements.siteImprovementsCost` | number |  |  |  | Paving, fencing, yard lighting, rail spur — site work beyond the building shell, USD. |
+| `valuation.costApproach.improvements.indirectCostsPercent` | number |  |  |  | Soft costs (A&E, permits, financing, lease-up) as a percent of direct costs, if not already in the cost source. |
+| `valuation.costApproach.improvements.entrepreneurialProfitPercent` | number |  |  |  | Developer profit as a percent of total cost. |
+| `valuation.costApproach.depreciation` | object |  |  |  | Accrued depreciation on the improvements. Percent fields apply to replacement cost new (plus site improvements); the age-life inputs document how physical deterioration was derived. |
+| `valuation.costApproach.depreciation.physicalDeteriorationPercent` | number |  |  |  |  |
+| `valuation.costApproach.depreciation.functionalObsolescencePercent` | number |  |  |  | E.g. inadequate clear height or loading for the modern market. |
+| `valuation.costApproach.depreciation.externalObsolescencePercent` | number |  |  |  | Value loss from outside the property: market conditions, surrounding uses. |
+| `valuation.costApproach.depreciation.effectiveAgeYears` | number |  |  |  | Age-life input behind physical deterioration. |
+| `valuation.costApproach.depreciation.economicLifeYears` | number |  |  |  | Total economic life used in the age-life calculation. |
+| `valuation.costApproach.depreciation.notes` | string |  |  |  |  |
+| `valuation.costApproach.indicatedValue` | number |  |  |  | Land + depreciated improvements (+ profit). Stated for self-checking; engines verify against components. |
+| `valuation.costApproach.notes` | string |  |  |  |  |
+| `valuation.reconciliation` | object |  |  |  | Final value conclusion across the approaches carried in this file. |
+| `valuation.reconciliation.concludedValue` | number | yes |  |  | USD. |
+| `valuation.reconciliation.concludedValuePerSF` | number |  |  |  | Stated for self-checking against property.physical.buildingSF. |
+| `valuation.reconciliation.primaryMethod` | string |  | `dcf`, `direct_cap`, `sales_comparison`, `cost` |  | The approach given most weight. |
+| `valuation.reconciliation.exposureTimeMonths` | number |  |  |  | Estimated exposure time supporting the conclusion (appraisal context). |
+| `valuation.reconciliation.marketingTimeMonths` | number |  |  |  |  |
+| `valuation.reconciliation.notes` | string |  |  |  | Reconciliation narrative: weighting rationale across approaches. |
+| `valuation.taxReassessment` | object |  |  |  | Opt-in property-tax reassessment on transfer (e.g. California Proposition 13). Presence of this object enables it. Requires valuation.purchasePrice. Going-in: the reassessed property tax is set to the purchase price times the effective rate, in force from the analysis start. Reversion: the terminal cap is loaded by the tax rate so the hypothetical buyer's taxes reset to the sale price. |
+| `valuation.taxReassessment.effectiveTaxRatePercent` | number |  |  |  | Effective property-tax rate as a percent of assessed value per year (base rate plus direct assessments). If omitted, derived from the current property-tax expense divided by purchasePrice — which assumes the current taxes already reflect the purchase price (a weak default for a long-held asset). |
+| `valuation.taxReassessment.reassessOnAcquisition` | boolean |  |  | `true` | Reset the property tax to purchasePrice x effective rate from the analysis start (affects operating NOI in every year). |
+| `valuation.taxReassessment.reassessAtReversion` | boolean |  |  | `true` | Load the terminal cap rate by the effective tax rate so the exit value reflects the buyer's reassessment to the sale price (direct_cap terminal method only). |
+| `valuation.taxReassessment.expenseId` | string |  |  |  | expenseId of the reassessable property-tax line. Defaults to the single expenses item with category real_estate_taxes. |
+| `valuation.notes` | string |  |  |  |  |
+| `debt` | object |  |  |  | Optional simple loan terms for levered returns. ORE v0.1 supports a single fixed-rate loan sized by amount or LTV; waterfalls and floating rates are out of scope. Exactly one of `loanAmount`, `ltvPercent`. |
+| `debt.loanAmount` | number |  |  |  | Loan amount in USD. Provide this or ltvPercent, not both. |
+| `debt.ltvPercent` | number |  |  |  | Loan-to-value in percent, applied to valuation.purchasePrice (which must be present when sizing by LTV). |
+| `debt.interestRatePercent` | number | yes |  |  | Fixed annual interest rate in percent. v0.1 supports fixed rates only. |
+| `debt.rateType` | const |  | `fixed` | `fixed` | v0.1 supports fixed-rate debt only; future versions will widen this enum. |
+| `debt.termMonths` | integer | yes |  |  | Loan term in months from fundingDate. If the term ends before the hold period, engines assume payoff of the outstanding balance at term end refinanced on identical terms; state deviations in notes. |
+| `debt.amortizationMonths` | integer |  |  |  | Amortization schedule in months (e.g. 360 for 30-year). Omit for interest-only through the full term. |
+| `debt.interestOnlyMonths` | integer |  |  | `0` | Interest-only period in months at the start of the loan, before amortization begins. |
+| `debt.originationFeePercent` | number |  |  | `0` | Origination fee as a percent of loan amount, deducted from proceeds at funding. |
+| `debt.fundingDate` | date |  |  |  | Loan funding date. Defaults to valuation.analysisStartDate. |
+| `debt.notes` | string |  |  |  |  |
+| `provenance` | object |  |  |  | Who produced the file, when, from what source documents, and whom to contact. Provenance is how a recipient judges what they can rely on and what to re-verify. |
+| `provenance.generatedAt` | date-time | yes |  |  | When the file was produced (ISO 8601 date-time with timezone). |
+| `provenance.generatedBy` | object | yes |  |  | The party responsible for the file's contents. |
+| `provenance.generatedBy.name` | string | yes |  |  | Person or team name. |
+| `provenance.generatedBy.organization` | string |  |  |  |  |
+| `provenance.generatedBy.role` | string |  | `listing_broker`, `buyer`, `appraiser`, `owner`, `lender`, `other` |  | The producer's role in the transaction — recipients read assumptions differently depending on who set them. |
+| `provenance.generatedBy.email` | email |  |  |  |  |
+| `provenance.generatedBy.phone` | string |  |  |  |  |
+| `provenance.software` | object |  |  |  | Tool that wrote the file, for conformance triage. |
+| `provenance.software.name` | string |  |  |  |  |
+| `provenance.software.version` | string |  |  |  |  |
+| `provenance.sourceDocuments` | array |  |  |  | Documents the file's data was abstracted from. Listed for diligence; the documents themselves do not travel in the file. |
+| `provenance.sourceDocuments[]` | object |  |  |  |  |
+| `provenance.sourceDocuments[].name` | string | yes |  |  | Document title, e.g. "Lease Agreement dated 2021-08-15". |
+| `provenance.sourceDocuments[].type` | string | yes | `lease`, `lease_amendment`, `rent_roll`, `operating_statement`, `budget`, `tax_bill`, `offering_memorandum`, `site_plan`, `estoppel`, `other` |  |  |
+| `provenance.sourceDocuments[].date` | date |  |  |  | Document date. |
+| `provenance.sourceDocuments[].description` | string |  |  |  |  |
+| `provenance.contacts` | array |  |  |  | Deal contacts beyond the producer (e.g. listing team members). |
+| `provenance.contacts[]` | object |  |  |  |  |
+| `provenance.contacts[].name` | string | yes |  |  |  |
+| `provenance.contacts[].organization` | string |  |  |  |  |
+| `provenance.contacts[].role` | string |  |  |  | Free-text role, e.g. "co-listing broker". |
+| `provenance.contacts[].email` | email |  |  |  |  |
+| `provenance.contacts[].phone` | string |  |  |  |  |
+| `provenance.confidentiality` | string |  |  |  | Free-text confidentiality statement or NDA reference governing the file's distribution. |
+| `provenance.notes` | string |  |  |  |  |
+
+---
+
 # Human specification
 
 # ORE Specification
 
 ORE (Open Real Estate) is an open, JSON-based file format for property-level
 underwriting data. A `.ore` file is standard JSON — `cat deal.ore | jq` just works —
-validated against the published JSON Schema in [`schema/`](schema/), then against
-the cross-field rules in [`validation.md`](validation.md).
+validated against the published JSON Schema in [`schema/`](https://github.com/graham1776/Open-Real-Estate/blob/main/spec/schema/), then against
+the cross-field rules in [`validation.md`](https://github.com/graham1776/Open-Real-Estate/blob/main/spec/validation.md).
 
 - Current format version: **0.1.0** (pre-release, unstable until tagged)
 - Schema dialect: JSON Schema draft 2020-12
-- Scope: US commercial property of any type, DCF and direct capitalization. The reference engine is deepest on industrial; coverage for each property type is in [`coverage.md`](coverage.md)
+- Scope: US commercial property of any type, DCF and direct capitalization. The reference engine is deepest on industrial; coverage for each property type is in [`coverage.md`](https://github.com/graham1776/Open-Real-Estate/blob/main/spec/coverage.md)
 
 ## Module status
 
@@ -136,6 +505,11 @@ document, never separate files.
 
 ## Conventions
 
+- **A `.ore` file is JSON.** Any JSON parser reads it and any JSON tool works on
+  it. The extension says which format the JSON follows; the content is plain
+  UTF-8 JSON with no comments or trailing commas. Where a tool refuses an
+  unknown extension, name the file `deal.ore.json`: every ORE tool accepts
+  both. Serve it as `application/json`.
 - **Dates** are ISO 8601 (`YYYY-MM-DD`) strings.
 - **Names:** field names are camelCase (`leasedSF`, `discountRatePercent`).
   Enum values are snake_case: lowercase words joined by underscores, with
@@ -187,15 +561,17 @@ The rules:
 
 ## Documents
 
-- [`data-dictionary.md`](data-dictionary.md) — every field defined, typed, and documented
-- [`validation.md`](validation.md) — cross-field rules (`lint()`): ids, severity, JSON Pointers
-- [`coverage.md`](coverage.md) — scope & coverage matrix: what the format represents
+- [`data-dictionary.md`](https://github.com/graham1776/Open-Real-Estate/blob/main/spec/data-dictionary.md) — every field defined, typed, and documented
+- [`validation.md`](https://github.com/graham1776/Open-Real-Estate/blob/main/spec/validation.md) — cross-field rules (`lint()`): ids, severity, JSON Pointers
+- [`coverage.md`](https://github.com/graham1776/Open-Real-Estate/blob/main/spec/coverage.md) — scope & coverage matrix: what the format represents
   and what the engine computes, by data domain, with the v0.2 gap backlog. The single
   source of truth for "is *X* supported?"
 - `schema/` — the normative JSON Schema files
-- [`../llms.txt`](../llms.txt) — the entire format (this spec + data dictionary +
-  schemas + an annotated example) assembled as one LLM-ingestible document.
-  Generated by `npm run llms` (`build-llms-txt.mjs`); regenerate after any spec change.
+- [`../reference.html`](https://github.com/graham1776/Open-Real-Estate/blob/main/reference.html) and [`../llms.txt`](https://github.com/graham1776/Open-Real-Estate/blob/main/llms.txt) — the
+  entire format (an authoring guide, every field in one table, this spec, the data
+  dictionary, validation rules and schemas, plus examples) as one HTML page on the
+  project site and as one plain-text document. Both are generated by `npm run llms`
+  (`build-llms-txt.mjs`, `field-table.mjs`); regenerate after any spec change.
 
 Where a field corresponds to a concept in an existing open standard (NCREIF PREA
 Reporting Standards, REDI), the data dictionary notes the mapping.
@@ -206,15 +582,15 @@ Reporting Standards, REDI), the data dictionary notes the mapping.
 
 # ORE Data Dictionary — v0.1 (draft)
 
-Normative definitions live in the JSON Schema files under [`schema/`](schema/); this
+Normative definitions live in the JSON Schema files under [`schema/`](https://github.com/graham1776/Open-Real-Estate/blob/main/spec/schema/); this
 dictionary restates them for human readers and adds interpretation guidance. Fields
 are listed as JSON paths from the file root. **(R)** marks required fields.
 Cross-field checks — references, unique ids, option fields — are in
-[`validation.md`](validation.md). JSON Schema does not enforce them.
+[`validation.md`](https://github.com/graham1776/Open-Real-Estate/blob/main/spec/validation.md). JSON Schema does not enforce them.
 
 A field not listed here is an error, except a key starting with `x-`, which any
 object other than a keyed map may carry and every reader ignores. See
-"Unknown fields and extensions" in the [spec README](README.md).
+"Unknown fields and extensions" in the [spec README](https://github.com/graham1776/Open-Real-Estate/blob/main/spec/README.md).
 
 ## Root
 
@@ -646,7 +1022,7 @@ non-renewal are reported in the order `renewalTermMonths`, `renewalCount`,
 `rentBasis`, `fixedRent`, `percentOfMarket`, then `terminationFee` when that
 field is present on a non-termination.
 
-Conformance fixtures live in [`engine/golden/invalid/`](../engine/golden/invalid/).
+Conformance fixtures live in [`engine/golden/invalid/`](https://github.com/graham1776/Open-Real-Estate/blob/main/engine/golden/invalid/).
 Most are invalid; a fixture whose expected issues are all warnings (e.g.
 `space-type-without-profiles`) locks a warning-level rule.
 Each `*.ore` file has a sibling `*.lint.json` listing the `code`, `severity`,

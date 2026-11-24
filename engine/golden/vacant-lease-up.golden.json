@@ -1,0 +1,352 @@
+{
+  "engineVersion": "0.1.0",
+  "property": {
+    "name": "Mesa Ridge Logistics Center",
+    "cityState": "Perris, CA",
+    "market": "Inland Empire",
+    "submarket": "Inland Empire East",
+    "buildingSF": 502000,
+    "yearBuilt": 2026,
+    "clearHeightFt": 40
+  },
+  "occupancy": {
+    "buildingSF": 502000,
+    "occupiedSF": 0,
+    "vacantSF": 502000,
+    "occupancyPercent": 0
+  },
+  "leaseMetrics": {
+    "waltYearsByRent": null,
+    "waltYearsBySF": null,
+    "rollNext12ByRentPercent": 0,
+    "rollNext12BySFPercent": 0
+  },
+  "rent": {
+    "inPlaceAnnualBaseRent": 0,
+    "inPlaceWARentPerSFPerMonth": null,
+    "marketRentPerSFPerMonth": 1.1,
+    "inPlaceVsMarketPercent": null
+  },
+  "expenses": {
+    "aboveLineAnnualExclMgmt": 1606260,
+    "belowTheLineAnnual": 40160,
+    "managementFeePercentOfEGR": 1.5
+  },
+  "noi": {
+    "year1NOI": -1604260,
+    "stabilizedAtMarketNOI": 6417500
+  },
+  "noiBridgeYear1": {
+    "year": 1,
+    "months": 12,
+    "scheduledBaseRent": 0,
+    "freeRent": 0,
+    "absorptionVacancy": -6626400,
+    "expenseRecoveries": 0,
+    "generalVacancy": 0,
+    "creditLoss": 0,
+    "effectiveGrossRevenue": 0,
+    "operatingExpenses": -1604260,
+    "managementFee": 0,
+    "noi": -1604260,
+    "belowTheLine": -40160,
+    "tiCosts": 0,
+    "lcCosts": 0,
+    "cashFlow": -1644420
+  },
+  "cashFlows": {
+    "annual": [
+      {
+        "year": 1,
+        "months": 12,
+        "scheduledBaseRent": 0,
+        "freeRent": 0,
+        "absorptionVacancy": -6626400,
+        "expenseRecoveries": 0,
+        "generalVacancy": 0,
+        "creditLoss": 0,
+        "effectiveGrossRevenue": 0,
+        "operatingExpenses": -1604260,
+        "managementFee": 0,
+        "noi": -1604260,
+        "belowTheLine": -40160,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": -1644420
+      },
+      {
+        "year": 2,
+        "months": 12,
+        "scheduledBaseRent": 3379464,
+        "freeRent": -3379464,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 1715939,
+        "generalVacancy": -169497,
+        "creditLoss": -24630,
+        "effectiveGrossRevenue": 4901276,
+        "operatingExpenses": -1639508,
+        "managementFee": -76431,
+        "noi": 3185337,
+        "belowTheLine": -41365,
+        "tiCosts": -2008000,
+        "lcCosts": -2196512,
+        "cashFlow": -1060540
+      },
+      {
+        "year": 3,
+        "months": 12,
+        "scheduledBaseRent": 7029285,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 1808116,
+        "generalVacancy": -176748,
+        "creditLoss": -43303,
+        "effectiveGrossRevenue": 8617350,
+        "operatingExpenses": -1675555,
+        "managementFee": -132561,
+        "noi": 6809234,
+        "belowTheLine": -42606,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 6766628
+      },
+      {
+        "year": 4,
+        "months": 12,
+        "scheduledBaseRent": 7310457,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 1849826,
+        "generalVacancy": -183206,
+        "creditLoss": -44885,
+        "effectiveGrossRevenue": 8932191,
+        "operatingExpenses": -1712422,
+        "managementFee": -137404,
+        "noi": 7082365,
+        "belowTheLine": -43884,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 7038482
+      },
+      {
+        "year": 5,
+        "months": 12,
+        "scheduledBaseRent": 7602875,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 1892558,
+        "generalVacancy": -189909,
+        "creditLoss": -46528,
+        "effectiveGrossRevenue": 9258996,
+        "operatingExpenses": -1750126,
+        "managementFee": -142431,
+        "noi": 7366439,
+        "belowTheLine": -45200,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 7321238
+      },
+      {
+        "year": 6,
+        "months": 12,
+        "scheduledBaseRent": 7906990,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 1936338,
+        "generalVacancy": -196867,
+        "creditLoss": -48232,
+        "effectiveGrossRevenue": 9598229,
+        "operatingExpenses": -1788688,
+        "managementFee": -147650,
+        "noi": 7661891,
+        "belowTheLine": -46556,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 7615334
+      },
+      {
+        "year": 7,
+        "months": 12,
+        "scheduledBaseRent": 5076319,
+        "freeRent": -1054819,
+        "absorptionVacancy": -1780008,
+        "expenseRecoveries": 1494203,
+        "generalVacancy": -49257,
+        "creditLoss": -32606,
+        "effectiveGrossRevenue": 6488658,
+        "operatingExpenses": -1828128,
+        "managementFee": -98558,
+        "noi": 4561972,
+        "belowTheLine": -47953,
+        "tiCosts": -803200,
+        "lcCosts": -2030748,
+        "cashFlow": 1680070
+      },
+      {
+        "year": 8,
+        "months": 12,
+        "scheduledBaseRent": 8156391,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 2021130,
+        "generalVacancy": -203550,
+        "creditLoss": -49870,
+        "effectiveGrossRevenue": 9924101,
+        "operatingExpenses": -1868467,
+        "managementFee": -152663,
+        "noi": 7902971,
+        "belowTheLine": -49392,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 7853579
+      },
+      {
+        "year": 9,
+        "months": 12,
+        "scheduledBaseRent": 8482647,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 2067985,
+        "generalVacancy": -211013,
+        "creditLoss": -51698,
+        "effectiveGrossRevenue": 10287922,
+        "operatingExpenses": -1909726,
+        "managementFee": -158259,
+        "noi": 8219936,
+        "belowTheLine": -50873,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 8169063
+      },
+      {
+        "year": 10,
+        "months": 12,
+        "scheduledBaseRent": 8821953,
+        "freeRent": 0,
+        "absorptionVacancy": 0,
+        "expenseRecoveries": 2115996,
+        "generalVacancy": -218759,
+        "creditLoss": -53596,
+        "effectiveGrossRevenue": 10665594,
+        "operatingExpenses": -1951927,
+        "managementFee": -164069,
+        "noi": 8549598,
+        "belowTheLine": -52400,
+        "tiCosts": 0,
+        "lcCosts": 0,
+        "cashFlow": 8497198
+      }
+    ]
+  },
+  "directCap": {
+    "basis": "stabilized_at_market",
+    "basisNOI": 6417500,
+    "capRatePercent": 4.75,
+    "grossValue": 135105263,
+    "adjustmentsApplied": [
+      {
+        "name": "Near-term downtime lost rent (24 mo, PV)",
+        "amount": -6389159
+      },
+      {
+        "name": "Near-term free rent (24 mo, PV)",
+        "amount": -3096805
+      },
+      {
+        "name": "Near-term TI (24 mo, PV)",
+        "amount": -1866084
+      },
+      {
+        "name": "Near-term LC (24 mo, PV)",
+        "amount": -2041273
+      }
+    ],
+    "indicatedValue": 121711941,
+    "perSF": 242.45
+  },
+  "dcf": {
+    "holdMonths": 120,
+    "discountRatePercent": 7,
+    "reversionDiscountRatePercent": 7,
+    "pvOperating": 33960605,
+    "terminalGross": 170122427,
+    "terminalNet": 167570591,
+    "pvTerminal": 85184391,
+    "indicatedValue": 119144996,
+    "perSF": 237.34,
+    "unfundedObligationsDeducted": 0
+  },
+  "debt": null,
+  "returns": {
+    "unlevered": {
+      "irrPercent": 7.62,
+      "npvAtDiscountRate": 6024996,
+      "equityMultiple": 1.94,
+      "totalProfit": 106687224
+    },
+    "levered": null
+  },
+  "sensitivity": {
+    "discountRatesPercent": [
+      6,
+      6.5,
+      7,
+      7.5,
+      8
+    ],
+    "exitCapRatesPercent": [
+      4.5,
+      4.75,
+      5,
+      5.25,
+      5.5
+    ],
+    "values": [
+      [
+        144703942,
+        138983448,
+        133835002,
+        129176885,
+        124942233
+      ],
+      [
+        138661789,
+        133204258,
+        128292481,
+        123848492,
+        119808502
+      ],
+      [
+        132908846,
+        127701044,
+        123014022,
+        118773383,
+        114918257
+      ],
+      [
+        127429733,
+        122459147,
+        117985619,
+        113938142,
+        110258617
+      ],
+      [
+        122209962,
+        117464760,
+        113194078,
+        109330128,
+        105817446
+      ]
+    ]
+  },
+  "concluded": {
+    "value": 119144996,
+    "source": "computed (dcf, engine)"
+  },
+  "warnings": [
+    {
+      "code": "tax_reassessment_reversion",
+      "message": "Terminal cap loaded by the 1.15% effective tax rate so the exit value reflects reassessment to the sale price (Prop 13-style)."
+    }
+  ]
+}

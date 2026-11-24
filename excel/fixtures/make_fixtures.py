@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate the workbook stress fixtures (excel/fixtures/*.ore).
 
-The six published examples exercise the common paths. These fixtures are
+The published examples exercise the common paths. These fixtures are
 synthetic variants built to reach every branch the workbook mirrors: fee-simple
 basis, expense stops and estimated base years, exclusions, admin fees,
 non-cumulative and simple-cumulative caps, partial and reimbursement-abating
