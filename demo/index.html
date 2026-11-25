@@ -1034,12 +1034,13 @@ function renderOutputs(deal, out, err) {
       <tr><td><strong>Indicated value</strong></td><td class="num"><strong>${usd(c.indicatedValue)}</strong></td></tr>
       ${deal.valuation?.purchasePrice ? `<tr><td class="muted">vs purchase price</td><td class="num muted">${usd(deal.valuation.purchasePrice)} (${num(((c.indicatedValue - deal.valuation.purchasePrice) / deal.valuation.purchasePrice) * 100, 1)}%)</td></tr>` : ""}
     </tbody></table>` : ""}
-    ${out.returns?.unlevered || out.returns?.levered ? `<h2>Returns${deal.valuation?.purchasePrice ? ` <span class="muted">(at ${usd(deal.valuation.purchasePrice)} purchase price)</span>` : ""}</h2>
+    ${out.returns?.unlevered || out.returns?.levered || out.returns?.yieldOnCost?.year1Percent != null ? `<h2>Returns${deal.valuation?.purchasePrice ? ` <span class="muted">(at ${usd(deal.valuation.purchasePrice)} purchase price)</span>` : ""}</h2>
     <div class="cards">
       ${out.returns.unlevered ? card("Unlevered IRR", pct(out.returns.unlevered.irrPercent), `${num(out.returns.unlevered.equityMultiple, 2)}x multiple`) : ""}
       ${out.returns.levered ? card("Levered IRR", pct(out.returns.levered.irrPercent), `${num(out.returns.levered.equityMultiple, 2)}x on ${usd(out.returns.levered.initialEquity)} equity`) : ""}
       ${out.debt ? card("Loan", usd(out.debt.loanAmount), `Year-1 DSCR ${num(out.debt.dscrYear1, 2)}`) : ""}
       ${out.returns.unlevered ? card("NPV vs price", usd(out.returns.unlevered.npvAtDiscountRate)) : ""}
+      ${out.returns.yieldOnCost?.year1Percent != null ? card("Yield on cost, year 1", pct(out.returns.yieldOnCost.year1Percent), `${pct(out.returns.yieldOnCost.year1MarketPercent)} with all space at market`) : ""}
     </div>` : ""}
     ${out.cashFlows?.annual?.length ? annualCfTable(out.cashFlows.annual) : ""}
     ${out.sensitivity ? `<h2>Sensitivity <span class="muted">(DCF value: discount rate × ${out.sensitivity.exitCapRatesPercent ? "exit cap rate" : "—"})</span></h2>

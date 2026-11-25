@@ -1164,6 +1164,30 @@ export function annualTable(model: MonthlyModel, H: number): AnnualRow[] {
   return rows;
 }
 
+// Yield on cost per year: that year's NOI ÷ total cost to date, where cost =
+// price × (1 + acquisition costs %) + TI + LC through the end of that year.
+// Below-the-line items are recurring reserves (the format has no one-time
+// capital yet), so they stay out. Market: stabilizedAnnualNOI at the year's
+// first month (year 1 ties to direct cap's stabilized_at_market basis).
+// A partial final year has no full-year actual NOI, so its actual yield is null.
+export type AnnualRowWithYield = AnnualRow & { yieldOnCostPercent: number | null; marketYieldOnCostPercent: number | null };
+
+export function withYieldOnCost(deal: OreFile, model: MonthlyModel, rows: AnnualRow[], warnings: Warnings): AnnualRowWithYield[] {
+  const v = deal.valuation;
+  return rows.map((row) => {
+    if (!v?.purchasePrice) return { ...row, yieldOnCostPercent: null, marketYieldOnCostPercent: null };
+    const a = (row.year - 1) * 12, b = a + row.months;
+    const cost = v.purchasePrice * (1 + (v.acquisitionCostsPercent ?? 0) / 100) + sum(model.ti, 0, b) + sum(model.lc, 0, b);
+    const market = stabilizedAnnualNOI(deal, a, warnings);
+    const pct = (noi: number) => (cost > 0 ? round2((noi / cost) * 100) : null);
+    return {
+      ...row,
+      yieldOnCostPercent: row.months === 12 ? pct(sum(model.noi, a, b)) : null,
+      marketYieldOnCostPercent: market != null ? pct(market) : null,
+    };
+  });
+}
+
 // ----------------------------------------------------- lease term metrics
 //
 // WALT and lease-roll, the standard occupancy-quality measures (and REDI asset
@@ -1253,6 +1277,7 @@ export function computeAll(deal: OreFile) {
   }
 
   const stabNOI = stabilizedAnnualNOI(deal, 0, warnings);
+  const annual = withYieldOnCost(deal, model, annualTable(model, H), warnings);
 
   return {
     engineVersion: ENGINE_VERSION,
@@ -1286,12 +1311,16 @@ export function computeAll(deal: OreFile) {
       stabilizedAtMarketNOI: stabNOI != null ? round0(stabNOI) : null,
     },
     noiBridgeYear1: annualTable(model, 12)[0]!,
-    cashFlows: { annual: annualTable(model, H) },
+    cashFlows: { annual },
     directCap, dcf, debt: debt ? {
       loanAmount: debt.loanAmount, netProceeds: debt.netProceeds,
       year1DebtService: debt.year1DebtService, dscrYear1: debt.dscrYear1,
     } : null,
-    returns, sensitivity,
+    returns: {
+      ...returns,
+      yieldOnCost: { year1Percent: annual[0]?.yieldOnCostPercent ?? null, year1MarketPercent: annual[0]?.marketYieldOnCostPercent ?? null },
+    },
+    sensitivity,
     concluded: { value: concludedValue != null ? round0(concludedValue) : null, source: concludedSource },
     warnings: warnings.list,
   };

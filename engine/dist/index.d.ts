@@ -100,6 +100,11 @@ export interface AnnualRow {
     cashFlow: number;
 }
 export declare function annualTable(model: MonthlyModel, H: number): AnnualRow[];
+export type AnnualRowWithYield = AnnualRow & {
+    yieldOnCostPercent: number | null;
+    marketYieldOnCostPercent: number | null;
+};
+export declare function withYieldOnCost(deal: OreFile, model: MonthlyModel, rows: AnnualRow[], warnings: Warnings): AnnualRowWithYield[];
 export interface LeaseMetrics {
     waltYearsByRent: number | null;
     waltYearsBySF: number | null;
@@ -141,7 +146,7 @@ export declare function computeAll(deal: OreFile): {
     };
     noiBridgeYear1: AnnualRow;
     cashFlows: {
-        annual: AnnualRow[];
+        annual: AnnualRowWithYield[];
     };
     directCap: DirectCapResult | null;
     dcf: DcfResult | null;
@@ -151,7 +156,24 @@ export declare function computeAll(deal: OreFile): {
         year1DebtService: number | null;
         dscrYear1: number | null;
     } | null;
-    returns: ReturnsResult;
+    returns: {
+        yieldOnCost: {
+            year1Percent: number | null;
+            year1MarketPercent: number | null;
+        };
+        unlevered: {
+            irrPercent: number | null;
+            npvAtDiscountRate: number | null;
+            equityMultiple: number | null;
+            totalProfit: number | null;
+        } | null;
+        levered: {
+            irrPercent: number | null;
+            equityMultiple: number | null;
+            initialEquity: number;
+            totalProfit: number | null;
+        } | null;
+    };
     sensitivity: SensitivityResult | null;
     concluded: {
         value: number | null;
